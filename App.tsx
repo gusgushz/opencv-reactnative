@@ -64,11 +64,11 @@ function App(): React.JSX.Element {
 
       if(Platform.OS === 'android') {
         OpenCVWrapper.getOpenCVVersion()
-        .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version);})
+        .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version)})
         .catch((error: any) => console.error('Error fetching OpenCV version:', error));
       } else {
         OpenCVWrapper.getOpenCVVersion()
-          .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version);})
+          .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version)})
           .catch((error: any) => console.error('Error fetching OpenCV version:', error));
       }
     } else {
