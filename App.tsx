@@ -4,7 +4,6 @@
  *
  * @format
  */
-
 import React,{useState, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
@@ -28,7 +27,6 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 const {OpenCVWrapper} = NativeModules;
-
 
 function Section({children, title}: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -105,7 +103,7 @@ function App(): React.JSX.Element {
           <Header/>
         </View>
         <View>
-          <Text>{CVversion}</Text>
+          {CVversion}
         </View>
         <View
           style={{

@@ -110,7 +110,10 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+<<<<<<< HEAD
     implementation("org.opencv:opencv:4.11.0")
+=======
+>>>>>>> 835e224 (Initial commit)
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
