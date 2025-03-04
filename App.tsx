@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   ScrollView,
@@ -13,7 +13,7 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  View,
+  View, NativeModules,  Platform
 } from 'react-native';
 
 import {
@@ -27,6 +27,8 @@ import {
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
+const {OpenCVWrapper} = NativeModules;
+
 
 function Section({children, title}: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -55,6 +57,25 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+  const [CVversion, setCVversion] = useState("")
+  useEffect(() => {
+    if (OpenCVWrapper) {
+      console.log('OpenCVWrapper:', OpenCVWrapper);
+
+      if(Platform.OS == "android") {
+        OpenCVWrapper.getOpenCVVersion()
+        .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version)})
+        .catch((error: any) => console.error('Error fetching OpenCV version:', error));
+      } else {
+        OpenCVWrapper.getOpenCVVersion()
+          .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version)})
+          .catch((error: any) => console.error('Error fetching OpenCV version:', error));
+      }
+    } else {
+      console.error('OpenCVWrapper module not found.');
+    }
+  }, []);
+
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -82,6 +103,9 @@ function App(): React.JSX.Element {
         style={backgroundStyle}>
         <View style={{paddingRight: safePadding}}>
           <Header/>
+        </View>
+        <View>
+          <Text>{CVversion}</Text>
         </View>
         <View
           style={{
