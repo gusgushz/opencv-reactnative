@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-testDoc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-testDoc.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-<<<<<<< HEAD
 		2FF7B2CB2D7210BC003ACC5F /* opencv2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2CA2D7210BC003ACC5F /* opencv2.xcframework */; };
 		2FF7B2CF2D721148003ACC5F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2CE2D721148003ACC5F /* CoreGraphics.framework */; };
 		2FF7B2D12D721152003ACC5F /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2D02D721152003ACC5F /* CoreImage.framework */; };
@@ -21,8 +20,6 @@
 		2FF7B2DC2D7211D1003ACC5F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2DB2D7211D1003ACC5F /* QuartzCore.framework */; };
 		2FF7B2DE2D7211E1003ACC5F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2DD2D7211E1003ACC5F /* UIKit.framework */; };
 		2FF7B2E22D721444003ACC5F /* OpenCVWrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2FF7B2E12D721444003ACC5F /* OpenCVWrapper.mm */; };
-=======
->>>>>>> 835e224 (Initial commit)
 		4148B0AB1E0B721B313BB267 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -33,7 +30,6 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = testDoc/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = testDoc/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = testDoc/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-<<<<<<< HEAD
 		2FF7B2CA2D7210BC003ACC5F /* opencv2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = opencv2.xcframework; path = ../../opencv/build_all/opencv2.xcframework; sourceTree = "<group>"; };
 		2FF7B2CE2D721148003ACC5F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		2FF7B2D02D721152003ACC5F /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
@@ -47,8 +43,6 @@
 		2FF7B2E02D721444003ACC5F /* testDoc-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "testDoc-Bridging-Header.h"; sourceTree = "<group>"; };
 		2FF7B2E12D721444003ACC5F /* OpenCVWrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenCVWrapper.mm; sourceTree = "<group>"; };
 		2FF7B2E32D7214F9003ACC5F /* PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
-=======
->>>>>>> 835e224 (Initial commit)
 		3B4392A12AC88292D35C810B /* Pods-testDoc.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-testDoc.debug.xcconfig"; path = "Target Support Files/Pods-testDoc/Pods-testDoc.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-testDoc.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-testDoc.release.xcconfig"; path = "Target Support Files/Pods-testDoc/Pods-testDoc.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-testDoc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-testDoc.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,7 +56,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-<<<<<<< HEAD
 				2FF7B2DC2D7211D1003ACC5F /* QuartzCore.framework in Frameworks */,
 				2FF7B2DE2D7211E1003ACC5F /* UIKit.framework in Frameworks */,
 				2FF7B2D92D721194003ACC5F /* AVFoundation.framework in Frameworks */,
@@ -74,9 +67,6 @@
 				2FF7B2D12D721152003ACC5F /* CoreImage.framework in Frameworks */,
 				2FF7B2D32D721164003ACC5F /* AssetsLibrary.framework in Frameworks */,
 				2FF7B2D72D721188003ACC5F /* CoreMedia.framework in Frameworks */,
-=======
-				0C80B921A6F3F58F76C31292 /* libPods-testDoc.a in Frameworks */,
->>>>>>> 835e224 (Initial commit)
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,13 +81,10 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-<<<<<<< HEAD
 				2FF7B2DF2D721417003ACC5F /* OpenCVWrapper.h */,
 				2FF7B2E12D721444003ACC5F /* OpenCVWrapper.mm */,
 				2FF7B2E02D721444003ACC5F /* testDoc-Bridging-Header.h */,
 				2FF7B2E32D7214F9003ACC5F /* PrefixHeader.pch */,
-=======
->>>>>>> 835e224 (Initial commit)
 			);
 			name = testDoc;
 			sourceTree = "<group>";
@@ -105,7 +92,6 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-<<<<<<< HEAD
 				2FF7B2DD2D7211E1003ACC5F /* UIKit.framework */,
 				2FF7B2DB2D7211D1003ACC5F /* QuartzCore.framework */,
 				2FF7B2D82D721194003ACC5F /* AVFoundation.framework */,
@@ -115,8 +101,6 @@
 				2FF7B2D02D721152003ACC5F /* CoreImage.framework */,
 				2FF7B2CE2D721148003ACC5F /* CoreGraphics.framework */,
 				2FF7B2CA2D7210BC003ACC5F /* opencv2.xcframework */,
-=======
->>>>>>> 835e224 (Initial commit)
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				5DCACB8F33CDC322A6C60F78 /* libPods-testDoc.a */,
 			);
@@ -175,6 +159,7 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
+				A752DD16F81F4122BDA646F2 /* Upload Debug Symbols to Sentry */,
 			);
 			buildRules = (
 			);
@@ -191,14 +176,11 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1210;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-<<<<<<< HEAD
 						LastSwiftMigration = 1620;
-=======
-						LastSwiftMigration = 1120;
->>>>>>> 835e224 (Initial commit)
 					};
 				};
 			};
@@ -248,7 +230,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT \\\"/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode.sh $REACT_NATIVE_XCODE\\\"\"\n";
 		};
 		00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -266,6 +248,20 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-testDoc/Pods-testDoc-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		A752DD16F81F4122BDA646F2 /* Upload Debug Symbols to Sentry */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Upload Debug Symbols to Sentry";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh";
 		};
 		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -313,10 +309,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-<<<<<<< HEAD
 				2FF7B2E22D721444003ACC5F /* OpenCVWrapper.mm in Sources */,
-=======
->>>>>>> 835e224 (Initial commit)
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -331,12 +324,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LTA2JZH5AD;
 				ENABLE_BITCODE = NO;
-<<<<<<< HEAD
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${SRCROOT}/PrefixHeader.pch";
-=======
->>>>>>> 835e224 (Initial commit)
 				INFOPLIST_FILE = testDoc/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -349,12 +341,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.opencv.--PRODUCT-NAME-rfc1034identifier";
 				PRODUCT_NAME = testDoc;
-<<<<<<< HEAD
 				SWIFT_OBJC_BRIDGING_HEADER = "testDoc-Bridging-Header.h";
-=======
->>>>>>> 835e224 (Initial commit)
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -368,11 +357,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-<<<<<<< HEAD
+				DEVELOPMENT_TEAM = LTA2JZH5AD;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${SRCROOT}/PrefixHeader.pch";
-=======
->>>>>>> 835e224 (Initial commit)
 				INFOPLIST_FILE = testDoc/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -385,12 +373,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.opencv.--PRODUCT-NAME-rfc1034identifier";
 				PRODUCT_NAME = testDoc;
-<<<<<<< HEAD
 				SWIFT_OBJC_BRIDGING_HEADER = "testDoc-Bridging-Header.h";
-=======
->>>>>>> 835e224 (Initial commit)
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -543,6 +528,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
