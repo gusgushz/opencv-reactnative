@@ -15,6 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OpenCVWrapper : NSObject <RCTBridgeModule>
 
+@property (nonatomic, strong) NSString *info;
+
++ (instancetype)sharedInstance;
+- (void)updateDecodedInfo:(NSString *)decodedString;
+
 @end
 
 NS_ASSUME_NONNULL_END
