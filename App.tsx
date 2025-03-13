@@ -13,7 +13,7 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  View, NativeModules,  Platform
+  View, NativeModules, Platform,
 } from 'react-native';
 
 import {
@@ -57,18 +57,18 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
-  const [CVversion, setCVversion] = useState("")
+  const [CVversion, setCVversion] = useState('');
   useEffect(() => {
     if (OpenCVWrapper) {
       console.log('OpenCVWrapper:', OpenCVWrapper);
 
-      if(Platform.OS == "android") {
+      if(Platform.OS === 'android') {
         OpenCVWrapper.getOpenCVVersion()
-        .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version)})
+        .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version);})
         .catch((error: any) => console.error('Error fetching OpenCV version:', error));
       } else {
         OpenCVWrapper.getOpenCVVersion()
-          .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version)})
+          .then((version: string) => {console.log('OpenCV Version:', version); setCVversion(version);})
           .catch((error: any) => console.error('Error fetching OpenCV version:', error));
       }
     } else {
