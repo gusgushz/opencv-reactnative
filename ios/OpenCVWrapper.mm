@@ -202,6 +202,7 @@ RCT_EXPORT_MODULE(); // Asegura que el módulo esté disponible en JavaScript
         sharedInstance = [[OpenCVWrapper alloc] init];
     });
     return sharedInstance;
+
 }
 
 RCT_EXPORT_METHOD(getOpenCVVersion:(RCTPromiseResolveBlock)resolve

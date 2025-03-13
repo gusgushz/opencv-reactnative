@@ -77,6 +77,7 @@ class OpencvWrapperModule(reactContext: ReactApplicationContext) :
         detector = QRCodeDetector() // Inicializar el detector de códigos QR
       }
     }
+
   override fun getName(): String {
     return NAME
   }
