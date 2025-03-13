@@ -171,7 +171,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     backgroundColor: 'lightgrey',
   },
-  ios: { flex: 1 },
   buttonDarkBlue: {
     width: 250,
     height: 60,
