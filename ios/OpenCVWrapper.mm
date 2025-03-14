@@ -88,8 +88,6 @@
   [cameraContainerView addSubview:overlayViewLeft];
   [cameraContainerView addSubview:overlayViewRight];
 
-  NSLog(@"Safe area insets: %@", NSStringFromUIEdgeInsets(self.view.safeAreaInsets));
-
   // Iniciar la sesión de la cámara
   [self.session startRunning];
   
@@ -122,15 +120,6 @@
     if (!imageBuffer) return;
 
     CVPixelBufferLockBaseAddress(imageBuffer, 0);
-
-    // Obtener las dimensiones del frame
-    size_t width = CVPixelBufferGetWidth(imageBuffer);
-    size_t height = CVPixelBufferGetHeight(imageBuffer);
-
-    // Obtener las dimensiones de la vista previa
-    CGRect previewBounds = self.previewLayer.bounds;
-    CGFloat previewWidth = previewBounds.size.width;
-    CGFloat previewHeight = previewBounds.size.height;
 
     // Verificar el formato del pixel buffer
     OSType pixelFormat = CVPixelBufferGetPixelFormatType(imageBuffer);
@@ -171,13 +160,11 @@
 
     // Manejar el resultado
     if (!qrCode.empty()) {
-        NSLog(@"QR Code detected: %@", [NSString stringWithUTF8String:qrCode.c_str()]);
-
-        // Convertir a NSString
         NSString *decodedString = [NSString stringWithUTF8String:qrCode.c_str()];
+        NSLog(@"✅ QR Code detected: %@", decodedString);
 
-        // Obtener la instancia de OpenCVWrapper y actualizar la info
-        [[OpenCVWrapper sharedInstance] updateDecodedInfo:decodedString];
+        // Almacena el valor decodificado
+        [OpenCVWrapper sharedInstance].lastDecodedQRCode = decodedString;
     }
 
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
@@ -189,9 +176,7 @@
 @property (nonatomic, strong) CameraViewController *cameraViewController;
 @end
 
-@implementation OpenCVWrapper {
-    NSString *info; // Variable para almacenar el QR detectado
-}
+@implementation OpenCVWrapper 
 
 RCT_EXPORT_MODULE(); // Asegura que el módulo esté disponible en JavaScript
 
@@ -271,20 +256,28 @@ RCT_EXPORT_METHOD(stopCamera) {
 }
 
 // Método actualizado para recibir info desde CameraViewController
-- (void)updateDecodedInfo:(NSString *)decodedString {
-    self.info = decodedString;
-}
+// - (void)updateDecodedInfo:(NSString *)decodedString {
+//     dispatch_async(dispatch_get_main_queue(), ^{
+//         //NSLog(@"update DECODED: %@", decodedString);
+//         self.info = decodedString;
+//         NSLog(@"update INFO: %@", self.info);
+//     });
+// }
 
 RCT_EXPORT_METHOD(sendDecodedInfoToReact:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    if (self.info != nil && [self.info length] > 0) {
-        NSLog(@"CameragusQR - sendDecodedInfoToReact: %@", self.info);
-        resolve(self.info); // Asegúrate de que esto se esté ejecutando
-    } else {
-        resolve(@""); // Devuelve una cadena vacía si no hay información
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSString *decodedString = [OpenCVWrapper sharedInstance].lastDecodedQRCode;
+        NSLog(@"INFO ANTES DEL RESOLVE: %@", decodedString);
+        if (decodedString != nil && [decodedString length] > 0) {
+            NSLog(@"INFO ANTES DEL RESOLVE: %@", decodedString);
+            resolve(decodedString);
+            [OpenCVWrapper sharedInstance].lastDecodedQRCode = nil; // Limpia el valor después de enviarlo
+        } else {
+            resolve(@""); // Devuelve una cadena vacía si no hay información
+        }
+    });
 }
-
 
 + (BOOL)requiresMainQueueSetup {
     return YES;

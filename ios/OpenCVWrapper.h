@@ -15,10 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OpenCVWrapper : NSObject <RCTBridgeModule>
 
-@property (nonatomic, strong) NSString *info;
-
+@property (nonatomic, strong) NSString *lastDecodedQRCode;
 + (instancetype)sharedInstance;
-- (void)updateDecodedInfo:(NSString *)decodedString;
+//- (void)updateDecodedInfo:(NSString *)decodedString;
 
 @end
 

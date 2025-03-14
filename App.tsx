@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   BackHandler,
   SafeAreaView,
-  NativeModules,
+  NativeModules
 } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 const { OpenCVWrapper } = NativeModules;
@@ -97,28 +97,29 @@ function App() {
   };
 
   useEffect(() => {
-    console.log('cameraReady cambió:', cameraReady); // Agrega este log
-    const interval = setInterval(() => {
-      const getQRCodeInfo = async () => {
-        try {
-          if (!cameraReady) {
-            console.log('Esperando a que la cámara esté lista...');
-            return;
-          }
-          const result = await OpenCVWrapper.sendDecodedInfoToReact();
-          console.log('Resultado de sendDecodedInfoToReact:', result); // Agrega este log
-          if (result && typeof result === 'string' && result.length > 0) {
-            setQRCodeInfo(result.length.toString());
-          } else {
-            console.log('No se detectó ningún QR');
-          }
-        } catch (error) {
-          console.error('REACT', error);
+    console.log('cameraReady cambió:', cameraReady);
+  
+    if (!cameraReady) {
+      console.log('Esperando a que la cámara esté lista...');
+      return;
+    }
+  
+    const interval = setInterval(async () => {
+      try {
+        const result = await OpenCVWrapper.sendDecodedInfoToReact();
+        console.log('Resultado de sendDecodedInfoToReact:', result);
+  
+        if (result && typeof result === 'string' && result.length > 0) {
+          setQRCodeInfo(result);
+        } else {
+          console.log('No se detectó ningún QR');
         }
-      };
-      getQRCodeInfo();
+      } catch (error) {
+        console.error('REACT', error);
+      }
     }, 1000);
-    return () => clearInterval(interval);
+  
+    return () => clearInterval(interval); // Limpia el intervalo cuando el componente se desmonte
   }, [cameraReady]);
 
   const get = async () => {

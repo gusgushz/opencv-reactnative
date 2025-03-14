@@ -124,7 +124,7 @@ class OpencvWrapperModule(reactContext: ReactApplicationContext) :
         // Se usa el tamaño del dispositivo para la vista de la cámara
         mOpenCvCameraView = JavaCameraView(activity, -1).apply {
           visibility = CameraBridgeViewBase.VISIBLE
-          setCvCameraViewListener(this@OpencvJavalibraryModule)
+          setCvCameraViewListener(this@OpencvWrapperModule)
           layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
