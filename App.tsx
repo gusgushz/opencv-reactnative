@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, PermissionsAndroid, Platform, SafeAreaView, NativeModules } from 'react-native';
 const { OpenCVWrapper } = NativeModules;
+import BootSplash from 'react-native-bootsplash';
 
 import * as Sentry from '@sentry/react-native';
 import { RootStackParamList } from './src/NavigationProps';
@@ -34,6 +35,20 @@ function App() {
 
   useEffect(() => {
     requestPermissions();
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      // …do multiple sync or async tasks
+      setInterval(() => {
+        console.log('Intervalo de 5 segundos');
+      }, 5000);
+    };
+
+    init().finally(async () => {
+      await BootSplash.hide({ fade: true });
+      console.log('BootSplash has been hidden successfully');
+    });
   }, []);
 
   return (

@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   buttonDarkBlue: {
     width: 250,
     height: 60,
-    backgroundColor: 'darkblue',
+    backgroundColor: '#66182E',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 4,
