@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, BackHandler, NativeModules, Platform, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, BackHandler, NativeModules, ScrollView, Vibration, TouchableOpacity, Platform } from 'react-native';
 import { CameraProps } from './NavigationProps';
 import { openCamera, closeCamera } from './CameraUtils';
 
@@ -9,6 +9,8 @@ export const Camera = ({ navigation }: CameraProps) => {
   const [cameraReady, setCameraReady] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [i, setI] = useState<string[]>([]);
+  const lastScannedRef = useRef<string | null>(null); // Almacena el último QR escaneado
 
   // Solo para iOS: header personalizado
   useEffect(() => {
@@ -84,26 +86,18 @@ export const Camera = ({ navigation }: CameraProps) => {
           res = await OpencvFunc.sendDecodedInfoToReact();
         }
         if (res && res.length > 0) {
-          console.log(res.split('_'))
-          const info = res.split('_');
-          await closeCamera(setCameraReady);
 
-          navigation.navigate('Information', {
-            uno: info[0],
-            plateType: info[1],
-            tres: info[2],
-            plateNumberType: info[3],
-            plate: info[4],
-            whichVehicleNumber: info[5],
-            whichVehicleText: info[6],
-            state: info[7],
-            nueve: info[8],
-            companyName: info[9],
-            batch: info[10],
-            validity: info[11],
-            manufactureYear: info[12],
-            url: info[13],
+          setI(prevI => {
+            // Si es un código nuevo (diferente al último escaneado)
+            if (res !== lastScannedRef.current) {
+              Vibration.vibrate(100);
+              lastScannedRef.current = res; // Actualiza el último código escaneado
+            }
+            return res.split('_');
+
           });
+        } else {
+          lastScannedRef.current = null; // Resetear si no hay código
         }
       } catch (err) {
         console.error('Error escaneando QR:', err);
@@ -117,9 +111,11 @@ export const Camera = ({ navigation }: CameraProps) => {
     };
   }, [cameraReady]);
 
-  return ( 
-  <View style={styles.container}>
-  </View>
+  return (
+    <View style={styles.container}>
+      <View style={styles.void}></View>
+      <ScrollView contentContainerStyle={styles.scroll}>{i && i.length > 0 && i.map((data, key) => <Text key={key}>{data}</Text>)}</ScrollView>
+    </View>
   );
 };
 
@@ -130,5 +126,15 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 18,
     color: 'blue',
+  },
+  void: {
+    height: 370,
+    width: '100%',
+    backgroundColor: 'black',
+  },
+  scroll: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
 });

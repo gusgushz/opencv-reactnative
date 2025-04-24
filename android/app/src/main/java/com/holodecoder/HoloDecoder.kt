@@ -284,6 +284,9 @@ class HoloDecoder {
             val field = GenericGF(285, 256, 0)  // Polinomio x⁸ + x⁴ + x³ + x² + 1
             val rsd = ReedSolomonDecoder(field)
             // Log.d("pastel", "Datos antes de RS (hex): ${finalMessage.take(48).joinToString(" ") { "%02X".format(it) }}")
+            for (i in 0 until 84) {
+                Log.d("original", "byte[$i] = %02X".format(finalMessage[i]))
+            }
             rsd.decode(finalMessage, 36)  // 36 bytes de redundancia
             // Log.d("pastel", "Datos después de RS (hex): ${finalMessage.take(48).joinToString(" ") { "%02X".format(it) }}")
         } catch (e: ReedSolomonException) {

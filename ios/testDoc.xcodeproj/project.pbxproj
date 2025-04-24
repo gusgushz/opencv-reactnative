@@ -24,6 +24,8 @@
 		4148B0AB1E0B721B313BB267 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		78EDB4416C2E485CA87FDAC3 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 17F2628F5B1D46B0B29AD21C /* BootSplash.storyboard */; };
+		BF22693336A044F7BFF12321 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AFCE3666BCE343928811F02D /* Colors.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +54,8 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = testDoc/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = testDoc/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		17F2628F5B1D46B0B29AD21C /* BootSplash.storyboard */ = {isa = PBXFileReference; name = "BootSplash.storyboard"; path = "testDoc/BootSplash.storyboard"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		AFCE3666BCE343928811F02D /* Colors.xcassets */ = {isa = PBXFileReference; name = "Colors.xcassets"; path = "testDoc/Colors.xcassets"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = folder.assetcatalog; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +94,8 @@
 				2F440BE42DA99AD0007D786C /* HoloDecoder.mm */,
 				2FF7B2E02D721444003ACC5F /* testDoc-Bridging-Header.h */,
 				2FF7B2E32D7214F9003ACC5F /* PrefixHeader.pch */,
+				17F2628F5B1D46B0B29AD21C /* BootSplash.storyboard */,
+				AFCE3666BCE343928811F02D /* Colors.xcassets */,
 			);
 			name = testDoc;
 			sourceTree = "<group>";
@@ -215,6 +221,8 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				4148B0AB1E0B721B313BB267 /* PrivacyInfo.xcprivacy in Resources */,
+				78EDB4416C2E485CA87FDAC3 /* BootSplash.storyboard in Resources */,
+				BF22693336A044F7BFF12321 /* Colors.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
