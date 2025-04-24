@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-testDoc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-testDoc.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		2F440BE52DA99AD0007D786C /* HoloDecoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2F440BE42DA99AD0007D786C /* HoloDecoder.mm */; };
 		2FF7B2CB2D7210BC003ACC5F /* opencv2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2CA2D7210BC003ACC5F /* opencv2.xcframework */; };
 		2FF7B2CF2D721148003ACC5F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2CE2D721148003ACC5F /* CoreGraphics.framework */; };
 		2FF7B2D12D721152003ACC5F /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FF7B2D02D721152003ACC5F /* CoreImage.framework */; };
@@ -30,6 +31,8 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = testDoc/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = testDoc/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = testDoc/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2F440BE32DA99AD0007D786C /* HoloDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HoloDecoder.h; sourceTree = "<group>"; };
+		2F440BE42DA99AD0007D786C /* HoloDecoder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = HoloDecoder.mm; sourceTree = "<group>"; };
 		2FF7B2CA2D7210BC003ACC5F /* opencv2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = opencv2.xcframework; path = ../../opencv/build_all/opencv2.xcframework; sourceTree = "<group>"; };
 		2FF7B2CE2D721148003ACC5F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		2FF7B2D02D721152003ACC5F /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
@@ -83,6 +86,8 @@
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				2FF7B2DF2D721417003ACC5F /* OpenCVWrapper.h */,
 				2FF7B2E12D721444003ACC5F /* OpenCVWrapper.mm */,
+				2F440BE32DA99AD0007D786C /* HoloDecoder.h */,
+				2F440BE42DA99AD0007D786C /* HoloDecoder.mm */,
 				2FF7B2E02D721444003ACC5F /* testDoc-Bridging-Header.h */,
 				2FF7B2E32D7214F9003ACC5F /* PrefixHeader.pch */,
 			);
@@ -311,6 +316,7 @@
 			files = (
 				2FF7B2E22D721444003ACC5F /* OpenCVWrapper.mm in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				2F440BE52DA99AD0007D786C /* HoloDecoder.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,10 +456,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -522,10 +525,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

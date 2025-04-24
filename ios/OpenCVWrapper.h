@@ -1,26 +1,42 @@
-//
-//  OpenCVWrapper.h
-//  testDoc
-//
-//  Created by DDT on 28/02/25.
-//
-
 #import <Foundation/Foundation.h>
+#import <CoreVideo/CoreVideo.h>
 #import <React/RCTBridgeModule.h>
 
-#ifndef OpenCVWrapper_h
-#define OpenCVWrapper_h
+#ifdef __cplusplus
+#import <opencv2/core.hpp>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, HologramOrientation) {
+    HOLO_NORTH = 0,
+    HOLO_EAST = 1,
+    HOLO_WEST = 2,
+    HOLO_SOUTH = 3
+};
+
 @interface OpenCVWrapper : NSObject <RCTBridgeModule>
 
-@property (nonatomic, strong) NSString *lastDecodedQRCode;
+@property (nonatomic, strong, nullable) NSString *lastDecodedQRCode;
+@property (nonatomic, assign) int frameCounter;
+@property (nonatomic, assign) int mark;
+@property (nonatomic, assign) int border;
+@property (nonatomic, assign) int marker;
+@property (nonatomic, assign) HologramOrientation orientation;
+@property (nonatomic, assign) BOOL codeDetected;
+@property (nonatomic, assign) double slope;
+@property (nonatomic, copy) NSString *text;
+@property (nonatomic, assign) int impSize;
+
 + (instancetype)sharedInstance;
-//- (void)updateDecodedInfo:(NSString *)decodedString;
+
+#ifdef __cplusplus
+// Declaraciones de métodos que usan tipos C++
++ (cv::Mat)convertYUVBufferToRGBA:(CVImageBufferRef)imageBuffer;
+- (BOOL)detectCode:(const cv::Mat &)image;
+- (NSArray<NSString *> *)extractBits;
+#endif
 
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif /* OpenCVWrapper_h */

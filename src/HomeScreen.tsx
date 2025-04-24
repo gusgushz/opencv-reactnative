@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet,View, Text, TouchableOpacity } from 'react-native';
 import { HomeProps } from './NavigationProps';
 
 export const Home = ({ navigation }: HomeProps) => {

@@ -1,39 +1,52 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, BackHandler, NativeModules } from 'react-native';
+import { StyleSheet, View, BackHandler, NativeModules, Platform, Text, TouchableOpacity } from 'react-native';
 import { CameraProps } from './NavigationProps';
 import { openCamera, closeCamera } from './CameraUtils';
 
-const { OpencvFunc } = NativeModules;
+const { OpencvFunc, OpenCVWrapper } = NativeModules;
 
 export const Camera = ({ navigation }: CameraProps) => {
   const [cameraReady, setCameraReady] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Solo para iOS: header personalizado
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity style={{ width: 'auto', height: '100%' }} onPress={() => navigation.goBack()}>
+            <Text style={styles.backButtonText}>Home</Text>
+          </TouchableOpacity>
+        ),
+      });
+    }
+  }, [navigation]);
+
   useEffect(() => {
     const onFocus = () => {
       //setCameraReady(false);
 
       // Retrasar la apertura de la cámara para que la animación termine
-      timerRef.current = setTimeout(() => {
-        openCamera(setCameraReady);
-      }, 200); // Ajusta el tiempo según lo que necesites
+      timerRef.current = setTimeout(async () => {
+        await openCamera(setCameraReady);
+      }, 500); // Ajusta el tiempo según lo que necesites
     };
 
-    const onBlur = () => {
+    const onBlur = async () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
-      closeCamera(setCameraReady);
+      await closeCamera(setCameraReady);
     };
 
-    const onBeforeRemove = (e: any) => {
+    const onBeforeRemove = async (e: any) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
-      closeCamera(setCameraReady);
+      await closeCamera(setCameraReady);
       const action = e.data.action;
       if (action.type !== 'GO_BACK') {
         e.preventDefault();
@@ -63,10 +76,17 @@ export const Camera = ({ navigation }: CameraProps) => {
   useEffect(() => {
     const scanQRCode = async () => {
       try {
-        const res = await OpencvFunc.sendDecodedInfoToReact();
+        let res;
+        if(Platform.OS === "ios"){
+          res = await OpenCVWrapper.sendDecodedInfoToReact();
+          console.log("TRAE algo res?",res);
+        } else {
+          res = await OpencvFunc.sendDecodedInfoToReact();
+        }
         if (res && res.length > 0) {
+          console.log(res.split('_'))
           const info = res.split('_');
-          closeCamera(setCameraReady);
+          await closeCamera(setCameraReady);
 
           navigation.navigate('Information', {
             uno: info[0],
@@ -97,13 +117,18 @@ export const Camera = ({ navigation }: CameraProps) => {
     };
   }, [cameraReady]);
 
-  return <View style={styles.container} />;
+  return ( 
+  <View style={styles.container}>
+  </View>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
+  },
+  backButtonText: {
+    fontSize: 18,
+    color: 'blue',
   },
 });
