@@ -205,25 +205,29 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   };
 
   const navigateToInformationScreen = async (parts: Parts) => {
-    await closeCamera();
-    console.log('Navigating to InformationScreen with parts:', parts);
-    navigation.navigate('InformationScreen', {
-      roleLevel: roleLevel,
-      version: parts.version,
-      codeType: parts.codeType,
-      chainLength: parts.chainLength,
-      permissionLevel: parts.permissionLevel,
-      serial: parts.serial,
-      typeServiceId: parts.typeServiceId,
-      typeServiceText: parts.typeServiceText,
-      state: parts.state,
-      batch: parts.batch,
-      provider: parts.provider,
-      providerNumber: parts.providerNumber,
-      expirationDate: parts.expirationDate,
-      manufacturedYear: parts.manufacturedYear,
-      url: parts.url,
-    });
+    const region = AppConfig.Regions.find(region => region.Name.toUpperCase() === parts.state);
+    if (!region) return console.log('En app.json no existe una region que coincida con el estado');
+    if (region.Name.toUpperCase() == parts.state) {
+      await closeCamera();
+      console.log('Navigating to InformationScreen with parts:', parts);
+      navigation.navigate('InformationScreen', {
+        roleLevel: roleLevel,
+        version: parts.version,
+        codeType: parts.codeType,
+        chainLength: parts.chainLength,
+        permissionLevel: parts.permissionLevel,
+        serial: parts.serial,
+        typeServiceId: parts.typeServiceId,
+        typeServiceText: parts.typeServiceText,
+        state: parts.state,
+        batch: parts.batch,
+        provider: parts.provider,
+        providerNumber: parts.providerNumber,
+        expirationDate: parts.expirationDate,
+        manufacturedYear: parts.manufacturedYear,
+        url: parts.url,
+      });
+    }
   };
 
   const checkboxesData = [
