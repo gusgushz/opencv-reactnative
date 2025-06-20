@@ -1,3 +1,17 @@
+**COMO USAR setup_env.py**
+
+# Para trabajar en desarrollo normalmente
+python .\setup_env.py default public //o sin escribir nada es esto
+
+# Para generar APK con diferentes estados 
+cd android
+./gradlew clean //Recordar limpiar cada vez que se quiera hacer un build nuevo para otro cliente
+cd ..
+python .\setup_env.py azul private
+cd Android
+./gradlew assembleRelease
+
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started
@@ -97,6 +111,7 @@ To learn more about React Native, take a look at the following resources:
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
 
 # Opencv-JS
+
 Proyecto para hacer pruebas en la instalación y funcionamiento de opencv
 
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).

@@ -5,6 +5,15 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 
+//Imports para ver el Android Id
+import android.content.Context
+import android.provider.Settings
+
+//imports para cerrar/matar la app + toast
+import android.app.Activity
+import android.os.Process
+import android.widget.Toast
+
 import android.content.res.Resources
 import android.graphics.PointF
 import kotlinx.coroutines.*
@@ -67,8 +76,9 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     private val drawingLock = Any()
     @Volatile private var lastValidBorder = -1
     @Volatile private var lastValidMarker = -1
-    private val persistentOverlay = Mat()
+    private var persistentOverlay = Mat()
     private var overlayInitialized = false
+    var shouldClearOverlay = false
 
     // Matrices y contenedores
     private lateinit var holo_raw: Mat // Matriz para la imagen transformada
@@ -117,6 +127,40 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         const val HOLO_EAST = 1
         const val HOLO_WEST = 2
         const val HOLO_SOUTH = 3
+    }
+    
+    @ReactMethod
+    fun getAndroidId(promise: Promise) {
+        try {
+            val androidId = Settings.Secure.getString(
+                reactApplicationContext.contentResolver,
+                Settings.Secure.ANDROID_ID
+            ) ?: "unknown"
+            promise.resolve(androidId)
+        } catch (e: Exception) {
+            promise.reject("ANDROID_ID_ERROR", "No se pudo obtener el Android ID", e)
+        }
+    }
+    @ReactMethod
+    fun exitAppWithMessage(message: String) {
+        val activity = currentActivity
+        activity?.runOnUiThread {
+            Toast.makeText(reactApplicationContext, message, Toast.LENGTH_LONG).show()
+        }
+
+        Thread {
+            Thread.sleep(50)
+            Process.killProcess(Process.myPid())
+        }.start()
+    }
+
+    private fun getStatusBarHeight(): Int {
+        val resourceId = currentActivity?.resources?.getIdentifier("status_bar_height", "dimen", "android")
+        return if (resourceId != null && resourceId > 0) {
+            currentActivity?.resources?.getDimensionPixelSize(resourceId) ?: 0
+        } else {
+            0
+        }
     }
 
 	@ReactMethod
@@ -219,15 +263,25 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 				width,
 				height/2
 			)
-			//TODO:Agregar una función que recoja el tamaño de la barra de navegación de ser necesario
-			params.setMargins(0, 168, 0, 0)
+			// params.setMargins(0, 200, 0, 0)
 
+			//TODO:Agregar una función que recoja el tamaño de la barra de navegación de status
+            val statusBarHeight = getStatusBarHeight()
+            params.setMargins(0, statusBarHeight+168, 0, 0)
 			// Agregar el contenedor a la actividad
 			activity.addContentView(cameraContainer, params)
 
 			// Habilitar la cámara
 			mOpenCvCameraView?.setCameraPermissionGranted()
+            shouldClearOverlay = true
+            synchronized(drawingLock) {
+                lastValidBorder = -1
+                lastValidMarker = -1
+                persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                shouldClearOverlay = true
+            }
 			mOpenCvCameraView?.enableView()
+
 			Log.d("pastel", "Camera enabled: ${mOpenCvCameraView?.isEnabled}")
 		}
 		promise.resolve("Camera started successfully")
@@ -243,13 +297,25 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                 return
             }
             synchronized(drawingLock) {
+                // Resetear variables de estado
+                lastValidBorder = -1
+                lastValidMarker = -1
+                frameCounter = 0
+                info = null
+                
                 // Limpiar el overlay persistente
                 if (overlayInitialized) {
                     persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                    persistentOverlay.release()
+                    overlayInitialized = false
                 }
-                lastValidBorder = -1
-                lastValidMarker = -1
-                overlayInitialized = false
+                
+                // Liberar contornos
+                contours.forEach { it.release() }
+                contours.clear()
+                
+                // Forzar limpieza en el próximo inicio
+                shouldClearOverlay = true
             }
 
             currentActivity?.runOnUiThread {
@@ -299,19 +365,32 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             }
         }
 
-        // Crear o actualizar la capa persistente
         synchronized(drawingLock) {
-            // Inicializar la capa persistente si es necesario
             if (!overlayInitialized || persistentOverlay.width() != activeArea.width() || persistentOverlay.height() != activeArea.height()) {
-                persistentOverlay.create(activeArea.size(), activeArea.type())
-                persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))  // Transparente
+                persistentOverlay = Mat(activeArea.size(), activeArea.type(), Scalar(0.0, 0.0, 0.0, 0.0))
                 overlayInitialized = true
             }
 
-            // Dibujar en la capa persistente
-            drawPersistentMarkers(activeArea)
+            // Limpieza forzada al inicio
+            if (shouldClearOverlay) {
+                persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                shouldClearOverlay = false
+            }
 
-            // Combinar con el frame actual
+            // Solo procesar detección si no estamos en modo limpieza
+            if (!shouldClearOverlay) {
+                frameCounter++
+                if (frameCounter >= 5) {
+                    frameCounter = 0
+                    val detected = detectCode(activeArea)
+                    if (detected) {
+                        val message = extractBits()
+                        info = message?.joinToString(separator = "_")
+                    }
+                }
+            }
+
+            drawPersistentMarkers(activeArea)
             val outputFrame = activeArea.clone()
             Core.add(outputFrame, persistentOverlay, outputFrame)
             return outputFrame
@@ -904,29 +983,12 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         Log.d("pastel", "Camera view started")
         Log.d("pastel", "Camera view width:${width} height:${height}")
         frameCounter = 0
+        info = null
     }
     override fun onCameraViewStopped() {
         Log.d("pastel", "Camera view stopped")
         frameCounter = 0
         info = null
-        synchronized(drawingLock) {
-            // 1. Resetear variables de estado
-            lastValidBorder = -1
-            lastValidMarker = -1
-            frameCounter = 0
-            info = null
-            
-            // 2. Limpiar el overlay persistente
-            if (overlayInitialized) {
-                persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0)) // Limpiar contenido
-                persistentOverlay.release() // Liberar memoria
-                overlayInitialized = false
-            }
-            
-            // 3. Liberar contornos
-            contours.forEach { it.release() }
-            contours.clear()
-        }
     }
     @ReactMethod
     private fun sendDecodedInfoToReact(promise: Promise) {

@@ -329,6 +329,8 @@ class HoloDecoder {
         specs[4] = (4..10).map { finalMessage[it].toInt().toChar() }.joinToString("")
         specs[5] = finalMessage[12].toString()
         specs[6] = whichState(finalMessage[13] - 1)
+        //specs[6] = finalMessage[13].toString()
+        Log.d("pastel", "finalMessage[13].toString(): ${finalMessage[13].toString()}")
         specs[7] = (14..19).map { finalMessage[it].toInt().toChar() }.joinToString("")
         specs[8] = (20..26).map { finalMessage[it].toInt().toChar() }.joinToString("")
         specs[9] = finalMessage[27].toString()
@@ -343,7 +345,7 @@ class HoloDecoder {
         }
         
         val result = specs.joinToString("_") { it?.trim() ?: "" }
-        Log.e("pastel", "Mensaje specs: ${result}")
+        Log.d("pastel", "Mensaje specs: ${result}")
         return result
     }
 

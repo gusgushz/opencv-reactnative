@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">ec2-3-16-117-69.us-east-2.compute.amazonaws.com</domain>
+        <domain includeSubdomains="true">ec2-3-144-185-166.us-east-2.compute.amazonaws.com</domain>
+        <domain includeSubdomains="true">ec2-3-129-57-8.us-east-2.compute.amazonaws.com</domain>
+    </domain-config>
+</network-security-config>

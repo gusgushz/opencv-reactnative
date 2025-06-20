@@ -1,0 +1,163 @@
+{
+  "AppName": "Yucatán",
+  "PackageName": "com.vifinsapublic",
+  "Client": {
+    "Id": "31"
+  },
+  "Regions": [
+    {
+      "Id": "31",
+      "Name": "yucatan"
+    }
+  ],
+  "Provider": {
+    "Id": "026",
+    "Name": "vifinsa"
+  },
+  "PermissionLevels": {
+    "public": [
+      {
+        "Level": "1",
+        "ReadOrderEnabled": false,
+        "DocumentsToRead": [
+          {
+            "Name": "Trasera",
+            "Enabled": true,
+            "Priority": 2
+          },
+          {
+            "Name": "Frontal",
+            "Enabled": true,
+            "Priority": 1
+          },
+          {
+            "Name": "Engomado",
+            "Enabled": true,
+            "Priority": 1
+          },
+          {
+            "Name": "Tarjeta",
+            "Enabled": false,
+            "Priority": 1
+          }
+        ],
+        "FieldsToShow": [
+          "url"
+        ]
+      },
+      {
+        "Level": "2",
+        "ReadOrderEnabled": false,
+        "DocumentsToRead": [
+          {
+            "Name": "Trasera",
+            "Enabled": true,
+            "Priority": 2
+          },
+          {
+            "Name": "Frontal",
+            "Enabled": true,
+            "Priority": 3
+          },
+          {
+            "Name": "Engomado",
+            "Enabled": true,
+            "Priority": 1
+          },
+          {
+            "Name": "Tarjeta",
+            "Enabled": false,
+            "Priority": 2
+          }
+        ],
+        "FieldsToShow": [
+          "url",
+          "expiration",
+          "service",
+          "serie",
+          "region",
+          "documents"
+        ]
+      },
+      {
+        "Level": "3",
+        "ReadOrderEnabled": false,
+        "DocumentsToRead": [
+          {
+            "Name": "Trasera",
+            "Enabled": true,
+            "Priority": 2
+          },
+          {
+            "Name": "Frontal",
+            "Enabled": true,
+            "Priority": 3
+          },
+          {
+            "Name": "Engomado",
+            "Enabled": true,
+            "Priority": 1
+          },
+          {
+            "Name": "Tarjeta",
+            "Enabled": false,
+            "Priority": 2
+          }
+        ],
+        "FieldsToShow": [
+          "url",
+          "expiration",
+          "service",
+          "serie",
+          "region",
+          "documents",
+          "provider_name",
+          "provider_number",
+          "lot",
+          "manufacturing_date"
+        ]
+      }
+    ],
+    "private": [
+      {
+        "Level": "4",
+        "ReadOrderEnabled": false,
+        "DocumentsToRead": [
+          {
+            "Name": "Trasera",
+            "Enabled": true,
+            "Priority": 2
+          },
+          {
+            "Name": "Frontal",
+            "Enabled": true,
+            "Priority": 3
+          },
+          {
+            "Name": "Engomado",
+            "Enabled": true,
+            "Priority": 1
+          },
+          {
+            "Name": "Tarjeta",
+            "Enabled": false,
+            "Priority": 2
+          }
+        ],
+        "FieldsToShow": [
+          "url",
+          "expiration",
+          "service",
+          "serie",
+          "region",
+          "documents",
+          "provider_name",
+          "provider_number",
+          "lot",
+          "manufacturing_date",
+          "infractions"
+        ]
+      }
+    ]
+  }
+}

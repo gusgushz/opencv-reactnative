@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.testdoc"
+    namespace "com.vifinsapublic"
     defaultConfig {
-        applicationId "com.testdoc"
+        applicationId "com.vifinsapublic"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -114,6 +114,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation("org.opencv:opencv:4.11.0")
     implementation("com.google.zxing:core:3.5.3")
+    //implementation project(':react-native-fs')
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
