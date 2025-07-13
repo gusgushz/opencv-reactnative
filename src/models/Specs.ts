@@ -14,7 +14,8 @@ export interface Specs {
   expirationDate: string; //vigencia 20xx-20xx
   manufacturedYear: string; //año de producción/manufactura
   url: string; //URL de la dependencia de gobierno
-};
+}
 export type Parts = Specs & {
   roleLevel: string;
+  documents: string[];
 };

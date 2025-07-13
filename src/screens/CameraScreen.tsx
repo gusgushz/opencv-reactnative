@@ -4,7 +4,7 @@ import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
-import { RoleLevels } from '../globalVariables';
+import { RoleLevels, stateNameToId } from '../globalVariables';
 import { Parts, Service } from '../models';
 import { getServices } from '../utils/';
 import AppConfig from '../config/app.json';
@@ -86,11 +86,11 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     };
   }, [navigation]);
 
-  const hasRear: boolean = !!services.find(service => service.has_frontal === 1);
+  const hasRear: boolean = !!services.find(service => service.has_rear === 1);
   console.log('hasRear', hasRear);
   const hasFrontal: boolean = !!services.find(service => service.has_frontal === 1);
   console.log('hasFrontal', hasFrontal);
-  const hasEngomado: boolean = !!services.find(service => service.has_frontal === 1);
+  const hasEngomado: boolean = !!services.find(service => service.has_engomado === 1);
   console.log('hasEngomado', hasEngomado);
 
   useEffect(() => {
@@ -109,8 +109,11 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             Vibration.vibrate(100);
             const parts = res.split('_');
 
-            const serviceName = findServiceName(parts[5]);
-
+            const serviceName = findServiceName(parts[5], parts[7]);
+            let documents: string[] = [];
+            if (hasFrontal) documents.push('Frontal');
+            if (hasRear) documents.push('Trasera');
+            if (hasEngomado) documents.push('Engomado');
             const updatedInfo: Parts = {
               roleLevel,
               version: parts[0],
@@ -127,9 +130,11 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
               expirationDate: parts[11],
               manufacturedYear: parts[12],
               url: parts[13],
+              documents: documents,
             };
 
-            console.log('INFO:', JSON.stringify(parts));
+            console.log('parts:', JSON.stringify(parts));
+            console.log('updatedInfo:', JSON.stringify(updatedInfo));
 
             if (roleLevel === RoleLevels.ZERO) {
               navigateToInformationScreen(updatedInfo);
@@ -196,11 +201,11 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     };
   }, [checkBoxes]);
 
-  const findServiceName = (typeServiceId: string): string => {
+  const findServiceName = (typeServiceId: string, state: string): string => {
+    const stateId = stateNameToId(state);
     const service = services.find(service => {
-      return service.parent_service_id.toString() === typeServiceId;
+      return service.service_db_id.toString() === typeServiceId && service.state_id === stateId;
     });
-
     return service?.parent_service_name ?? 'No se encontró el servicio';
   };
 
@@ -223,6 +228,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
       expirationDate: parts.expirationDate,
       manufacturedYear: parts.manufacturedYear,
       url: parts.url,
+      documents: parts.documents,
     });
   };
 

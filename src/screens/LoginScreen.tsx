@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, TextInput, Text, KeyboardAvoidingView, Platform } from 'react-native';
 import { stylesTemplate } from '../theme';
 import { LoginScreenProps } from '../navigation/NavigationProps';
-import { useUserContext } from '../contexts/UserContext';
+// import { useUserContext } from '../contexts/UserContext.tsx';
 import { UserSession } from '../models';
-import { getUsersData, readableString } from '../utils';
+import { getUsersData, readableString, storeUser, storeUserSession } from '../utils';
 
 export const LoginScreen = ({ navigation }: LoginScreenProps) => {
-  const { setUser, setUserSession } = useUserContext();
+  // const { setUser, setUserSession } = useUserContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,8 +35,8 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
       role: user.role,
     };
     setWarning('');
-    setUserSession(userToSave);
-    setUser({ ...userToSave, state_id: user.state_id });
+    storeUserSession(userToSave);
+    storeUser({ ...userToSave, state_id: user.state_id });
     setIsLoading(false);
     navigation.goBack();
   };

@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.vifinsapublic"
+    namespace "com.vifinsaprivate"
     defaultConfig {
-        applicationId "com.vifinsapublic"
+        applicationId "com.vifinsaprivate"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

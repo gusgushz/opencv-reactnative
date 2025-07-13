@@ -3,45 +3,45 @@ import { Service, UpdateByTimestampData, UserSession, UserProfile } from '../mod
 
 const storage = new MMKV();
 
-// export const storeUserSession = (userSession: UserSession) => {
-//   console.log('Storing userSession:', userSession);
-//   storage.set('userSession', JSON.stringify(userSession));
-// };
+export const storeUserSession = (userSession: UserSession) => {
+  console.log('Storing userSession:', userSession);
+  storage.set('userSession', JSON.stringify(userSession));
+};
 
-// export const getUserSession = () => {
-//   const userSession = storage.getString('userSession');
-//   if (userSession === undefined) {
-//     return null;
-//   } else {
-//     console.log('Getting userSession:', JSON.parse(userSession));
-//     return JSON.parse(userSession) as UserSession;
-//   }
-// };
+export const getUserSession = () => {
+  const userSession = storage.getString('userSession');
+  if (userSession === undefined) {
+    return null;
+  } else {
+    console.log('Getting userSession:', JSON.parse(userSession));
+    return JSON.parse(userSession) as UserSession;
+  }
+};
 
-// export const removeUserSession = () => {
-//   console.log('Removing userSession');
-//   storage.delete('userSession');
-// };
+export const removeUserSession = () => {
+  console.log('Removing userSession');
+  storage.delete('userSession');
+};
 
-// export const storeUser = (user: UserProfile) => {
-//   console.log('Storing user:', user);
-//   storage.set('user', JSON.stringify(user));
-// };
+export const storeUser = (user: UserProfile) => {
+  console.log('Storing user:', user);
+  storage.set('user', JSON.stringify(user));
+};
 
-// export const getUser = () => {
-//   const user = storage.getString('user');
-//   if (user === undefined) {
-//     return null;
-//   } else {
-//     console.log('Getting user:', JSON.parse(user));
-//     return JSON.parse(user) as UserProfile;
-//   }
-// };
+export const getUser = () => {
+  const user = storage.getString('user');
+  if (user === undefined) {
+    return null;
+  } else {
+    console.log('Getting user:', JSON.parse(user));
+    return JSON.parse(user) as UserProfile;
+  }
+};
 
-// export const removeUser = () => {
-//   console.log('Removing user');
-//   storage.delete('user');
-// };
+export const removeUser = () => {
+  console.log('Removing user');
+  storage.delete('user');
+};
 
 export const storeServices = (services: Service[]) => {
   console.log('Storing services');

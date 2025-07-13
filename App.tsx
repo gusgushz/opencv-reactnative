@@ -42,7 +42,7 @@ import {
   postValidateToken,
   postAuthenticateDevice,
 } from './src/api';
-import { UserProvider } from './src/contexts/UserContext';
+// import { UserProvider } from './src/contexts/UserContext.tsx';
 import { sufix } from './src/globalVariables';
 import * as Sentry from '@sentry/react-native';
 Sentry.init({ dsn: 'https://86a8a5548583da54c5af87a58acf940a@o1412274.ingest.us.sentry.io/4508937809362944' });
@@ -67,7 +67,7 @@ function App() {
         }
       } else {
         const cameraPermission = await OpenCVWrapper.checkCameraPermission();
-        console.log('Permiso de cámara en iOS:', cameraPermission); //TODO: Agregar el permiso de Ios para leer archivos
+        console.log('Permiso de cámara en iOS:', cameraPermission);
         if (cameraPermission !== 'granted') {
           await OpenCVWrapper.requestCameraPermission();
         }
@@ -107,7 +107,6 @@ function App() {
         console.log('keyDecoded', keyDecoded);
         console.log('chain', chain);
         if (token != '') {
-          //TODO:Todo este bloque ya funciona
           if (key === keyDecoded) {
             console.log(key === keyDecoded);
             const dateRaw = getLastValidateTokenDate();
@@ -158,7 +157,6 @@ function App() {
             isPermissionGranted = true; //FIXME: se dejo en true para pruebas
           }
           if (isKeyRegistered) {
-            //TODO:Todo este bloque ya funciona
             const res = await postAuthenticateDevice(chain);
             console.log('res isKeyRegistered****', res);
             if (res.status === 'success') {
@@ -196,12 +194,12 @@ function App() {
   }, []);
 
   return (
-    <UserProvider>
+    <>
       <StatusBar hidden />
       <SafeAreaView style={styles.ios}>
         <MyStack></MyStack>
       </SafeAreaView>
-    </UserProvider>
+    </>
   );
 }
 
@@ -221,7 +219,7 @@ const MyStack = () => {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName={SECURITY_LEVEL === 'private' && !exists ? 'DownloadSecretKeyScreen' : 'HomeScreen'}
-        screenOptions={{ headerTitleAlign: 'center' }}>
+        screenOptions={{ headerTitleAlign: 'center', headerTintColor: '#737373' }}>
         <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: true, headerTitle: 'Escanear código' }} />
         <Stack.Screen name="InformationScreen" component={InformationScreen} options={{ headerShown: true, headerTitle: 'Información' }} />
@@ -233,7 +231,7 @@ const MyStack = () => {
           component={DownloadSecretKeyScreen}
           options={{ headerShown: false, headerTitle: 'Infracciones' }}
         />
-        <Stack.Screen name="AndroidIdScreen" component={AndroidIdScreen} options={{ headerShown: true, headerTitle: 'Soporte Técnico' }} />
+        <Stack.Screen name="AndroidIdScreen" component={AndroidIdScreen} options={{ headerShown: true, headerTitle: 'Soporte técnico' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

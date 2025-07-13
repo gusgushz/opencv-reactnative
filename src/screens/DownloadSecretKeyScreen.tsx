@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, NativeModules } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, NativeModules, Image } from 'react-native';
 import { stylesTemplate } from '../theme';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import { base64Decode, removeToken, storeKey } from '../utils';
 const { OpencvFunc } = NativeModules;
 
 export const DownloadSecretKeyScreen = () => {
-  //http://ec2-3-16-117-69.us-east-2.compute.amazonaws.com/key/dbUwFsYFnmsdAg3A
-  //http://ec2-3-16-117-69.us-east-2.compute.amazonaws.com/key/dbUwFsYFnmsdAg3A
   const [url, setUrl] = useState<string>('');
   const [exists, setExists] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,7 +32,7 @@ export const DownloadSecretKeyScreen = () => {
     try {
       let processedUrl = url.trim(); // Limpiar espacios
       if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
-        processedUrl = 'http://' + processedUrl;//FIXME: cambiar el prefijo a https://
+        processedUrl = 'http://' + processedUrl; //FIXME: cambiar el prefijo a https://
       }
       processedUrl = processedUrl.replace('https://', 'http://'); //FIXME: eliminar cuando ya se corrija el backend
       console.log('URL de descarga:', processedUrl);
@@ -68,7 +66,8 @@ export const DownloadSecretKeyScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, stylesTemplate.screenBgColor]}>
+      <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
       <TextInput
         style={styles.input}
         value={url}
@@ -98,8 +97,9 @@ export const DownloadSecretKeyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    paddingTop: 16,
     alignItems: 'center',
+    paddingHorizontal: 30,
   },
   input: {
     width: '80%',
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 20,
+    backgroundColor: '#fff',
   },
   button: {
     marginHorizontal: 12,

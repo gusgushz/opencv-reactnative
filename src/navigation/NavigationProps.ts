@@ -19,6 +19,7 @@ export type RootStackParamList = {
     expirationDate: string; //vigencia 20xx-20xx
     manufacturedYear: string; //año de producción/manufactura
     url: string; //URL de la dependencia de gobierno
+    documents: string[];
   };
   ProfileScreen: {} | undefined;
   // RentRequests: { showSnackbar: boolean } | undefined;

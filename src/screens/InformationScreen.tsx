@@ -23,6 +23,7 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
     expirationDate,
     manufacturedYear,
     url,
+    documents,
   } = route.params;
 
   const [link, setLink] = useState<string>('Cargando url...');
@@ -36,22 +37,32 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
       }
     };
     fetchLink();
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchLink();
+    });
+    return unsubscribe;
   }, []);
 
   return (
     <View style={[styles.container, stylesTemplate.screenBgColor]}>
       <TouchableOpacity
-        style={[styles.containerWithColor, stylesTemplate.primaryColor]}
+        style={[styles.containerWithColor, stylesTemplate.primaryColor, styles.bottomRadius]}
         onPress={() => {
           if (!link) return;
           Linking.openURL(link);
         }}>
-        <Image source={require('../../assets/icons/link.png')} style={{ width: 24, height: 12 }}></Image>
-        <Text style={[styles.textNormal, { color: 'white' }]}>URL: {link}</Text>
+        <Image resizeMode="contain" source={require('../../assets/icons/link.png')} style={{ width: 16, tintColor: 'white' }}></Image>
+        <Text style={[styles.textNormal, { color: 'white' }]}>{link}</Text>
       </TouchableOpacity>
 
       {roleLevel == RoleLevels.ONE && (
-        <BodyLevelOfClearanceA codeType={codeType} expirationDate={expirationDate} serial={serial} state={state} typeServiceText={typeServiceText} />
+        <BodyLevelOfClearanceA
+          expirationDate={expirationDate}
+          serial={serial}
+          state={state}
+          typeServiceText={typeServiceText}
+          documents={documents}
+        />
       )}
 
       {roleLevel == RoleLevels.TWO && (
@@ -61,15 +72,9 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
             serial={serial}
             state={state}
             typeServiceText={typeServiceText}
-            codeType={codeType}
+            documents={documents}
           />
-          <BodyLevelOfClearanceB
-            manufacturedYear={manufacturedYear}
-            provider={provider}
-            providerNumber={providerNumber}
-            batch={batch}
-            typeServiceId={typeServiceId}
-          />
+          <BodyLevelOfClearanceB manufacturedYear={manufacturedYear} provider={provider} providerNumber={providerNumber} batch={batch} />
         </>
       )}
 
@@ -80,69 +85,75 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
             serial={serial}
             state={state}
             typeServiceText={typeServiceText}
-            //codeType={codeType} //FIXME: ocultar
+            documents={documents}
           />
-          <BodyLevelOfClearanceB
-            manufacturedYear={manufacturedYear}
-            provider={provider}
-            providerNumber={providerNumber}
-            batch={batch}
-            typeServiceId={typeServiceId}
-          />
-          <TouchableOpacity
-            style={[styles.containerWithColor, stylesTemplate.primaryColor]}
-            onPress={() => {
-              navigation.navigate('InfractionsScreen');
-            }}>
-            <Text style={[styles.textNormal, { color: 'white', flex: 1, textAlign: 'center', fontWeight: 'bold' }]}>Infracciones</Text>
-          </TouchableOpacity>
-          {/* <Text style={styles.textNormal}>version: {version}</Text>
-          <Text style={styles.textNormal}>Tamaño de la cadena: {chainLength}</Text>
-          <Text style={styles.textNormal}>Nivel de permiso: {permissionLevel}</Text> */}
+          <BodyLevelOfClearanceB manufacturedYear={manufacturedYear} provider={provider} providerNumber={providerNumber} batch={batch} />
+          <View style={styles.containerButton}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate('InfractionsScreen');
+              }}
+              style={[styles.button, stylesTemplate.primaryColor]}>
+              <Text style={styles.buttonText}>Infracciones</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </View>
   );
 };
 
-type BodyLevelOfClearanceAProps = Pick<Parts, 'expirationDate' | 'typeServiceText' | 'serial' | 'state'> & {
-  codeType?: string;
-};
+type BodyLevelOfClearanceAProps = Pick<Parts, 'expirationDate' | 'typeServiceText' | 'serial' | 'state' | 'documents'>;
 
-const BodyLevelOfClearanceA: React.FC<BodyLevelOfClearanceAProps> = ({ expirationDate, typeServiceText, serial, state, codeType }) => {
+const BodyLevelOfClearanceA: React.FC<BodyLevelOfClearanceAProps> = ({ expirationDate, typeServiceText, serial, state, documents }) => {
   return (
     <View style={styles.body}>
       <View style={[styles.containerWithColor, stylesTemplate.primaryColor]}>
-        <Image source={require('../../assets/icons/person_outline.png')} style={{ width: 24, height: 24 }}></Image>
+        <Image resizeMode="contain" source={require('../../assets/icons/person_outline.png')} style={{ width: 16, tintColor: 'white' }}></Image>
         <Text style={styles.textHeader}>Perfil privado 2</Text>
       </View>
       <View style={styles.content}>
-        <Text style={styles.textNormal}>Vigencia: {expirationDate}</Text>
-        <Text style={styles.textNormal}>Texto del servicio: {typeServiceText}</Text>
-        <Text style={styles.textNormal}>Placa: {serial}</Text>
-        <Text style={styles.textNormal}>Estado: {state}</Text>
-        {codeType && <Text style={styles.textNormal}>Tipo de Placa: {codeType}</Text>}
+        <View style={{ gap: 4 }}>
+          <Text style={styles.textNormal}>Vigencia:</Text>
+          <Text style={styles.textNormal}>Servicio:</Text>
+          <Text style={styles.textNormal}>Serie:</Text>
+          <Text style={styles.textNormal}>Región:</Text>
+          <Text style={styles.textNormal}>Documentos:</Text>
+        </View>
+        <View style={{ gap: 4 }}>
+          <Text style={{ textAlign: 'right' }}>{expirationDate}</Text>
+          <Text style={{ textAlign: 'right' }}>{typeServiceText}</Text>
+          <Text style={{ textAlign: 'right' }}>{serial}</Text>
+          <Text style={{ textAlign: 'right' }}>{state}</Text>
+          <Text style={{ textAlign: 'right' }}>{documents.join(', ')}</Text>
+        </View>
       </View>
     </View>
   );
 };
 
-type BodyLevelOfClearanceBProps = Pick<Parts, 'provider' | 'providerNumber' | 'batch' | 'manufacturedYear' | 'typeServiceId'>;
+type BodyLevelOfClearanceBProps = Pick<Parts, 'provider' | 'providerNumber' | 'batch' | 'manufacturedYear'>;
 
-const BodyLevelOfClearanceB: React.FC<BodyLevelOfClearanceBProps> = ({ provider, providerNumber, batch, typeServiceId, manufacturedYear }) => {
+const BodyLevelOfClearanceB: React.FC<BodyLevelOfClearanceBProps> = ({ provider, providerNumber, batch, manufacturedYear }) => {
   return (
     <View style={styles.body}>
       <View style={[styles.containerWithColor, stylesTemplate.primaryColor]}>
-        <Image source={require('../../assets/icons/person_outline.png')} style={{ width: 24, height: 24 }}></Image>
+        <Image resizeMode="contain" source={require('../../assets/icons/person_outline.png')} style={{ width: 16, tintColor: 'white' }}></Image>
         <Text style={styles.textHeader}>Perfil privado 3</Text>
       </View>
       <View style={styles.content}>
-        {/* <Text style={styles.textNormal}>Estado: {state}</Text> FIXME: En el original aqui está el estado*/}
-        <Text style={styles.textNormal}>Proveedor: {provider}</Text>
-        <Text style={styles.textNormal}>Numero proveedor: {providerNumber}</Text>
-        <Text style={styles.textNormal}>Lote: {batch}</Text>
-        <Text style={styles.textNormal}>Año de Fabricación: {manufacturedYear}</Text>
-        <Text style={styles.textNormal}>Número de servicio: {typeServiceId}</Text>
+        <View style={{ gap: 4 }}>
+          <Text style={styles.textNormal}>Nombre del proveedor:</Text>
+          <Text style={styles.textNormal}>Número del proveedor:</Text>
+          <Text style={styles.textNormal}>Lote:</Text>
+          <Text style={styles.textNormal}>Fecha de manufactura:</Text>
+        </View>
+        <View style={{ gap: 4 }}>
+          <Text style={{ textAlign: 'right' }}>{provider}</Text>
+          <Text style={{ textAlign: 'right' }}>{providerNumber}</Text>
+          <Text style={{ textAlign: 'right' }}>{batch}</Text>
+          <Text style={{ textAlign: 'right' }}>{manufacturedYear}</Text>
+        </View>
       </View>
     </View>
   );
@@ -162,16 +173,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 12,
     alignItems: 'center',
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
   },
   body: {
     width: '100%',
     backgroundColor: 'white',
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25) ', //TODO:
   },
   content: {
+    flexDirection: 'row',
     paddingVertical: 12,
     paddingHorizontal: 24,
     gap: 4,
-    //boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.25) ', //TODO:
+    justifyContent: 'space-between',
   },
   text: {
     fontSize: 20,
@@ -186,5 +205,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'white',
     fontWeight: 'bold',
+  },
+  bottomRadius: { borderBottomLeftRadius: 5, borderBottomRightRadius: 5 },
+  containerButton: {
+    width: '100%',
+    paddingHorizontal: 42,
+  },
+  button: {
+    paddingVertical: 12,
+    backgroundColor: '#4A4546',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    width: '100%',
+  },
+  buttonText: {
+    textAlign: 'center',
+    fontSize: 15,
+    color: '#fff',
   },
 });

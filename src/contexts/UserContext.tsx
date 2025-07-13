@@ -1,6 +1,16 @@
 import React, { createContext, useState, PropsWithChildren, useContext, useMemo } from 'react';
 import { UserProfile, UserSession } from '../models';
-
+/*
+FIXME: Este archivo se usa para guardar el usuario mientras se está dentro de la aplicación
+Primero se había planteado así, pero se cambió a usar MMKV para guardar el usuario y la sesión
+de forma persistente. 
+Para volverlo a usar se tendría que descomentar el export y los imports en los archivos que lo usan.
+Estos archivos son: 
+- App.tsx
+- LoginScreen.tsx
+- ProfileScreen.tsx
+- HomeScreen.tsx
+*/
 interface UserContextType {
   userSession: UserSession | null;
   setUserSession: React.Dispatch<React.SetStateAction<UserSession | null>>;
@@ -35,4 +45,4 @@ const useUserContext = (): UserContextType => {
   return context;
 };
 
-export { UserProvider, useUserContext };
+//export { UserProvider, useUserContext };

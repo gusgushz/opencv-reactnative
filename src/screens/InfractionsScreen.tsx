@@ -1,25 +1,26 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { stylesTemplate } from '../theme';
 
 export const InfractionsScreen = () => {
+  const { height } = useWindowDimensions();
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Infractions</Text>
+    <View style={[styles.containerNoInfo, { paddingTop: height / 3 }]}>
+      <Image source={require('../../assets/icons/Vector.png')} resizeMode="contain" style={{ width: '30%' }}></Image>
+      <Text style={styles.text}>Sin infracciones</Text>
     </View>
   );
 };
 const styles = StyleSheet.create({
-  container: {
+  containerNoInfo: {
     flex: 1,
-    paddingVertical: 16,
     paddingHorizontal: 30,
-    gap: 16,
-    textAlign: 'center',
     backgroundColor: stylesTemplate.screenBgColor.backgroundColor,
+    alignItems: 'center',
+    gap: 8,
   },
   text: {
-    fontSize: 20,
     textAlign: 'center',
+    fontSize: 17,
   },
 });

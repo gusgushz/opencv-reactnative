@@ -1,40 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Image, Text, TouchableWithoutFeedback } from 'react-native';
 import { HomeScreenProps } from '../navigation/NavigationProps';
 import { stylesTemplate } from '../theme';
 import { RoleLevels } from '../globalVariables';
-import { useUserContext } from '../contexts/UserContext';
+// import { useUserContext } from '../contexts/UserContext.tsx';
 import { SECURITY_LEVEL } from 'dotenv';
 import { UserSession } from '../models';
+import { getUser, getUserSession, removeUser, removeUserSession, storeUserSession } from '../utils';
+import { useIsFocused } from '@react-navigation/native';
 
 export const HomeScreen = ({ navigation }: HomeScreenProps) => {
-  const { setUser, setUserSession, userSession } = useUserContext();
-  const [count, setCount] = React.useState(0);
+  // const { setUser, setUserSession, userSession } = useUserContext();
+  const [count, setCount] = useState<number>(0);
+  const [userSession, setUserSession] = useState<UserSession | null>(getUserSession());
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    if (SECURITY_LEVEL === 'private' && !userSession) {
-      let userSecurityLevelRole: UserSession = {
-        email: '',
-        name: '',
-        role: '4',
-      };
-      setUserSession(userSecurityLevelRole);
+    if (!userSession) {
+      if (SECURITY_LEVEL === 'private') {
+        const userSecurityLevelRole: UserSession = {
+          email: '',
+          name: '',
+          role: '4',
+        };
+        storeUserSession(userSecurityLevelRole);
+        setUserSession(userSecurityLevelRole);
+      } else {
+        const Session = getUserSession();
+        if (Session) setUserSession(Session);
+      }
     }
-  }, []);
+  }, [isFocused]);
 
   return (
     <View style={[styles.container, stylesTemplate.screenBgColor]}>
       <TouchableWithoutFeedback
         onPress={() => {
-          setCount(count + 1);
-          if (SECURITY_LEVEL === 'private' && count == 4) {
-            setCount(0);
-            navigation.navigate('AndroidIdScreen');
+          if (SECURITY_LEVEL === 'private') {
+            setCount(count + 1);
+            if (count == 4) {
+              setCount(0);
+              navigation.navigate('AndroidIdScreen');
+            }
           }
         }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="center" />
+        <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
       </TouchableWithoutFeedback>
-      <View style={SECURITY_LEVEL === 'private' ? styles.buttonsContainerPrivate : styles.buttonsContainerPublic}>
+      <View style={styles.buttonsContainer}>
         <TouchableOpacity
           onPress={() => {
             if (userSession) {
@@ -59,11 +71,12 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
+                    removeUserSession();
+                    removeUser();
                     setUserSession(null);
-                    setUser(null);
                   }}
                   style={[styles.button, stylesTemplate.primaryColor]}>
-                  <Text style={styles.buttonText}>Cerrar Sesión</Text>
+                  <Text style={styles.buttonText}>Cerrar sesión</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -85,13 +98,11 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: 16,
+    paddingTop: 16,
     alignItems: 'center',
     paddingHorizontal: 30,
-    gap: 16,
   },
-  buttonsContainerPublic: { width: '100%', gap: 10 },
-  buttonsContainerPrivate: { width: '100%', gap: 10, marginTop: '50%' },
+  buttonsContainer: { width: '100%', gap: 10 },
   button: {
     marginHorizontal: 12,
     paddingVertical: 12,

@@ -4,7 +4,7 @@ import { stylesTemplate } from '../theme';
 import { LoginScreenProps } from '../navigation/NavigationProps';
 import { UpdateByTimestampData, UserCreated, UserSession } from '../models';
 import { getUsersData, readableString } from '../utils';
-import { useUserContext } from '../contexts/UserContext';
+import { useUserContext } from '../contexts/UserContext.tsx';
 import { getUpdateByTimestamp } from '../api';
 
 export const LoginScreenInputsAnim = ({ navigation }: LoginScreenProps) => {

@@ -67,3 +67,24 @@ export const readableString = (completeChain: string): string => {
 
   return decrypted.toString(CryptoJS.enc.Utf8);
 };
+
+const key = CryptoJS.enc.Utf8.parse("c879307e7ba9b450522cb58a1fe82a56"); // 32 bytes ASCII = AES-256
+const iv = CryptoJS.enc.Utf8.parse("5b03a3a9b940f661"); // 16 bytes ASCII
+
+export const AESEncrypt = (plainText: string): string => {
+  const encrypted = CryptoJS.AES.encrypt(plainText, key, {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+  return encrypted.toString(); // Devuelve en base64
+};
+
+export const AESDecrypt = (cipherTextBase64: string): string => {
+  const decrypted = CryptoJS.AES.decrypt(cipherTextBase64, key, {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  });
+  return decrypted.toString(CryptoJS.enc.Utf8);
+};
