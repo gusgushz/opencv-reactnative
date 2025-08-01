@@ -93,9 +93,9 @@
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
       children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
         source: _$$_REQUIRE(_dependencyMap[9]),
-        resizeMode: "center",
+        resizeMode: "contain",
         style: {
-          marginBottom: -16
+          marginBottom: 16
         }
       }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TextInput, {
         style: styles.input,
@@ -129,8 +129,8 @@
   var styles = _reactNative.StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: 16,
       alignItems: 'center',
+      justifyContent: 'center',
       paddingHorizontal: 30
     },
     input: {

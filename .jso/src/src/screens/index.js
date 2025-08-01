@@ -100,3 +100,14 @@
       }
     });
   });
+  var _CameraTestScreen = _$$_REQUIRE(_dependencyMap[9]);
+  Object.keys(_CameraTestScreen).forEach(function (key) {
+    if (key === "default" || key === "__esModule") return;
+    if (key in exports && exports[key] === _CameraTestScreen[key]) return;
+    Object.defineProperty(exports, key, {
+      enumerable: true,
+      get: function get() {
+        return _CameraTestScreen[key];
+      }
+    });
+  });

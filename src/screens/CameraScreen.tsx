@@ -4,10 +4,10 @@ import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
-import { RoleLevels, stateNameToId } from '../globalVariables';
+import { stateNameToId } from '../globalVariables';
 import { Parts, Service } from '../models';
 import { getServices } from '../utils/';
-import AppConfig from '../config/app.json';
+import { useScanContext } from '../contexts/ScanContext';
 
 const { OpencvFunc, OpenCVWrapper } = NativeModules;
 const { height } = Dimensions.get('window');
@@ -19,6 +19,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   const lastScannedRef = useRef<string | null>(null); // Almacena el último QR escaneado
   const [checkBoxes, setCheckBoxes] = useState<boolean[]>([false, false, false]);
   const [services, setServices] = useState<Service[]>([]);
+  const { setParts, setPartsEdomex, parts, partsEdomex } = useScanContext();
 
   // Solo para iOS: header personalizado por tema de la animación de la pantalla
   useEffect(() => {
@@ -106,87 +107,61 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
         if (res && res.length > 0) {
           // Si es un código nuevo (diferente al último escaneado)
           if (res !== lastScannedRef.current) {
-            Vibration.vibrate(100);
-            const parts = res.split('_');
-
-            const serviceName = findServiceName(parts[5], parts[7]);
-            let documents: string[] = [];
-            if (hasFrontal) documents.push('Frontal');
-            if (hasRear) documents.push('Trasera');
-            if (hasEngomado) documents.push('Engomado');
-            const updatedInfo: Parts = {
-              roleLevel,
-              version: parts[0],
-              codeType: parts[1],
-              chainLength: parts[2],
-              permissionLevel: parts[3],
-              serial: parts[4],
-              typeServiceId: parts[5],
-              typeServiceText: serviceName,
-              state: parts[7],
-              batch: parts[8],
-              provider: parts[9],
-              providerNumber: parts[10],
-              expirationDate: parts[11],
-              manufacturedYear: parts[12],
-              url: parts[13],
-              documents: documents,
-            };
-
-            console.log('parts:', JSON.stringify(parts));
-            console.log('updatedInfo:', JSON.stringify(updatedInfo));
-
-            if (roleLevel === RoleLevels.ZERO) {
-              navigateToInformationScreen(updatedInfo);
+            let pts;
+            if (res.includes('XD')) { 
+              Vibration.vibrate(100);
+              navigateToInformationScreen(res);
             }
-            let newCheckBoxes = [...checkBoxes];
-
-            const isSamePlate = res.split('_')[4] === lastScannedRef.current?.split('_')[4];
-            console.log('lastScannedRef.current', lastScannedRef.current?.split('_')[4]);
-            console.log('res', res.split('_')[4]);
-            console.log('isSamePlate', isSamePlate);
-            if (!isSamePlate) {
-              newCheckBoxes = [false, false, false];
-              setCheckBoxes(newCheckBoxes);
+            if (res.includes('|')) {
+              Vibration.vibrate(100);
+              
+              pts = res.split('|');
+              //NOTE:Informacion hardcodeada para Edomex
+              setPartsEdomex({
+                url: 'https://edomex.gob.mx/',
+                folio: pts[0],
+                providerName: 'VIFINSA',
+                providerId: pts[1],
+                batchNumber: pts[2],
+                manufacturedYear: pts[3].slice(0, 2),
+                holo: '00',
+                semester: '2',
+                expirationDate: '2025',
+                serial: 'AAA-000-A',
+              });
+              console.log('parts*************:', JSON.stringify(pts));
+              lastScannedRef.current = res; // Actualiza el último código escaneado
+              navigateToInformationScreen();
             }
-
-            switch (updatedInfo.codeType) {
-              case 'Trasero':
-                newCheckBoxes[0] = true;
-                break;
-              case 'Delantero':
-                newCheckBoxes[1] = true;
-                break;
-              case 'Engomado':
-                newCheckBoxes[2] = true;
-                break;
-            }
-            setCheckBoxes(newCheckBoxes);
-
-            lastScannedRef.current = res; // Actualiza el último código escaneado
-
-            // if (roleLevel === RoleLevels.ONE && newCheckBoxes[1]) {
-            //   navigateToInformationScreen(updatedInfo);
-            // } else if (roleLevel === RoleLevels.TWO && newCheckBoxes[0] && newCheckBoxes[1]) {
-            //   navigateToInformationScreen(updatedInfo);
-            // } else if (
-            //   roleLevel === RoleLevels.THREE
-            //   //&& newCheckBoxes.every(v => v) //FIXME:
-            // ) {
+            //TODO: Oculto ya que esta rama (EDOMEX) no necesita escanera placas
+            // else {
+            //   pts = res.split('_');
+            //   const serviceName = findServiceName(pts[5], pts[7]);
+            //   let documents: string[] = [];
+            //   if (hasFrontal) documents.push('Frontal');
+            //   if (hasRear) documents.push('Trasera');
+            //   if (hasEngomado) documents.push('Engomado');
+            //   const updatedInfo: Parts = {
+            //     version: pts[0],
+            //     codeType: pts[1],
+            //     chainLength: pts[2],
+            //     permissionLevel: pts[3],
+            //     serial: pts[4],
+            //     typeServiceId: pts[5],
+            //     typeServiceText: serviceName,
+            //     state: pts[7],
+            //     batch: pts[8],
+            //     provider: pts[9],
+            //     providerNumber: pts[10],
+            //     expirationDate: pts[11],
+            //     manufacturedYear: pts[12],
+            //     url: pts[13],
+            //     documents: documents,
+            //   };
+            //   setParts(updatedInfo);
+            //   console.log('parts:', JSON.stringify(pts));
+            //   console.log('updatedInfo:', JSON.stringify(updatedInfo));
             // }
-            if (hasRear && hasFrontal && hasEngomado) {
-              if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen(updatedInfo);
-            }
-            if (hasRear && hasFrontal && !hasEngomado) {
-              if (newCheckBoxes[0] && newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-            }
-            if (hasFrontal && !hasEngomado && !hasRear) {
-              if (newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-            }
-
-            if (hasRear && !hasFrontal && !hasEngomado) {
-              if (newCheckBoxes[0]) navigateToInformationScreen(updatedInfo);
-            }
           }
         }
       } catch (err) {
@@ -202,34 +177,38 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   }, [checkBoxes]);
 
   const findServiceName = (typeServiceId: string, state: string): string => {
+    console.log('stateNAME', state);
     const stateId = stateNameToId(state);
+    console.log('stateId', stateId);
     const service = services.find(service => {
       return service.service_db_id.toString() === typeServiceId && service.state_id === stateId;
     });
     return service?.parent_service_name ?? 'No se encontró el servicio';
   };
 
-  const navigateToInformationScreen = async (parts: Parts) => {
+  const navigateToInformationScreen = async (info?:string) => {
     await closeCamera();
-    console.log('Navigating to InformationScreen with parts:', parts);
-    navigation.navigate('InformationScreen', {
-      roleLevel: roleLevel,
-      version: parts.version,
-      codeType: parts.codeType,
-      chainLength: parts.chainLength,
-      permissionLevel: parts.permissionLevel,
-      serial: parts.serial,
-      typeServiceId: parts.typeServiceId,
-      typeServiceText: parts.typeServiceText,
-      state: parts.state,
-      batch: parts.batch,
-      provider: parts.provider,
-      providerNumber: parts.providerNumber,
-      expirationDate: parts.expirationDate,
-      manufacturedYear: parts.manufacturedYear,
-      url: parts.url,
-      documents: parts.documents,
-    });
+    navigation.navigate(
+      'InformationScreen',
+      //{
+      { roleLevel: roleLevel, info: info ?? '',},
+      //   version: parts.version,
+      //   codeType: parts.codeType,
+      //   chainLength: parts.chainLength,
+      //   permissionLevel: parts.permissionLevel,
+      //   serial: parts.serial,
+      //   typeServiceId: parts.typeServiceId,
+      //   typeServiceText: parts.typeServiceText,
+      //   state: parts.state,
+      //   batch: parts.batch,
+      //   provider: parts.provider,
+      //   providerNumber: parts.providerNumber,
+      //   expirationDate: parts.expirationDate,
+      //   manufacturedYear: parts.manufacturedYear,
+      //   url: parts.url,
+      //   documents: parts.documents,
+      // }
+    );
   };
 
   const checkboxesData = [
@@ -237,13 +216,13 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     { id: 2, label: 'Placa frontal identificada', isChecked: checkBoxes[1] },
     { id: 3, label: 'Engomado identificado', isChecked: checkBoxes[2] },
   ];
-  //info[1] = "Delantero"  "Trasero"  "Engomado"
 
   return (
     <View style={[styles.container, stylesTemplate.screenBgColor]}>
       <View style={styles.void}></View>
       <View style={{ paddingHorizontal: 34, paddingVertical: 68, gap: 10 }}>
-        {checkboxesData.map(checkbox => (
+        <AdvancedCheckbox label={'Escanear código'} checkedColor="#8F0F40" uncheckedColor="#747272" size={24}></AdvancedCheckbox>
+        {/* {checkboxesData.map(checkbox => (
           <AdvancedCheckbox
             key={checkbox.id}
             value={checkbox.isChecked}
@@ -255,7 +234,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             labelStyle={{ color: checkbox.isChecked ? '#8F0F40' : '#747272' }}
             animationType="fade"
           />
-        ))}
+        ))} */}
       </View>
     </View>
   );

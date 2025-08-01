@@ -5,44 +5,21 @@ import { StyleSheet, PermissionsAndroid, Platform, SafeAreaView, NativeModules, 
 const { OpenCVWrapper, OpencvFunc } = NativeModules;
 import BootSplash from 'react-native-bootsplash';
 import { RootStackParamList } from './src/navigation/NavigationProps';
-import {
-  CameraScreen,
-  HomeScreen,
-  InformationScreen,
-  ProfileScreen,
-  LoginScreen,
-  InfractionsScreen,
-  DownloadSecretKeyScreen,
-  AndroidIdScreen,
+//prettier-ignore
+import { CameraScreen, HomeScreen, InformationScreen, ProfileScreen, LoginScreen, InfractionsScreen, DownloadSecretKeyScreen, AndroidIdScreen, CameraTestScreen
 } from './src/screens/';
-import {
-  storeServices,
-  storeUsersData,
-  readableString,
-  getKey,
-  getToken,
-  base64Decode,
-  base64Encode,
-  storeToken,
-  getServices,
-  getUsersData,
-  removeToken,
-  getLastValidateTokenDate,
-  storeLastValidateTokenDate,
+//prettier-ignore
+import { storeServices, storeUsersData, readableString, getKey, getToken, base64Decode, base64Encode, storeToken, getServices, getUsersData, removeToken, getLastValidateTokenDate, storeLastValidateTokenDate,
 } from './src/utils';
 import ConfigApp from './src/config/app.json';
 import { SECURITY_LEVEL } from 'dotenv';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import { UpdateByTimestampData } from './src/models';
-import {
-  getChildServicesByState,
-  getRecoverToken,
-  getUpdateByTimestamp,
-  postKeyActivation,
-  postValidateToken,
-  postAuthenticateDevice,
+//prettier-ignore
+import { getChildServicesByState, getRecoverToken, getUpdateByTimestamp, postKeyActivation, postValidateToken, postAuthenticateDevice,
 } from './src/api';
 // import { UserProvider } from './src/contexts/UserContext.tsx';
+import { ScanContextProvider } from './src/contexts/ScanContext.tsx';
 import { sufix } from './src/globalVariables';
 import * as Sentry from '@sentry/react-native';
 Sentry.init({ dsn: 'https://86a8a5548583da54c5af87a58acf940a@o1412274.ingest.us.sentry.io/4508937809362944' });
@@ -89,94 +66,97 @@ function App() {
     console.log('SECURITY_LEVEL actual:', SECURITY_LEVEL);
 
     if (SECURITY_LEVEL === 'private') {
-      const exists = await RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
-      console.log('exists', exists);
-      //removeToken();
-      if (exists) {
-        const androidId = (await OpencvFunc.getAndroidId()) + sufix;
-        const token = getToken() ?? '';
-        const content = await RNFS.readFile(`${RNFS.ExternalDirectoryPath}/secretKey.dat`, 'utf8');
-        const keyDecoded = base64Decode(content);
-        const key = getKey() ?? '';
-        const chain = base64Encode(key + '.' + androidId);
-        const today = new Date();
+      // const exists = await RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
+      // console.log('exists', exists);
+      // //removeToken();
+      // if (exists) {
+      //   const androidId = (await OpencvFunc.getAndroidId()) + sufix;
+      //   const token = getToken() ?? '';
+      //   const content = await RNFS.readFile(`${RNFS.ExternalDirectoryPath}/secretKey.dat`, 'utf8');
+      //   const keyDecoded = base64Decode(content);
+      //   const key = getKey() ?? '';
+      //   const chain = base64Encode(key + '.' + androidId);
+      //   const today = new Date();
 
-        console.log('androidId', androidId);
-        console.log('token', token);
-        console.log('content', content);
-        console.log('keyDecoded', keyDecoded);
-        console.log('chain', chain);
-        if (token != '') {
-          if (key === keyDecoded) {
-            console.log(key === keyDecoded);
-            const dateRaw = getLastValidateTokenDate();
-            const date = dateRaw ? new Date(dateRaw) : null;
-            const response = await postValidateToken(chain, token);
-            console.log('response postValidateToken', response);
-            if (response.status === 'error' && response.message === 'Error de red') {
-              if (date) {
-                console.log('getLastValidateTokenDate', date.toLocaleDateString());
-                const daysDifference = (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
-                if (daysDifference <= 7) {
-                  console.log('diferencia de días', daysDifference);
-                  isPermissionGranted = true;
-                  return;
-                }
-              }
-              await OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
-              return;
-            }
-            if (response.status === 'success') {
-              storeLastValidateTokenDate(today);
-              isPermissionGranted = true;
-              return;
-            }
-          }
-        } else {
-          console.log('No hay token, se procede a registrar la clave');
-          let isKeyRegistered: boolean = false;
-          let isKeyAlreadyRegistered: boolean = false;
-          const response = await postKeyActivation(androidId, keyDecoded);
-          console.log('response postKeyActivation', response);
-          if (response.status === 'error') {
-            if (response.data == 'key is already active') isKeyAlreadyRegistered = true;
-          }
-          if (response.status === 'success') isKeyRegistered = true;
-          if (isKeyAlreadyRegistered) {
-            // console.log('isKeyAlreadyRegistered****', chain);
-            // const res = await getRecoverToken(chain);
-            // console.log('res isKeyAlreadyRegistered', res);
-            // if (res.status === 'success') {
-            //   storeLastValidateTokenDate(today);
-            //   storeToken(res.authToken);
-            //   isPermissionGranted = true;
-            //   return;
-            // }
-            console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
-            storeLastValidateTokenDate(today);
-            isPermissionGranted = true; //FIXME: se dejo en true para pruebas
-          }
-          if (isKeyRegistered) {
-            const res = await postAuthenticateDevice(chain);
-            console.log('res isKeyRegistered****', res);
-            if (res.status === 'success') {
-              storeLastValidateTokenDate(today);
-              storeToken(res.authToken);
-              isPermissionGranted = true;
-              return;
-            }
-          }
-        }
-      } else {
-        isPermissionGranted = true;
-        return;
-      }
-      console.log('isPermissionGranted', isPermissionGranted);
-      if (!isPermissionGranted) await OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
+      //   console.log('androidId', androidId);
+      //   console.log('token', token);
+      //   console.log('content', content);
+      //   console.log('keyDecoded', keyDecoded);
+      //   console.log('chain', chain);
+      //   if (token != '') {
+      //     if (key === keyDecoded) {
+      //       console.log(key === keyDecoded);
+      //       const dateRaw = getLastValidateTokenDate();
+      //       const date = dateRaw ? new Date(dateRaw) : null;
+      //       const response = await postValidateToken(chain, token);
+      //       console.log('response postValidateToken', response);
+      //       if (response.status === 'error' && response.message === 'Error de red') {
+      //         if (date) {
+      //           console.log('getLastValidateTokenDate', date.toLocaleDateString());
+      //           const daysDifference = (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
+      //           if (daysDifference <= 7) {
+      //             console.log('diferencia de días', daysDifference);
+      //             isPermissionGranted = true;
+      //             return;
+      //           }
+      //         }
+      //         await OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
+      //         return;
+      //       }
+      //       if (response.status === 'success') {
+      //         storeLastValidateTokenDate(today);
+      //         isPermissionGranted = true;
+      //         return;
+      //       }
+      //     }
+      //   } else {
+      //     console.log('No hay token, se procede a registrar la clave');
+      //     let isKeyRegistered: boolean = false;
+      //     let isKeyAlreadyRegistered: boolean = false;
+      //     const response = await postKeyActivation(androidId, keyDecoded);
+      //     console.log('response postKeyActivation', response);
+      //     if (response.status === 'error') {
+      //       if (response.data == 'key is already active') isKeyAlreadyRegistered = true;
+      //     }
+      //     if (response.status === 'success') isKeyRegistered = true;
+      //     if (isKeyAlreadyRegistered) {
+      //       // console.log('isKeyAlreadyRegistered****', chain);
+      //       // const res = await getRecoverToken(chain);
+      //       // console.log('res isKeyAlreadyRegistered', res);
+      //       // if (res.status === 'success') {
+      //       //   storeLastValidateTokenDate(today);
+      //       //   storeToken(res.authToken);
+      //       //   isPermissionGranted = true;
+      //       //   return;
+      //       // }
+      //       console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
+      //       storeLastValidateTokenDate(today);
+      //       isPermissionGranted = true; //FIXME: se dejo en true para pruebas
+      //     }
+      //     if (isKeyRegistered) {
+      //       const res = await postAuthenticateDevice(chain);
+      //       console.log('res isKeyRegistered****', res);
+      //       console.log('res isKeyRegistered res.authToken****', res.authToken);
+      //       if (res.status === 'success') {
+      //         storeLastValidateTokenDate(today);
+      //         storeToken(res.authToken);
+      //         isPermissionGranted = true;
+      //         return;
+      //       }
+      //     }
+      //   }
+      // } else {
+      //   isPermissionGranted = true;
+      //   return;
+      // }
+      // console.log('isPermissionGranted', isPermissionGranted);
+      // if (!isPermissionGranted) await OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
     } else {
       const res = getUsersData();
       if (!res) {
+        console.log('configid', ConfigApp.Client.Id);
         const response = await getUpdateByTimestamp(ConfigApp.Client.Id);
+        console.log('response getUpdateByTimestamp', JSON.parse(readableString(response.data)) as UpdateByTimestampData);
         if (response.status !== 'error') storeUsersData(JSON.parse(readableString(response.data)) as UpdateByTimestampData);
       }
     }
@@ -194,12 +174,12 @@ function App() {
   }, []);
 
   return (
-    <>
+    <ScanContextProvider>
       <StatusBar hidden />
       <SafeAreaView style={styles.ios}>
         <MyStack></MyStack>
       </SafeAreaView>
-    </>
+    </ScanContextProvider>
   );
 }
 
@@ -219,7 +199,10 @@ const MyStack = () => {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName={SECURITY_LEVEL === 'private' && !exists ? 'DownloadSecretKeyScreen' : 'HomeScreen'}
+        //NOTE:
+        // initialRouteName="CameraTestScreen"
         screenOptions={{ headerTitleAlign: 'center', headerTintColor: '#737373' }}>
+        <Stack.Screen name="CameraTestScreen" component={CameraTestScreen} options={{ headerShown: true }} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: true, headerTitle: 'Escanear código' }} />
         <Stack.Screen name="InformationScreen" component={InformationScreen} options={{ headerShown: true, headerTitle: 'Información' }} />

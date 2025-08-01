@@ -237,7 +237,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			overlayViewLeft = View(activity).apply {
 				layoutParams = FrameLayout.LayoutParams(
 					width / 4,
-					(height / 4) + 2,
+					(height / 4) + (height * 0.001).toInt(), // Ajustar el alto para que sea más grande
 				).apply {
 					gravity = Gravity.START or Gravity.CENTER
 				}
@@ -249,7 +249,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			overlayViewRight = View(activity).apply {
 				layoutParams = FrameLayout.LayoutParams(
 					width / 4,
-					(height / 4) + 2,
+					(height / 4) + (height * 0.001).toInt(), // Ajustar el alto para que sea más grande
 				).apply {
 					gravity = Gravity.END or Gravity.CENTER
 				}
@@ -293,9 +293,14 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     fun stopCamera(promise: Promise) {
         try {
             if (mOpenCvCameraView == null) {
-                promise.reject("CameraError", "Camera is not initialized")
+                promise.resolve("Camera already stopped") // Cambiado de reject a resolve
                 return
             }
+
+            val localCameraView = mOpenCvCameraView
+            val localContainer = cameraContainer
+            val localOverlays = listOf(overlayViewTop, overlayViewBottom, overlayViewLeft, overlayViewRight)
+
             synchronized(drawingLock) {
                 // Resetear variables de estado
                 lastValidBorder = -1
@@ -305,49 +310,42 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                 
                 // Limpiar el overlay persistente
                 if (overlayInitialized) {
-                    persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
-                    persistentOverlay.release()
+                    persistentOverlay?.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                    persistentOverlay?.release()
                     overlayInitialized = false
                 }
                 
                 // Liberar contornos
-                contours.forEach { it.release() }
+                contours.forEach { it?.release() }
                 contours.clear()
                 
-                // Forzar limpieza en el próximo inicio
                 shouldClearOverlay = true
             }
 
             currentActivity?.runOnUiThread {
-                mOpenCvCameraView?.disableView() // Deshabilita la cámara
-                cameraContainer?.removeView(mOpenCvCameraView) // Elimina la vista de la cámara del contenedor
-                mOpenCvCameraView = null // Libera la referencia
+                try {
+                    localCameraView?.disableView()
+                    localContainer?.removeView(localCameraView)
 
-                // Elimina el overlay si existe
-                overlayViewTop?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewTop = null // Libera la referencia
-                }
-                overlayViewBottom?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewBottom = null // Libera la referencia
-                }
-                overlayViewLeft?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewLeft = null // Libera la referencia
-                }
-                overlayViewRight?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewRight = null // Libera la referencia
-                }
+                    localOverlays.forEach { overlay ->
+                        overlay?.let { localContainer?.removeView(it) }
+                    }
 
-                cameraContainer = null // Libera el contenedor
+                    // Liberar referencias
+                    mOpenCvCameraView = null
+                    cameraContainer = null
+                    overlayViewTop = null
+                    overlayViewBottom = null
+                    overlayViewLeft = null
+                    overlayViewRight = null
+
+                    promise.resolve("Camera stopped successfully")
+                } catch (e: Exception) {
+                    promise.resolve("Camera stopped with minor issues: ${e.message}")
+                }
             }
-            info = null // Reinicia la información
-
-            promise.resolve("Camera stopped successfully")
         } catch (e: Exception) {
-            promise.reject("CameraError", e.message)
+            promise.resolve("Camera stopped with errors: ${e.message}") // Cambiado de reject a resolve
         }
     }
 
@@ -355,15 +353,15 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         val activeArea = inputFrame.rgba()
 
         // Procesamiento de detección (tu lógica existente)
-        frameCounter++
-        if (frameCounter >= 5) {  // Procesar cada 5 frames
-            frameCounter = 0
-            val detected = detectCode(activeArea)
-            if (detected) {
-                val message = extractBits()
-                info = message?.joinToString(separator = "_")
-            }
-        }
+        // frameCounter++
+        // if (frameCounter >= 5) {  // Procesar cada 5 frames
+        //     frameCounter = 0
+        //     val detected = detectCode(activeArea)
+        //     if (detected) {
+        //         val message = extractBits()
+        //         info = message?.joinToString(separator = "_")
+        //     }
+        // }
 
         synchronized(drawingLock) {
             if (!overlayInitialized || persistentOverlay.width() != activeArea.width() || persistentOverlay.height() != activeArea.height()) {
@@ -378,15 +376,13 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             }
 
             // Solo procesar detección si no estamos en modo limpieza
-            if (!shouldClearOverlay) {
-                frameCounter++
-                if (frameCounter >= 5) {
-                    frameCounter = 0
-                    val detected = detectCode(activeArea)
-                    if (detected) {
-                        val message = extractBits()
-                        info = message?.joinToString(separator = "_")
-                    }
+            frameCounter++
+            if (frameCounter >= 5 && !shouldClearOverlay) {
+                frameCounter = 0
+                val detected = detectCode(activeArea)
+                if (detected) {
+                    val message = extractBits()
+                    info = message?.joinToString(separator = "_")
                 }
             }
 
@@ -522,7 +518,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         mark = 0
         //val momentsList = mutableListOf<Moments>()
         val massCenters = mutableListOf<Point>()
-        for (contour in contours) {
+        for (contour in contours.toList()) {
             // Calcular los momentos del contorno
             val mu = Imgproc.moments(contour)
 
@@ -539,10 +535,26 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                 massCenters.add(Point(centerX, centerY))
             }
         }
+        if (contours.isEmpty()) return false
+        val contourCount = contours.size // Captura el tamaño actual al inicio para evitar cambios por otro hilo
+        for (i in 0 until contourCount) {
 
-        for (i in contours.indices) {
+            // Validar que el índice sigue siendo válido
+            if (i >= contours.size) break
+
+            val contour = contours[i]
+            val points = contour.toArray()
+
+            if (points.isEmpty()) continue // evita crash si el contorno está vacío
+
+            val contour2f = MatOfPoint2f(*points)
+
+            if (contour2f.total().toInt() < 3) {
+                contour2f.release()
+                continue
+            }
+
             val approx = MatOfPoint2f()
-            val contour2f = MatOfPoint2f(*contours[i].toArray())
             Imgproc.approxPolyDP(contour2f, approx, Imgproc.arcLength(contour2f, true) * 0.02, true)
 
             if (approx.total() == 4L) {
@@ -562,6 +574,9 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                     mark++
                 }
             }
+
+            approx.release()
+            contour2f.release()
         }
 
         Log.d("pastel", "mark = ${mark}")
@@ -614,12 +629,24 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             val dstArray = arrayOfNulls<Point>(4)
 
             // Obtener vértices de los contornos
-            getVertices(contours, border, slope, tempL)
-            getVertices(contours, marker, slope, tempM)
+            try {
+                getVertices(contours, border, slope, tempL)
+                getVertices(contours, marker, slope, tempM)
+            } catch (e: Exception) {
+                Log.e("pastel", "Error en getVertices: ${e.message}", e)
+            }
+            // getVertices(contours, border, slope, tempL)
+            // getVertices(contours, marker, slope, tempM)
 
             // Reordenar según orientación
-            updateCornerOrientation(orientation, tempL, L)
-            updateCornerOrientation(orientation, tempM, M)
+            try {
+                updateCornerOrientation(orientation, tempL, L)
+                updateCornerOrientation(orientation, tempM, M)
+            } catch (e: Exception) {
+                Log.e("pastel", "Error en updateCornerOrientation: ${e.message}", e)
+            }
+            // updateCornerOrientation(orientation, tempL, L)
+            // updateCornerOrientation(orientation, tempM, M)
 
             // Convertir a Point para la transformación de perspectiva
             srcArray[0] = L[0]
@@ -771,7 +798,11 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    private fun getApproximatedWidth(contours: List<MatOfPoint>, cId: Int): Int { //FIXME:
+    private fun getApproximatedWidth(contours: List<MatOfPoint>, cId: Int): Int {//FIXME:
+        if (contours.isEmpty() || cId < 0 || cId >= contours.size) {
+            return 0 // O devuelve -1, lanza excepción controlada, loguea, etc.
+        }
+
         val box: Rect = Imgproc.boundingRect(contours[cId])
         return box.width
     }
@@ -833,6 +864,11 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     }
 
     private fun getVertices(contours: List<MatOfPoint>, cId: Int, slope: Double, quad: MutableList<Point>) { //FIXME:
+        if (cId < 0 || cId >= contours.size) {
+            Log.e("OpenCV", "Índice de contorno inválido: cId=$cId, tamaño=${contours.size}")
+            return  // Salir temprano si el índice no es válido
+        }
+
         val box: Rect = Imgproc.boundingRect(contours[cId])
 
         val M0 = Point()

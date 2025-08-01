@@ -285,7 +285,7 @@ class HoloDecoder {
             val rsd = ReedSolomonDecoder(field)
             // Log.d("pastel", "Datos antes de RS (hex): ${finalMessage.take(48).joinToString(" ") { "%02X".format(it) }}")
             for (i in 0 until 84) {
-                Log.d("original", "byte[$i] = %02X".format(finalMessage[i]))
+                // Log.d("original", "byte[$i] = %02X".format(finalMessage[i]))
             }
             rsd.decode(finalMessage, 36)  // 36 bytes de redundancia
             // Log.d("pastel", "Datos después de RS (hex): ${finalMessage.take(48).joinToString(" ") { "%02X".format(it) }}")
@@ -337,7 +337,6 @@ class HoloDecoder {
         specs[10] = "20${finalMessage[28]}-20${finalMessage[29]}"
         specs[11] = "20${finalMessage[30]}"
         specs[12] = (31..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
-
         // Validación con regex
         val plateNumber = specs[4]!!.trim()
         if (!Regex("^[A-Z0-9]+\$").matches(plateNumber)) {
@@ -346,7 +345,14 @@ class HoloDecoder {
         
         val result = specs.joinToString("_") { it?.trim() ?: "" }
         Log.d("pastel", "Mensaje specs: ${result}")
-        return result
+        val rawSpec = (4..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
+        Log.d("pastel", "Mensaje rawSpec: ${rawSpec}")
+        // Si la el Holo contiene "|", retornar rawSpec; si no, retornar result
+        return if (rawSpec.contains("|")) {
+            rawSpec
+        } else {
+            result
+        }
     }
 
     fun mask(matrix: Array<Array<ByteArray>>, mask0: Int, mask1: Int, mask2: Int, mask3: Int): Int {

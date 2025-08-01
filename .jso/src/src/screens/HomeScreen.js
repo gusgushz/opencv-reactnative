@@ -13,11 +13,10 @@
   var _jsxRuntime = _$$_REQUIRE(_dependencyMap[8]);
   function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-  // import { useUserContext } from '../contexts/UserContext.tsx';
-
+  var _Dimensions$get = _reactNative.Dimensions.get('window'),
+    height = _Dimensions$get.height;
   var HomeScreen = exports.HomeScreen = function HomeScreen(_ref) {
     var navigation = _ref.navigation;
-    // const { setUser, setUserSession, userSession } = useUserContext();
     var _useState = (0, _react.useState)(0),
       _useState2 = (0, _slicedToArray2.default)(_useState, 2),
       count = _useState2[0],
@@ -54,10 +53,8 @@
         },
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
           source: _$$_REQUIRE(_dependencyMap[9]),
-          resizeMode: "center",
-          style: {
-            marginBottom: -16
-          }
+          resizeMode: "contain",
+          style: styles.image
         })
       }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
         style: styles.buttonsContainer,
@@ -92,6 +89,11 @@
     buttonsContainer: {
       width: '100%',
       gap: 10
+    },
+    image: {
+      marginBottom: 30,
+      marginTop: 16,
+      height: height * 0.25
     },
     button: {
       marginHorizontal: 12,

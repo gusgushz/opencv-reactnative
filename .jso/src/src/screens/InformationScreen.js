@@ -8,9 +8,10 @@
   var _react = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[3]));
   var _reactNative = _$$_REQUIRE(_dependencyMap[4]);
   var _theme = _$$_REQUIRE(_dependencyMap[5]);
-  var _globalVariables = _$$_REQUIRE(_dependencyMap[6]);
-  var _api = _$$_REQUIRE(_dependencyMap[7]);
-  var _jsxRuntime = _$$_REQUIRE(_dependencyMap[8]);
+  var _api = _$$_REQUIRE(_dependencyMap[6]);
+  var _ScanContext = _$$_REQUIRE(_dependencyMap[7]);
+  var _native = _$$_REQUIRE(_dependencyMap[8]);
+  var _jsxRuntime = _$$_REQUIRE(_dependencyMap[9]);
   function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
   var InformationScreen = exports.InformationScreen = function InformationScreen(_ref) {
@@ -18,44 +19,60 @@
       navigation = _ref.navigation;
     var _route$params = route.params,
       roleLevel = _route$params.roleLevel,
-      version = _route$params.version,
-      codeType = _route$params.codeType,
-      chainLength = _route$params.chainLength,
-      permissionLevel = _route$params.permissionLevel,
-      serial = _route$params.serial,
-      typeServiceId = _route$params.typeServiceId,
-      typeServiceText = _route$params.typeServiceText,
-      state = _route$params.state,
-      batch = _route$params.batch,
-      provider = _route$params.provider,
-      providerNumber = _route$params.providerNumber,
-      expirationDate = _route$params.expirationDate,
-      manufacturedYear = _route$params.manufacturedYear,
-      url = _route$params.url,
-      documents = _route$params.documents;
-    var _useState = (0, _react.useState)('Cargando url...'),
+      info = _route$params.info;
+    var _useScanContext = (0, _ScanContext.useScanContext)(),
+      parts = _useScanContext.parts,
+      setParts = _useScanContext.setParts,
+      partsEdomex = _useScanContext.partsEdomex,
+      setPartsEdomex = _useScanContext.setPartsEdomex;
+    var _useState = (0, _react.useState)([false, false, false]),
       _useState2 = (0, _slicedToArray2.default)(_useState, 2),
-      link = _useState2[0],
-      setLink = _useState2[1];
-    (0, _react.useEffect)(function () {
-      var fetchLink = /*#__PURE__*/function () {
-        var _ref2 = (0, _asyncToGenerator2.default)(function* () {
-          try {
-            setLink(yield (0, _api.getLink)(url));
-          } catch (error) {
-            setLink('Error al cargar la URL');
-          }
-        });
-        return function fetchLink() {
-          return _ref2.apply(this, arguments);
-        };
-      }();
-      fetchLink();
-      var unsubscribe = navigation.addListener('focus', function () {
-        fetchLink();
+      visibilityLevels = _useState2[0],
+      setVisibilityLevels = _useState2[1];
+    var _useState3 = (0, _react.useState)('Cargando url...'),
+      _useState4 = (0, _slicedToArray2.default)(_useState3, 2),
+      link = _useState4[0],
+      setLink = _useState4[1];
+    var fetchLink = /*#__PURE__*/function () {
+      var _ref2 = (0, _asyncToGenerator2.default)(function* (url) {
+        try {
+          setLink(yield (0, _api.getLink)(url));
+        } catch (error) {
+          setLink('Error al cargar la URL');
+        }
       });
-      return unsubscribe;
+      return function fetchLink(_x) {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    (0, _react.useEffect)(function () {
+      if (parts) {
+        fetchLink(parts.url);
+      } else if (partsEdomex) {
+        setLink(partsEdomex.url);
+      } else if (info) {
+        setLink('https://edomex.gob.mx');
+      }
     }, []);
+    (0, _native.useFocusEffect)((0, _react.useCallback)(function () {
+      // Do something when the screen is focused
+      return function () {
+        // Do something when the screen is unfocused. Useful for cleanup functions
+        setParts(null);
+        setPartsEdomex(null);
+        setLink('Cargando url...');
+        setVisibilityLevels([false, false, false]);
+      };
+    }, []));
+    (0, _react.useEffect)(function () {
+      var handleVisibilityLevels = function handleVisibilityLevels(roleLevel) {
+        if (roleLevel == '2') return setVisibilityLevels([true, false, false]);
+        if (roleLevel == '3') return setVisibilityLevels([true, true, false]);
+        if (roleLevel == '4') return setVisibilityLevels([true, true, true]);
+      };
+      handleVisibilityLevels(roleLevel);
+      console.log('roleLevel:', roleLevel);
+    }, [roleLevel]);
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
       children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.TouchableOpacity, {
@@ -66,7 +83,7 @@
         },
         children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
           resizeMode: "contain",
-          source: _$$_REQUIRE(_dependencyMap[9]),
+          source: _$$_REQUIRE(_dependencyMap[10]),
           style: {
             width: 16,
             tintColor: 'white'
@@ -77,197 +94,522 @@
           }],
           children: link
         })]
-      }), roleLevel == _globalVariables.RoleLevels.ONE && /*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceA, {
-        expirationDate: expirationDate,
-        serial: serial,
-        state: state,
-        typeServiceText: typeServiceText,
-        documents: documents
-      }), roleLevel == _globalVariables.RoleLevels.TWO && /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
-        children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceA, {
-          expirationDate: expirationDate,
-          serial: serial,
-          state: state,
-          typeServiceText: typeServiceText,
-          documents: documents
-        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceB, {
-          manufacturedYear: manufacturedYear,
-          provider: provider,
-          providerNumber: providerNumber,
-          batch: batch
-        })]
-      }), roleLevel == _globalVariables.RoleLevels.THREE && /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
-        children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceA, {
-          expirationDate: expirationDate,
-          serial: serial,
-          state: state,
-          typeServiceText: typeServiceText,
-          documents: documents
-        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceB, {
-          manufacturedYear: manufacturedYear,
-          provider: provider,
-          providerNumber: providerNumber,
-          batch: batch
-        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
-          style: styles.containerButton,
-          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableOpacity, {
-            onPress: function onPress() {
-              navigation.navigate('InfractionsScreen');
-            },
-            style: [styles.button, _theme.stylesTemplate.primaryColor],
-            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-              style: styles.buttonText,
-              children: "Infracciones"
-            })
-          })
+      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
+        children: [visibilityLevels[0] && /*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceA, {
+          parts: parts,
+          partsEdomex: partsEdomex,
+          info: info
+        }), visibilityLevels[1] && /*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceB, {
+          parts: parts,
+          partsEdomex: partsEdomex,
+          info: info
+        }), visibilityLevels[2] && /*#__PURE__*/(0, _jsxRuntime.jsx)(BodyLevelOfClearanceC, {
+          parts: parts,
+          partsEdomex: partsEdomex,
+          navigation: navigation,
+          info: info
         })]
       })]
     });
   };
   var BodyLevelOfClearanceA = function BodyLevelOfClearanceA(_ref3) {
-    var expirationDate = _ref3.expirationDate,
-      typeServiceText = _ref3.typeServiceText,
-      serial = _ref3.serial,
-      state = _ref3.state,
-      documents = _ref3.documents;
-    return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-      style: styles.body,
-      children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-        style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
-        children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
-          resizeMode: "contain",
-          source: _$$_REQUIRE(_dependencyMap[10]),
-          style: {
-            width: 16,
-            tintColor: 'white'
-          }
-        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-          style: styles.textHeader,
-          children: "Perfil privado 2"
-        })]
-      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-        style: styles.content,
+    var parts = _ref3.parts,
+      partsEdomex = _ref3.partsEdomex,
+      info = _ref3.info;
+    if (parts) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
         children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-          style: {
-            gap: 4
-          },
-          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Vigencia:"
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
           }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Servicio:"
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Serie:"
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Regi\xF3n:"
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Documentos:"
+            style: styles.textHeader,
+            children: "Perfil privado 2"
           })]
         }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-          style: {
-            gap: 4
-          },
-          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
             style: {
-              textAlign: 'right'
+              gap: 4
             },
-            children: expirationDate
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Vigencia:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Servicio:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Serie:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Regi\xF3n:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Documentos:"
+            })]
+          }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
             style: {
-              textAlign: 'right'
+              gap: 4
             },
-            children: typeServiceText
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: {
-              textAlign: 'right'
-            },
-            children: serial
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: {
-              textAlign: 'right'
-            },
-            children: state
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: {
-              textAlign: 'right'
-            },
-            children: documents.join(', ')
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.expirationDate
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.typeServiceText
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.serial
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.state
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.documents.join(', ')
+            })]
           })]
         })]
-      })]
-    });
+      });
+    } else if (partsEdomex) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.textHeader,
+            children: "Perfil privado 2"
+          })]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Folio"
+            })
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.folio
+            })
+          })]
+        })]
+      });
+    } else if (info) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.textHeader,
+            children: "Perfil privado 2"
+          })]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Folio"
+            })
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "A20425223"
+            })
+          })]
+        })]
+      });
+    }
   };
   var BodyLevelOfClearanceB = function BodyLevelOfClearanceB(_ref4) {
-    var provider = _ref4.provider,
-      providerNumber = _ref4.providerNumber,
-      batch = _ref4.batch,
-      manufacturedYear = _ref4.manufacturedYear;
-    return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-      style: styles.body,
-      children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-        style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
-        children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
-          resizeMode: "contain",
-          source: _$$_REQUIRE(_dependencyMap[10]),
-          style: {
-            width: 16,
-            tintColor: 'white'
-          }
-        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-          style: styles.textHeader,
-          children: "Perfil privado 3"
-        })]
-      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-        style: styles.content,
+    var parts = _ref4.parts,
+      partsEdomex = _ref4.partsEdomex,
+      info = _ref4.info;
+    if (parts) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
         children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-          style: {
-            gap: 4
-          },
-          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Nombre del proveedor:"
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
           }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "N\xFAmero del proveedor:"
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Lote:"
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: styles.textNormal,
-            children: "Fecha de manufactura:"
+            style: styles.textHeader,
+            children: "Perfil privado 3"
           })]
         }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
-          style: {
-            gap: 4
-          },
-          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
             style: {
-              textAlign: 'right'
+              gap: 4
             },
-            children: provider
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Nombre del proveedor:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "N\xFAmero del proveedor:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Lote:"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Fecha de manufactura:"
+            })]
+          }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
             style: {
-              textAlign: 'right'
+              gap: 4
             },
-            children: providerNumber
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: {
-              textAlign: 'right'
-            },
-            children: batch
-          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
-            style: {
-              textAlign: 'right'
-            },
-            children: manufacturedYear
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.provider
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.providerNumber
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.batch
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: parts.manufacturedYear
+            })]
           })]
         })]
-      })]
-    });
+      });
+    } else if (partsEdomex) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.textHeader,
+            children: "Perfil privado 3"
+          })]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Nombre del proveedor"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "N\xFAmero del proveedor"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "No. lote"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Fecha de manufactura"
+            })]
+          }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.providerName
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.providerId != '26' ? '26' : '26'
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.batchNumber
+            }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: ["20", partsEdomex.manufacturedYear]
+            })]
+          })]
+        })]
+      });
+    } else if (info) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.textHeader,
+            children: "Perfil privado 3"
+          })]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Nombre del proveedor"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "N\xFAmero del proveedor"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "No. lote"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Fecha de manufactura"
+            })]
+          }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "Vifinsa"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "26"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "010"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "2025"
+            })]
+          })]
+        })]
+      });
+    }
+  };
+  var BodyLevelOfClearanceC = function BodyLevelOfClearanceC(_ref5) {
+    var parts = _ref5.parts,
+      partsEdomex = _ref5.partsEdomex,
+      navigation = _ref5.navigation,
+      info = _ref5.info;
+    if (parts) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
+        style: styles.containerButton,
+        children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableOpacity, {
+          onPress: function onPress() {
+            if (navigation) {
+              navigation.navigate('InfractionsScreen');
+            }
+          },
+          style: [styles.button, _theme.stylesTemplate.primaryColor],
+          children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.buttonText,
+            children: "Infracciones"
+          })
+        })
+      });
+    } else if (partsEdomex) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.textHeader,
+            children: "Perfil privado 4"
+          })]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Holograma"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Semestre del certificado"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "A\xF1o de vigencia"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Placa"
+            })]
+          }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.holo
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.semester
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.expirationDate
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: partsEdomex.serial
+            })]
+          })]
+        })]
+      });
+    } else if (info) {
+      return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        style: styles.body,
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: [styles.containerWithColor, _theme.stylesTemplate.primaryColor],
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+            resizeMode: "contain",
+            source: _$$_REQUIRE(_dependencyMap[11]),
+            style: {
+              width: 16,
+              tintColor: 'white'
+            }
+          }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+            style: styles.textHeader,
+            children: "Perfil privado 4"
+          })]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+          style: styles.content,
+          children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Holograma"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Semestre del certificado"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "A\xF1o de vigencia"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.textNormal,
+              children: "Placa"
+            })]
+          }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+            style: {
+              gap: 4
+            },
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "00"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "2"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "2025"
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: {
+                textAlign: 'right'
+              },
+              children: "AAA-000-A"
+            })]
+          })]
+        })]
+      });
+    }
   };
   var styles = _reactNative.StyleSheet.create({
     container: {

@@ -7,3 +7,4 @@ export * from './InfractionsScreen';
 export * from './DownloadSecretKeyScreen';
 export * from './LoginScreen';
 export * from './AndroidIdScreen';
+export * from './CameraTestScreen';

@@ -16,6 +16,17 @@ export interface Specs {
   url: string; //URL de la dependencia de gobierno
 }
 export type Parts = Specs & {
-  roleLevel: string;
   documents: string[];
 };
+export interface PartsEdomex {
+  url: string;
+  folio: string;
+  providerName: string;
+  providerId: string;
+  batchNumber: string;
+  manufacturedYear: string; //año de manufactura
+  holo: string; //Holograma
+  semester: string; //Semestre
+  expirationDate: string; //vigencia 20xx-20xx
+  serial: string; // Numeros-letras de la placa // serie de placa
+}

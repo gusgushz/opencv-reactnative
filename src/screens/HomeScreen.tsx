@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image, Text, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Image, Text, TouchableWithoutFeedback, Dimensions } from 'react-native';
 import { HomeScreenProps } from '../navigation/NavigationProps';
 import { stylesTemplate } from '../theme';
 import { RoleLevels } from '../globalVariables';
-// import { useUserContext } from '../contexts/UserContext.tsx';
 import { SECURITY_LEVEL } from 'dotenv';
 import { UserSession } from '../models';
-import { getUser, getUserSession, removeUser, removeUserSession, storeUserSession } from '../utils';
+import { getUserSession, removeUser, removeUserSession, storeUserSession } from '../utils';
 import { useIsFocused } from '@react-navigation/native';
 
+const { height } = Dimensions.get('window');
+
 export const HomeScreen = ({ navigation }: HomeScreenProps) => {
-  // const { setUser, setUserSession, userSession } = useUserContext();
   const [count, setCount] = useState<number>(0);
   const [userSession, setUserSession] = useState<UserSession | null>(getUserSession());
   const isFocused = useIsFocused();
@@ -44,7 +44,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
             }
           }
         }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
+        <Image source={require('../../assets/logohome.png')} resizeMode="contain" style={styles.image} />
       </TouchableWithoutFeedback>
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
@@ -85,7 +85,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
                   navigation.navigate('LoginScreen');
                 }}
                 style={[styles.button, stylesTemplate.primaryColor]}>
-                <Text style={styles.buttonText}>Iniciar Sesión</Text>
+                <Text style={styles.buttonText}>Iniciar sesión</Text>
               </TouchableOpacity>
             )}
           </>
@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   buttonsContainer: { width: '100%', gap: 10 },
+  image: { marginBottom: 30, marginTop: 16, height: height * 0.25 },
   button: {
     marginHorizontal: 12,
     paddingVertical: 12,

@@ -67,7 +67,7 @@ export const DownloadSecretKeyScreen = () => {
 
   return (
     <View style={[styles.container, stylesTemplate.screenBgColor]}>
-      <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
+      <Image source={require('../../assets/logohome.png')} resizeMode="contain" style={{ marginBottom: 16 }} />
       <TextInput
         style={styles.input}
         value={url}
@@ -97,8 +97,8 @@ export const DownloadSecretKeyScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 30,
   },
   input: {

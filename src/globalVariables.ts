@@ -5,7 +5,8 @@ export enum RoleLevels {
   THREE = '4',
 }
 
-export const sufix = 'ddt131';
+export const sufix = 'MEX010';
+export const isDemo = false;
 
 const regions: string[] = [
   'AGUASCALIENTES',

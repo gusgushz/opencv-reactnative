@@ -3,15 +3,15 @@
     value: true
   });
   exports.CameraScreen = undefined;
-  var _toConsumableArray2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[1]));
-  var _asyncToGenerator2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[2]));
-  var _slicedToArray2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[3]));
-  var _react = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[4]));
-  var _reactNative = _$$_REQUIRE(_dependencyMap[5]);
-  var _utils = _$$_REQUIRE(_dependencyMap[6]);
-  var _theme = _$$_REQUIRE(_dependencyMap[7]);
-  var _reactNativeAdvancedCheckbox = _$$_REQUIRE(_dependencyMap[8]);
-  var _globalVariables = _$$_REQUIRE(_dependencyMap[9]);
+  var _asyncToGenerator2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[1]));
+  var _slicedToArray2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[2]));
+  var _react = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[3]));
+  var _reactNative = _$$_REQUIRE(_dependencyMap[4]);
+  var _utils = _$$_REQUIRE(_dependencyMap[5]);
+  var _theme = _$$_REQUIRE(_dependencyMap[6]);
+  var _reactNativeAdvancedCheckbox = _$$_REQUIRE(_dependencyMap[7]);
+  var _globalVariables = _$$_REQUIRE(_dependencyMap[8]);
+  var _ScanContext = _$$_REQUIRE(_dependencyMap[9]);
   var _jsxRuntime = _$$_REQUIRE(_dependencyMap[10]);
   function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -34,6 +34,11 @@
       _useState4 = (0, _slicedToArray2.default)(_useState3, 2),
       services = _useState4[0],
       setServices = _useState4[1];
+    var _useScanContext = (0, _ScanContext.useScanContext)(),
+      setParts = _useScanContext.setParts,
+      setPartsEdomex = _useScanContext.setPartsEdomex,
+      parts = _useScanContext.parts,
+      partsEdomex = _useScanContext.partsEdomex;
 
     // Solo para iOS: header personalizado por tema de la animación de la pantalla
     (0, _react.useEffect)(function () {
@@ -141,81 +146,60 @@
             if (res && res.length > 0) {
               // Si es un código nuevo (diferente al último escaneado)
               if (res !== lastScannedRef.current) {
-                var _lastScannedRef$curre, _lastScannedRef$curre2;
-                _reactNative.Vibration.vibrate(100);
-                var parts = res.split('_');
-                var serviceName = findServiceName(parts[5], parts[7]);
-                var documents = [];
-                if (hasFrontal) documents.push('Frontal');
-                if (hasRear) documents.push('Trasera');
-                if (hasEngomado) documents.push('Engomado');
-                var updatedInfo = {
-                  roleLevel: roleLevel,
-                  version: parts[0],
-                  codeType: parts[1],
-                  chainLength: parts[2],
-                  permissionLevel: parts[3],
-                  serial: parts[4],
-                  typeServiceId: parts[5],
-                  typeServiceText: serviceName,
-                  state: parts[7],
-                  batch: parts[8],
-                  provider: parts[9],
-                  providerNumber: parts[10],
-                  expirationDate: parts[11],
-                  manufacturedYear: parts[12],
-                  url: parts[13],
-                  documents: documents
-                };
-                console.log('parts:', JSON.stringify(parts));
-                console.log('updatedInfo:', JSON.stringify(updatedInfo));
-                if (roleLevel === _globalVariables.RoleLevels.ZERO) {
-                  navigateToInformationScreen(updatedInfo);
+                var pts;
+                if (res.includes('XD')) {
+                  _reactNative.Vibration.vibrate(100);
+                  navigateToInformationScreen(res);
                 }
-                var newCheckBoxes = (0, _toConsumableArray2.default)(checkBoxes);
-                var isSamePlate = res.split('_')[4] === ((_lastScannedRef$curre = lastScannedRef.current) == null ? undefined : _lastScannedRef$curre.split('_')[4]);
-                console.log('lastScannedRef.current', (_lastScannedRef$curre2 = lastScannedRef.current) == null ? undefined : _lastScannedRef$curre2.split('_')[4]);
-                console.log('res', res.split('_')[4]);
-                console.log('isSamePlate', isSamePlate);
-                if (!isSamePlate) {
-                  newCheckBoxes = [false, false, false];
-                  setCheckBoxes(newCheckBoxes);
+                if (res.includes('|')) {
+                  _reactNative.Vibration.vibrate(100);
+                  pts = res.split('|');
+                  //NOTE:Informacion hardcodeada para Edomex
+                  setPartsEdomex({
+                    url: 'https://edomex.gob.mx/',
+                    folio: pts[0],
+                    providerName: 'VIFINSA',
+                    providerId: pts[1],
+                    batchNumber: pts[2],
+                    manufacturedYear: pts[3].slice(0, 2),
+                    holo: '00',
+                    semester: '2',
+                    expirationDate: '2025',
+                    serial: 'AAA-000-A'
+                  });
+                  console.log('parts*************:', JSON.stringify(pts));
+                  lastScannedRef.current = res; // Actualiza el último código escaneado
+                  navigateToInformationScreen();
                 }
-                switch (updatedInfo.codeType) {
-                  case 'Trasero':
-                    newCheckBoxes[0] = true;
-                    break;
-                  case 'Delantero':
-                    newCheckBoxes[1] = true;
-                    break;
-                  case 'Engomado':
-                    newCheckBoxes[2] = true;
-                    break;
-                }
-                setCheckBoxes(newCheckBoxes);
-                lastScannedRef.current = res; // Actualiza el último código escaneado
-
-                // if (roleLevel === RoleLevels.ONE && newCheckBoxes[1]) {
-                //   navigateToInformationScreen(updatedInfo);
-                // } else if (roleLevel === RoleLevels.TWO && newCheckBoxes[0] && newCheckBoxes[1]) {
-                //   navigateToInformationScreen(updatedInfo);
-                // } else if (
-                //   roleLevel === RoleLevels.THREE
-                //   //&& newCheckBoxes.every(v => v) //FIXME:
-                // ) {
+                //TODO: Oculto ya que esta rama (EDOMEX) no necesita escanera placas
+                // else {
+                //   pts = res.split('_');
+                //   const serviceName = findServiceName(pts[5], pts[7]);
+                //   let documents: string[] = [];
+                //   if (hasFrontal) documents.push('Frontal');
+                //   if (hasRear) documents.push('Trasera');
+                //   if (hasEngomado) documents.push('Engomado');
+                //   const updatedInfo: Parts = {
+                //     version: pts[0],
+                //     codeType: pts[1],
+                //     chainLength: pts[2],
+                //     permissionLevel: pts[3],
+                //     serial: pts[4],
+                //     typeServiceId: pts[5],
+                //     typeServiceText: serviceName,
+                //     state: pts[7],
+                //     batch: pts[8],
+                //     provider: pts[9],
+                //     providerNumber: pts[10],
+                //     expirationDate: pts[11],
+                //     manufacturedYear: pts[12],
+                //     url: pts[13],
+                //     documents: documents,
+                //   };
+                //   setParts(updatedInfo);
+                //   console.log('parts:', JSON.stringify(pts));
+                //   console.log('updatedInfo:', JSON.stringify(updatedInfo));
                 // }
-                if (hasRear && hasFrontal && hasEngomado) {
-                  if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen(updatedInfo);
-                }
-                if (hasRear && hasFrontal && !hasEngomado) {
-                  if (newCheckBoxes[0] && newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-                }
-                if (hasFrontal && !hasEngomado && !hasRear) {
-                  if (newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-                }
-                if (hasRear && !hasFrontal && !hasEngomado) {
-                  if (newCheckBoxes[0]) navigateToInformationScreen(updatedInfo);
-                }
               }
             }
           } catch (err) {
@@ -231,36 +215,32 @@
         if (intervalRef.current) clearInterval(intervalRef.current);
       };
     }, [checkBoxes]);
-    var findServiceName = function findServiceName(typeServiceId, state) {
-      var _service$parent_servi;
-      var stateId = (0, _globalVariables.stateNameToId)(state);
-      var service = services.find(function (service) {
-        return service.service_db_id.toString() === typeServiceId && service.state_id === stateId;
-      });
-      return (_service$parent_servi = service == null ? undefined : service.parent_service_name) != null ? _service$parent_servi : 'No se encontró el servicio';
-    };
     var navigateToInformationScreen = /*#__PURE__*/function () {
-      var _ref6 = (0, _asyncToGenerator2.default)(function* (parts) {
+      var _ref6 = (0, _asyncToGenerator2.default)(function* (info) {
         yield (0, _utils.closeCamera)();
-        console.log('Navigating to InformationScreen with parts:', parts);
-        navigation.navigate('InformationScreen', {
+        navigation.navigate('InformationScreen',
+        //{
+        {
           roleLevel: roleLevel,
-          version: parts.version,
-          codeType: parts.codeType,
-          chainLength: parts.chainLength,
-          permissionLevel: parts.permissionLevel,
-          serial: parts.serial,
-          typeServiceId: parts.typeServiceId,
-          typeServiceText: parts.typeServiceText,
-          state: parts.state,
-          batch: parts.batch,
-          provider: parts.provider,
-          providerNumber: parts.providerNumber,
-          expirationDate: parts.expirationDate,
-          manufacturedYear: parts.manufacturedYear,
-          url: parts.url,
-          documents: parts.documents
-        });
+          info: info != null ? info : ''
+        }
+        //   version: parts.version,
+        //   codeType: parts.codeType,
+        //   chainLength: parts.chainLength,
+        //   permissionLevel: parts.permissionLevel,
+        //   serial: parts.serial,
+        //   typeServiceId: parts.typeServiceId,
+        //   typeServiceText: parts.typeServiceText,
+        //   state: parts.state,
+        //   batch: parts.batch,
+        //   provider: parts.provider,
+        //   providerNumber: parts.providerNumber,
+        //   expirationDate: parts.expirationDate,
+        //   manufacturedYear: parts.manufacturedYear,
+        //   url: parts.url,
+        //   documents: parts.documents,
+        // }
+        );
       });
       return function navigateToInformationScreen(_x2) {
         return _ref6.apply(this, arguments);
@@ -279,8 +259,6 @@
       label: 'Engomado identificado',
       isChecked: checkBoxes[2]
     }];
-    //info[1] = "Delantero"  "Trasero"  "Engomado"
-
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
       children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
@@ -291,21 +269,11 @@
           paddingVertical: 68,
           gap: 10
         },
-        children: checkboxesData.map(function (checkbox) {
-          return /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNativeAdvancedCheckbox.AdvancedCheckbox, {
-            value: checkbox.isChecked,
-            label: checkbox.label,
-            checkedColor: "#8F0F40",
-            uncheckedColor: "#747272",
-            size: 24,
-            checkBoxStyle: {
-              borderRadius: 24
-            },
-            labelStyle: {
-              color: checkbox.isChecked ? '#8F0F40' : '#747272'
-            },
-            animationType: "fade"
-          }, checkbox.id);
+        children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNativeAdvancedCheckbox.AdvancedCheckbox, {
+          label: 'Escanear código',
+          checkedColor: "#8F0F40",
+          uncheckedColor: "#747272",
+          size: 24
         })
       })]
     });
