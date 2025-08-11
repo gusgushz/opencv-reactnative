@@ -218,29 +218,10 @@
     var navigateToInformationScreen = /*#__PURE__*/function () {
       var _ref6 = (0, _asyncToGenerator2.default)(function* (info) {
         yield (0, _utils.closeCamera)();
-        navigation.navigate('InformationScreen',
-        //{
-        {
+        navigation.navigate('InformationScreen', {
           roleLevel: roleLevel,
           info: info != null ? info : ''
-        }
-        //   version: parts.version,
-        //   codeType: parts.codeType,
-        //   chainLength: parts.chainLength,
-        //   permissionLevel: parts.permissionLevel,
-        //   serial: parts.serial,
-        //   typeServiceId: parts.typeServiceId,
-        //   typeServiceText: parts.typeServiceText,
-        //   state: parts.state,
-        //   batch: parts.batch,
-        //   provider: parts.provider,
-        //   providerNumber: parts.providerNumber,
-        //   expirationDate: parts.expirationDate,
-        //   manufacturedYear: parts.manufacturedYear,
-        //   url: parts.url,
-        //   documents: parts.documents,
-        // }
-        );
+        });
       });
       return function navigateToInformationScreen(_x2) {
         return _ref6.apply(this, arguments);

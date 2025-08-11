@@ -1,7 +1,7 @@
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.storeUsersData = exports.storeUserSession = exports.storeUser = exports.storeToken = exports.storeServices = exports.storeLastValidateTokenDate = exports.storeKey = exports.storeIsFirstLogin = exports.removeUsersData = exports.removeUserSession = exports.removeUser = exports.removeToken = exports.removeServices = exports.removeLastValidateTokenDate = exports.removeKey = exports.removeAll = exports.getUsersData = exports.getUserSession = exports.getUser = exports.getToken = exports.getServices = exports.getLastValidateTokenDate = exports.getKey = exports.getIsFirstLogin = undefined;
+  exports.storeUsersData = exports.storeUserSession = exports.storeUser = exports.storeToken = exports.storeServices = exports.storeLastValidateTokenDate = exports.storeKey = exports.storeIsFirstLogin = exports.storeDaysDifference = exports.removeUsersData = exports.removeUserSession = exports.removeUser = exports.removeToken = exports.removeServices = exports.removeLastValidateTokenDate = exports.removeKey = exports.removeAll = exports.getUsersData = exports.getUserSession = exports.getUser = exports.getToken = exports.getServices = exports.getLastValidateTokenDate = exports.getKey = exports.getIsFirstLogin = exports.getDaysDifference = undefined;
   var _reactNativeMmkv = _$$_REQUIRE(_dependencyMap[0]);
   var storage = new _reactNativeMmkv.MMKV();
   var storeUserSession = exports.storeUserSession = function storeUserSession(userSession) {
@@ -141,6 +141,19 @@
   var removeLastValidateTokenDate = exports.removeLastValidateTokenDate = function removeLastValidateTokenDate() {
     console.log('Removing date');
     storage.delete('date');
+  };
+  var storeDaysDifference = exports.storeDaysDifference = function storeDaysDifference(diff) {
+    console.log('Storing days diff:', diff);
+    storage.set('diff', JSON.stringify(diff));
+  };
+  var getDaysDifference = exports.getDaysDifference = function getDaysDifference() {
+    var diff = storage.getString('diff');
+    if (diff === undefined) {
+      return null;
+    } else {
+      console.log('Getting date:', JSON.parse(diff));
+      return JSON.parse(diff);
+    }
   };
   var removeAll = exports.removeAll = function removeAll() {
     storage.clearAll();

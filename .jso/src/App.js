@@ -12,10 +12,12 @@
   var _screens = _$$_REQUIRE(_dependencyMap[7]);
   var _utils = _$$_REQUIRE(_dependencyMap[8]);
   var _app = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[9]));
-  var _api = _$$_REQUIRE(_dependencyMap[10]);
-  var _ScanContext = _$$_REQUIRE(_dependencyMap[11]);
-  var Sentry = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[12]));
-  var _jsxRuntime = _$$_REQUIRE(_dependencyMap[13]);
+  var RNFS = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[10]));
+  var _api = _$$_REQUIRE(_dependencyMap[11]);
+  var _ScanContext = _$$_REQUIRE(_dependencyMap[12]);
+  var _globalVariables = _$$_REQUIRE(_dependencyMap[13]);
+  var Sentry = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[14]));
+  var _jsxRuntime = _$$_REQUIRE(_dependencyMap[15]);
   function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
   var OpenCVWrapper = _reactNative.NativeModules.OpenCVWrapper,
@@ -69,91 +71,94 @@
         }
         console.log('SECURITY_LEVEL actual:', "private");
         {
-          // const exists = await RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
-          // console.log('exists', exists);
-          // //removeToken();
-          // if (exists) {
-          //   const androidId = (await OpencvFunc.getAndroidId()) + sufix;
-          //   const token = getToken() ?? '';
-          //   const content = await RNFS.readFile(`${RNFS.ExternalDirectoryPath}/secretKey.dat`, 'utf8');
-          //   const keyDecoded = base64Decode(content);
-          //   const key = getKey() ?? '';
-          //   const chain = base64Encode(key + '.' + androidId);
-          //   const today = new Date();
-
-          //   console.log('androidId', androidId);
-          //   console.log('token', token);
-          //   console.log('content', content);
-          //   console.log('keyDecoded', keyDecoded);
-          //   console.log('chain', chain);
-          //   if (token != '') {
-          //     if (key === keyDecoded) {
-          //       console.log(key === keyDecoded);
-          //       const dateRaw = getLastValidateTokenDate();
-          //       const date = dateRaw ? new Date(dateRaw) : null;
-          //       const response = await postValidateToken(chain, token);
-          //       console.log('response postValidateToken', response);
-          //       if (response.status === 'error' && response.message === 'Error de red') {
-          //         if (date) {
-          //           console.log('getLastValidateTokenDate', date.toLocaleDateString());
-          //           const daysDifference = (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24);
-          //           if (daysDifference <= 7) {
-          //             console.log('diferencia de días', daysDifference);
-          //             isPermissionGranted = true;
-          //             return;
-          //           }
-          //         }
-          //         await OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
-          //         return;
-          //       }
-          //       if (response.status === 'success') {
-          //         storeLastValidateTokenDate(today);
-          //         isPermissionGranted = true;
-          //         return;
-          //       }
-          //     }
-          //   } else {
-          //     console.log('No hay token, se procede a registrar la clave');
-          //     let isKeyRegistered: boolean = false;
-          //     let isKeyAlreadyRegistered: boolean = false;
-          //     const response = await postKeyActivation(androidId, keyDecoded);
-          //     console.log('response postKeyActivation', response);
-          //     if (response.status === 'error') {
-          //       if (response.data == 'key is already active') isKeyAlreadyRegistered = true;
-          //     }
-          //     if (response.status === 'success') isKeyRegistered = true;
-          //     if (isKeyAlreadyRegistered) {
-          //       // console.log('isKeyAlreadyRegistered****', chain);
-          //       // const res = await getRecoverToken(chain);
-          //       // console.log('res isKeyAlreadyRegistered', res);
-          //       // if (res.status === 'success') {
-          //       //   storeLastValidateTokenDate(today);
-          //       //   storeToken(res.authToken);
-          //       //   isPermissionGranted = true;
-          //       //   return;
-          //       // }
-          //       console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
-          //       storeLastValidateTokenDate(today);
-          //       isPermissionGranted = true; //FIXME: se dejo en true para pruebas
-          //     }
-          //     if (isKeyRegistered) {
-          //       const res = await postAuthenticateDevice(chain);
-          //       console.log('res isKeyRegistered****', res);
-          //       console.log('res isKeyRegistered res.authToken****', res.authToken);
-          //       if (res.status === 'success') {
-          //         storeLastValidateTokenDate(today);
-          //         storeToken(res.authToken);
-          //         isPermissionGranted = true;
-          //         return;
-          //       }
-          //     }
-          //   }
-          // } else {
-          //   isPermissionGranted = true;
-          //   return;
-          // }
-          // console.log('isPermissionGranted', isPermissionGranted);
-          // if (!isPermissionGranted) await OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
+          var exists = yield RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
+          console.log('exists', exists);
+          //removeToken();
+          if (exists) {
+            var _getToken, _getKey;
+            var androidId = (yield OpencvFunc.getAndroidId()) + _globalVariables.sufix;
+            var token = (_getToken = (0, _utils.getToken)()) != null ? _getToken : '';
+            var content = yield RNFS.readFile(`${RNFS.ExternalDirectoryPath}/secretKey.dat`, 'utf8');
+            var keyDecoded = (0, _utils.base64Decode)(content);
+            var key = (_getKey = (0, _utils.getKey)()) != null ? _getKey : '';
+            var chain = (0, _utils.base64Encode)(key + '.' + androidId);
+            var today = new Date();
+            console.log('androidId', androidId);
+            console.log('token', token);
+            console.log('content', content);
+            console.log('keyDecoded', keyDecoded);
+            console.log('chain', chain);
+            if (token != '') {
+              if (key === keyDecoded) {
+                console.log(key === keyDecoded);
+                var dateRaw = (0, _utils.getLastValidateTokenDate)();
+                console.log('dateRaw', dateRaw);
+                var date = dateRaw ? new Date(dateRaw) : null;
+                console.log('date', date);
+                var response = yield (0, _api.postValidateToken)(chain, token);
+                console.log('response postValidateToken', response);
+                if (response.status === 'error' && response.message === 'Error de red') {
+                  if (date) {
+                    console.log('getLastValidateTokenDate', date.toLocaleDateString());
+                    var daysDifference = (today.getTime() - date.getTime()) / 86400000;
+                    (0, _utils.storeDaysDifference)(daysDifference);
+                    if (daysDifference <= 7) {
+                      console.log('diferencia de días', daysDifference);
+                      isPermissionGranted = true;
+                      return;
+                    }
+                  }
+                  yield OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
+                  return;
+                }
+                if (response.status === 'success') {
+                  (0, _utils.storeLastValidateTokenDate)(today);
+                  isPermissionGranted = true;
+                  return;
+                }
+              }
+            } else {
+              console.log('No hay token, se procede a registrar la clave');
+              var isKeyRegistered = false;
+              var isKeyAlreadyRegistered = false;
+              var _response = yield (0, _api.postKeyActivation)(androidId, keyDecoded);
+              console.log('response postKeyActivation', _response);
+              if (_response.status === 'error') {
+                if (_response.data == 'key is already active') isKeyAlreadyRegistered = true;
+              }
+              if (_response.status === 'success') isKeyRegistered = true;
+              if (isKeyAlreadyRegistered) {
+                // console.log('isKeyAlreadyRegistered****', chain);
+                // const res = await getRecoverToken(chain);
+                // console.log('res isKeyAlreadyRegistered', res);
+                // if (res.status === 'success') {
+                //   storeLastValidateTokenDate(today);
+                //   storeToken(res.authToken);
+                //   isPermissionGranted = true;
+                //   return;
+                // }
+                console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
+                (0, _utils.storeLastValidateTokenDate)(today);
+                isPermissionGranted = true; //FIXME: se dejo en true para pruebas
+              }
+              if (isKeyRegistered) {
+                var res = yield (0, _api.postAuthenticateDevice)(chain);
+                console.log('res isKeyRegistered****', res);
+                console.log('res isKeyRegistered res.authToken****', res.authToken);
+                if (res.status === 'success') {
+                  (0, _utils.storeLastValidateTokenDate)(today);
+                  (0, _utils.storeToken)(res.authToken);
+                  isPermissionGranted = true;
+                  return;
+                }
+              }
+            }
+          } else {
+            isPermissionGranted = true;
+            return;
+          }
+          console.log('isPermissionGranted', isPermissionGranted);
+          if (!isPermissionGranted) yield OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
         }
       });
       return function init() {
@@ -193,9 +198,9 @@
   var _default = exports.default = Sentry.wrap(App);
   var Stack = (0, _nativeStack.createNativeStackNavigator)();
   var MyStack = function MyStack() {
-    var _getKey;
+    var _getKey2;
     var exists = false;
-    var key = (_getKey = (0, _utils.getKey)()) != null ? _getKey : '';
+    var key = (_getKey2 = (0, _utils.getKey)()) != null ? _getKey2 : '';
     if (key !== '') exists = true;
     return /*#__PURE__*/(0, _jsxRuntime.jsx)(_native.NavigationContainer, {
       children: /*#__PURE__*/(0, _jsxRuntime.jsxs)(Stack.Navigator, {

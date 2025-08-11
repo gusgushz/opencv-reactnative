@@ -70,8 +70,8 @@
         if (roleLevel == '3') return setVisibilityLevels([true, true, false]);
         if (roleLevel == '4') return setVisibilityLevels([true, true, true]);
       };
-      handleVisibilityLevels(roleLevel);
       console.log('roleLevel:', roleLevel);
+      handleVisibilityLevels(roleLevel);
     }, [roleLevel]);
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],

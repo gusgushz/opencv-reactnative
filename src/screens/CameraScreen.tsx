@@ -108,13 +108,13 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
           // Si es un código nuevo (diferente al último escaneado)
           if (res !== lastScannedRef.current) {
             let pts;
-            if (res.includes('XD')) { 
+            if (res.includes('XD')) {
               Vibration.vibrate(100);
               navigateToInformationScreen(res);
             }
             if (res.includes('|')) {
               Vibration.vibrate(100);
-              
+
               pts = res.split('|');
               //NOTE:Informacion hardcodeada para Edomex
               setPartsEdomex({
@@ -186,29 +186,9 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     return service?.parent_service_name ?? 'No se encontró el servicio';
   };
 
-  const navigateToInformationScreen = async (info?:string) => {
+  const navigateToInformationScreen = async (info?: string) => {
     await closeCamera();
-    navigation.navigate(
-      'InformationScreen',
-      //{
-      { roleLevel: roleLevel, info: info ?? '',},
-      //   version: parts.version,
-      //   codeType: parts.codeType,
-      //   chainLength: parts.chainLength,
-      //   permissionLevel: parts.permissionLevel,
-      //   serial: parts.serial,
-      //   typeServiceId: parts.typeServiceId,
-      //   typeServiceText: parts.typeServiceText,
-      //   state: parts.state,
-      //   batch: parts.batch,
-      //   provider: parts.provider,
-      //   providerNumber: parts.providerNumber,
-      //   expirationDate: parts.expirationDate,
-      //   manufacturedYear: parts.manufacturedYear,
-      //   url: parts.url,
-      //   documents: parts.documents,
-      // }
-    );
+    navigation.navigate('InformationScreen', { roleLevel: roleLevel, info: info ?? '' });
   };
 
   const checkboxesData = [
@@ -222,19 +202,6 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
       <View style={styles.void}></View>
       <View style={{ paddingHorizontal: 34, paddingVertical: 68, gap: 10 }}>
         <AdvancedCheckbox label={'Escanear código'} checkedColor="#8F0F40" uncheckedColor="#747272" size={24}></AdvancedCheckbox>
-        {/* {checkboxesData.map(checkbox => (
-          <AdvancedCheckbox
-            key={checkbox.id}
-            value={checkbox.isChecked}
-            label={checkbox.label}
-            checkedColor="#8F0F40"
-            uncheckedColor="#747272"
-            size={24}
-            checkBoxStyle={{ borderRadius: 24 }}
-            labelStyle={{ color: checkbox.isChecked ? '#8F0F40' : '#747272' }}
-            animationType="fade"
-          />
-        ))} */}
       </View>
     </View>
   );

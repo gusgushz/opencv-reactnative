@@ -3,19 +3,22 @@
     value: true
   });
   exports.HomeScreen = undefined;
-  var _slicedToArray2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[1]));
-  var _react = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[2]));
-  var _reactNative = _$$_REQUIRE(_dependencyMap[3]);
-  var _theme = _$$_REQUIRE(_dependencyMap[4]);
-  var _globalVariables = _$$_REQUIRE(_dependencyMap[5]);
-  var _utils = _$$_REQUIRE(_dependencyMap[6]);
-  var _native = _$$_REQUIRE(_dependencyMap[7]);
-  var _jsxRuntime = _$$_REQUIRE(_dependencyMap[8]);
+  var _asyncToGenerator2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[1]));
+  var _slicedToArray2 = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[2]));
+  var _react = _interopRequireWildcard(_$$_REQUIRE(_dependencyMap[3]));
+  var _reactNative = _$$_REQUIRE(_dependencyMap[4]);
+  var _theme = _$$_REQUIRE(_dependencyMap[5]);
+  var _globalVariables = _$$_REQUIRE(_dependencyMap[6]);
+  var _utils = _$$_REQUIRE(_dependencyMap[7]);
+  var _native = _$$_REQUIRE(_dependencyMap[8]);
+  var _jsxRuntime = _$$_REQUIRE(_dependencyMap[9]);
   function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+  var OpencvFunc = _reactNative.NativeModules.OpencvFunc;
   var _Dimensions$get = _reactNative.Dimensions.get('window'),
     height = _Dimensions$get.height;
   var HomeScreen = exports.HomeScreen = function HomeScreen(_ref) {
+    var _getToken, _getKey;
     var navigation = _ref.navigation;
     var _useState = (0, _react.useState)(0),
       _useState2 = (0, _slicedToArray2.default)(_useState, 2),
@@ -26,6 +29,24 @@
       userSession = _useState4[0],
       setUserSession = _useState4[1];
     var isFocused = (0, _native.useIsFocused)();
+    var getInfo = /*#__PURE__*/function () {
+      var _ref2 = (0, _asyncToGenerator2.default)(function* () {
+        var androidId = yield OpencvFunc.getAndroidId();
+        console.log('Android ID:', androidId);
+        setAndroidId(androidId + _globalVariables.sufix);
+      });
+      return function getInfo() {
+        return _ref2.apply(this, arguments);
+      };
+    }();
+    var _useState5 = (0, _react.useState)(''),
+      _useState6 = (0, _slicedToArray2.default)(_useState5, 2),
+      androidId = _useState6[0],
+      setAndroidId = _useState6[1];
+    var token = (_getToken = (0, _utils.getToken)()) != null ? _getToken : '';
+    var key = (_getKey = (0, _utils.getKey)()) != null ? _getKey : '';
+    var chain = (0, _utils.base64Encode)(key + '.' + androidId);
+    var daysDiff = (0, _utils.getDaysDifference)();
     (0, _react.useEffect)(function () {
       if (!userSession) {
         {
@@ -38,6 +59,7 @@
           setUserSession(userSecurityLevelRole);
         }
       }
+      getInfo();
     }, [isFocused]);
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
@@ -52,7 +74,7 @@
           }
         },
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
-          source: _$$_REQUIRE(_dependencyMap[9]),
+          source: _$$_REQUIRE(_dependencyMap[10]),
           resizeMode: "contain",
           style: styles.image
         })
@@ -76,6 +98,21 @@
             children: "Escanear c\xF3digo"
           })
         }), false]
+      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.Text, {
+        style: styles.text,
+        children: ["Key ", key]
+      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.Text, {
+        style: styles.text,
+        children: ["AndroidId ", androidId]
+      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.Text, {
+        style: styles.text,
+        children: ["Chain ", chain]
+      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.Text, {
+        style: styles.text,
+        children: ["D\xEDas desde la \xFAltima validaci\xF3n: ", daysDiff]
+      }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.Text, {
+        style: styles.text,
+        children: ["Token: ", token]
       })]
     });
   };

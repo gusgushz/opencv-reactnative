@@ -163,6 +163,20 @@ export const removeLastValidateTokenDate = () => {
   storage.delete('date');
 };
 
+export const storeDaysDifference = (diff: number) => {
+  console.log('Storing days diff:', diff);
+  storage.set('diff', JSON.stringify(diff));
+};
+export const getDaysDifference = () => {
+  const diff = storage.getString('diff');
+  if (diff === undefined) {
+    return null;
+  } else {
+    console.log('Getting date:', JSON.parse(diff));
+    return JSON.parse(diff) as number;
+  }
+};
+
 export const removeAll = () => {
   storage.clearAll();
 };

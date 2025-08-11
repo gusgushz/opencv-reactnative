@@ -20,6 +20,7 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
       setLink('Error al cargar la URL');
     }
   };
+
   useEffect(() => {
     if (parts) {
       fetchLink(parts.url);
@@ -49,8 +50,8 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
       if (roleLevel == '3') return setVisibilityLevels([true, true, false]);
       if (roleLevel == '4') return setVisibilityLevels([true, true, true]);
     };
-    handleVisibilityLevels(roleLevel);
     console.log('roleLevel:', roleLevel);
+    handleVisibilityLevels(roleLevel);
   }, [roleLevel]);
 
   return (

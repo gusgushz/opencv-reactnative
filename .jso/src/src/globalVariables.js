@@ -9,7 +9,7 @@
     RoleLevels["THREE"] = "4";
     return RoleLevels;
   }({});
-  var sufix = exports.sufix = 'MEX010';
+  var sufix = exports.sufix = 'MEX014';
   var isDemo = exports.isDemo = false;
   var regions = ['AGUASCALIENTES', 'BAJA CALIFORNIA', 'BAJA CALIFORNIA SUR', 'CAMPECHE', 'CHIAPAS', 'CHIHUAHUA', 'CIUDAD DE MEXICO', 'COAHUILA', 'COLIMA', 'DURANGO', 'GUANAJUATO', 'GUERRERO', 'HIDALGO', 'JALISCO', 'MEXICO', 'MICHOACAN', 'MORELOS', 'NAYARIT', 'NUEVO LEON', 'OAXACA', 'PUEBLA', 'QUERETARO', 'QUINTANA ROO', 'SAN LUIS POTOSI', 'SINALOA', 'SONORA', 'TABASCO', 'TAMAULIPAS', 'TLAXCALA', 'VERACRUZ', 'YUCATAN', 'ZACATECAS', 'BELIZE', 'CAYO', 'COROZAL', 'ORANGE WALK', 'STANN CREEK', 'TOLEDO'];
   var stateNameToId = exports.stateNameToId = function stateNameToId(state) {
