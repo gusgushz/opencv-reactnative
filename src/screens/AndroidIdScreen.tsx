@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, NativeModules, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { Text, View, NativeModules, StyleSheet, TouchableOpacity, ToastAndroid } from 'react-native';
 import { stylesTemplate } from '../theme';
 import { sufix } from '../globalVariables';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -23,6 +23,7 @@ export const AndroidIdScreen = () => {
   }, []);
 
   const copyToClipboard = (androidId: string) => {
+    ToastAndroid.show('Copiado al portapapeles', ToastAndroid.SHORT);
     Clipboard.setString(androidId);
   };
 

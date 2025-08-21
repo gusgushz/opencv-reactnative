@@ -33,7 +33,7 @@
       manufacturedYear = _route$params.manufacturedYear,
       url = _route$params.url,
       documents = _route$params.documents;
-    var _useState = (0, _react.useState)('Cargando url...'),
+    var _useState = (0, _react.useState)(url),
       _useState2 = (0, _slicedToArray2.default)(_useState, 2),
       link = _useState2[0],
       setLink = _useState2[1];

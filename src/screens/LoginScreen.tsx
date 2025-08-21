@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, TextInput, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, TextInput, Text, KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
 import { stylesTemplate } from '../theme';
 import { LoginScreenProps } from '../navigation/NavigationProps';
 // import { useUserContext } from '../contexts/UserContext.tsx';
 import { UserSession } from '../models';
 import { getUsersData, readableString, storeUser, storeUserSession } from '../utils';
+
+const { height } = Dimensions.get('window');
 
 export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   // const { setUser, setUserSession } = useUserContext();
@@ -44,6 +46,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.container, stylesTemplate.screenBgColor]}>
       <View style={{ width: '100%', gap: 24 }}>
+        <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ width: '100%', height: height * 0.2 }} />
         <View style={{ gap: 4 }}>
           <Text style={styles.title}>Correo</Text>
           <TextInput
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     paddingHorizontal: 30,
     gap: 16,
     paddingBottom: 50,

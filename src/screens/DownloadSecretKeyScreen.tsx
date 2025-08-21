@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, NativeModules, Image } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, NativeModules, Image, TouchableWithoutFeedback } from 'react-native';
 import { stylesTemplate } from '../theme';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import { base64Decode, removeToken, storeKey } from '../utils';
+import { SECURITY_LEVEL } from 'dotenv';
+import { DownloadSecretKeyScreenProps } from '../navigation/NavigationProps';
 const { OpencvFunc } = NativeModules;
 
-export const DownloadSecretKeyScreen = () => {
+export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenProps) => {
   const [url, setUrl] = useState<string>('');
   const [exists, setExists] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [warning, setWarning] = useState<string>('');
+  const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
     const checkFileExists = async () => {
@@ -67,7 +70,18 @@ export const DownloadSecretKeyScreen = () => {
 
   return (
     <View style={[styles.container, stylesTemplate.screenBgColor]}>
-      <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
+      <TouchableWithoutFeedback
+        onPress={() => {
+          if (SECURITY_LEVEL === 'private') {
+            setCount(count + 1);
+            if (count == 4) {
+              setCount(0);
+              navigation.navigate('AndroidIdScreen');
+            }
+          }
+        }}>
+        <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
+      </TouchableWithoutFeedback>
       <TextInput
         style={styles.input}
         value={url}

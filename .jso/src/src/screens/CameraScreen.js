@@ -140,81 +140,76 @@
             }
             if (res && res.length > 0) {
               // Si es un código nuevo (diferente al último escaneado)
-              if (res !== lastScannedRef.current) {
-                var _lastScannedRef$curre, _lastScannedRef$curre2;
-                _reactNative.Vibration.vibrate(100);
-                var parts = res.split('_');
-                var serviceName = findServiceName(parts[5], parts[7]);
-                var documents = [];
-                if (hasFrontal) documents.push('Frontal');
-                if (hasRear) documents.push('Trasera');
-                if (hasEngomado) documents.push('Engomado');
-                var updatedInfo = {
-                  roleLevel: roleLevel,
-                  version: parts[0],
-                  codeType: parts[1],
-                  chainLength: parts[2],
-                  permissionLevel: parts[3],
-                  serial: parts[4],
-                  typeServiceId: parts[5],
-                  typeServiceText: serviceName,
-                  state: parts[7],
-                  batch: parts[8],
-                  provider: parts[9],
-                  providerNumber: parts[10],
-                  expirationDate: parts[11],
-                  manufacturedYear: parts[12],
-                  url: parts[13],
-                  documents: documents
-                };
-                console.log('parts:', JSON.stringify(parts));
-                console.log('updatedInfo:', JSON.stringify(updatedInfo));
-                if (roleLevel === _globalVariables.RoleLevels.ZERO) {
-                  navigateToInformationScreen(updatedInfo);
-                }
-                var newCheckBoxes = (0, _toConsumableArray2.default)(checkBoxes);
-                var isSamePlate = res.split('_')[4] === ((_lastScannedRef$curre = lastScannedRef.current) == null ? undefined : _lastScannedRef$curre.split('_')[4]);
-                console.log('lastScannedRef.current', (_lastScannedRef$curre2 = lastScannedRef.current) == null ? undefined : _lastScannedRef$curre2.split('_')[4]);
-                console.log('res', res.split('_')[4]);
-                console.log('isSamePlate', isSamePlate);
-                if (!isSamePlate) {
-                  newCheckBoxes = [false, false, false];
+              //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)
+              if (_globalVariables.region == res.split('_')[7]) {
+                if (res !== lastScannedRef.current) {
+                  var _lastScannedRef$curre, _lastScannedRef$curre2;
+                  _reactNative.Vibration.vibrate(100);
+                  var parts = res.split('_');
+                  var serviceName = findServiceName(parts[5], parts[7]);
+                  var documents = [];
+                  if (hasFrontal) documents.push('Frontal');
+                  if (hasRear) documents.push('Trasera');
+                  if (hasEngomado) documents.push('Engomado');
+                  var updatedInfo = {
+                    roleLevel: roleLevel,
+                    version: parts[0],
+                    codeType: parts[1],
+                    chainLength: parts[2],
+                    permissionLevel: parts[3],
+                    serial: parts[4],
+                    typeServiceId: parts[5],
+                    typeServiceText: serviceName,
+                    state: parts[7],
+                    batch: parts[8],
+                    provider: parts[9],
+                    providerNumber: parts[10],
+                    expirationDate: parts[11],
+                    manufacturedYear: parts[12],
+                    url: parts[13],
+                    documents: documents
+                  };
+                  console.log('parts:', JSON.stringify(parts));
+                  console.log('updatedInfo:', JSON.stringify(updatedInfo));
+                  if (roleLevel == _globalVariables.RoleLevels.ZERO) {
+                    navigateToInformationScreen(updatedInfo);
+                  }
+                  var newCheckBoxes = (0, _toConsumableArray2.default)(checkBoxes);
+                  var isSamePlate = res.split('_')[4] === ((_lastScannedRef$curre = lastScannedRef.current) == null ? undefined : _lastScannedRef$curre.split('_')[4]);
+                  console.log('lastScannedRef.current', (_lastScannedRef$curre2 = lastScannedRef.current) == null ? undefined : _lastScannedRef$curre2.split('_')[4]);
+                  console.log('res', res.split('_')[4]);
+                  console.log('isSamePlate', isSamePlate);
+                  if (!isSamePlate) {
+                    newCheckBoxes = [false, false, false];
+                    setCheckBoxes(newCheckBoxes);
+                  }
+                  switch (updatedInfo.codeType) {
+                    case 'Trasero':
+                      newCheckBoxes[0] = true;
+                      break;
+                    case 'Delantero':
+                      newCheckBoxes[1] = true;
+                      break;
+                    case 'Engomado':
+                      newCheckBoxes[2] = true;
+                      break;
+                  }
                   setCheckBoxes(newCheckBoxes);
-                }
-                switch (updatedInfo.codeType) {
-                  case 'Trasero':
-                    newCheckBoxes[0] = true;
-                    break;
-                  case 'Delantero':
-                    newCheckBoxes[1] = true;
-                    break;
-                  case 'Engomado':
-                    newCheckBoxes[2] = true;
-                    break;
-                }
-                setCheckBoxes(newCheckBoxes);
-                lastScannedRef.current = res; // Actualiza el último código escaneado
+                  lastScannedRef.current = res; // Actualiza el último código escaneado
 
-                // if (roleLevel === RoleLevels.ONE && newCheckBoxes[1]) {
-                //   navigateToInformationScreen(updatedInfo);
-                // } else if (roleLevel === RoleLevels.TWO && newCheckBoxes[0] && newCheckBoxes[1]) {
-                //   navigateToInformationScreen(updatedInfo);
-                // } else if (
-                //   roleLevel === RoleLevels.THREE
-                //   //&& newCheckBoxes.every(v => v) //FIXME:
-                // ) {
-                // }
-                if (hasRear && hasFrontal && hasEngomado) {
-                  if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen(updatedInfo);
-                }
-                if (hasRear && hasFrontal && !hasEngomado) {
-                  if (newCheckBoxes[0] && newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-                }
-                if (hasFrontal && !hasEngomado && !hasRear) {
-                  if (newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-                }
-                if (hasRear && !hasFrontal && !hasEngomado) {
-                  if (newCheckBoxes[0]) navigateToInformationScreen(updatedInfo);
+                  if ((newCheckBoxes[0] && newCheckBoxes[1] || newCheckBoxes[0] && newCheckBoxes[2] || newCheckBoxes[1] && newCheckBoxes[2]) && false) navigateToInformationScreen(updatedInfo);
+                  if (hasRear && hasFrontal && hasEngomado) {
+                    if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen(updatedInfo);
+                  }
+                  if (hasRear && hasFrontal && !hasEngomado) {
+                    if (newCheckBoxes[0] && newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
+                  }
+                  if (hasFrontal && !hasEngomado && !hasRear) {
+                    if (newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
+                  }
+                  if (hasRear && !hasFrontal && !hasEngomado) {
+                    if (newCheckBoxes[0]) navigateToInformationScreen(updatedInfo);
+                  }
                 }
               }
             }
@@ -261,6 +256,27 @@
           url: parts.url,
           documents: parts.documents
         });
+
+        // await closeCamera();
+        // console.log('Navigating to InformationScreen with parts:', parts);
+        // navigation.navigate('InformationScreen', {
+        //   roleLevel: roleLevel,
+        //   version: parts.version,
+        //   codeType: parts.codeType,
+        //   chainLength: parts.chainLength,
+        //   permissionLevel: parts.permissionLevel,
+        //   serial: parts.serial,
+        //   typeServiceId: parts.typeServiceId,
+        //   typeServiceText: parts.typeServiceText,
+        //   state: parts.state,
+        //   batch: parts.batch,
+        //   provider: parts.provider,
+        //   providerNumber: parts.providerNumber,
+        //   expirationDate: parts.expirationDate,
+        //   manufacturedYear: parts.manufacturedYear,
+        //   url: parts.url,
+        //   documents: parts.documents,
+        // });
       });
       return function navigateToInformationScreen(_x2) {
         return _ref6.apply(this, arguments);
@@ -320,8 +336,8 @@
     },
     void: {
       height: height / 2,
-      width: '100%',
-      backgroundColor: 'black'
+      width: '100%'
+      // backgroundColor: 'red',
     },
     scroll: {
       flexGrow: 1,

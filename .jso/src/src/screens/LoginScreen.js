@@ -13,6 +13,8 @@
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
   // import { useUserContext } from '../contexts/UserContext.tsx';
 
+  var _Dimensions$get = _reactNative.Dimensions.get('window'),
+    height = _Dimensions$get.height;
   var LoginScreen = exports.LoginScreen = function LoginScreen(_ref) {
     var navigation = _ref.navigation;
     // const { setUser, setUserSession } = useUserContext();
@@ -71,7 +73,14 @@
           width: '100%',
           gap: 24
         },
-        children: [/*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
+        children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+          source: _$$_REQUIRE(_dependencyMap[7]),
+          resizeMode: "center",
+          style: {
+            width: '100%',
+            height: height * 0.2
+          }
+        }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
           style: {
             gap: 4
           },
@@ -125,7 +134,7 @@
     container: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       paddingHorizontal: 30,
       gap: 16,
       paddingBottom: 50

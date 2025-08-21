@@ -136,9 +136,25 @@ class HoloDecoder {
     fun decodeMessage(binaryData: Array<IntArray>): String {
         // Log.d("pastel", "inside DECODEMESSAGE********* ")
         // 1. Verificar orientación y rotar binaryData si es necesario
-        if (binaryData[1][1] == 1) { 
-            rotateMatrix180(binaryData)
-            Log.d("pastel", "Matriz rotada 180° (basado en [1,1])")
+        when {
+            binaryData[1][1] == 0 -> {
+                Log.d("pastel", "Matriz sin rotar (basado en [1,1])")
+            }
+            binaryData[26][26] == 0 -> {
+                rotateMatrix180(binaryData)
+                Log.d("pastel", "Matriz rotada 180° (basado en [26,26])")
+            }
+            binaryData[1][26] == 0 -> {
+                rotateMatrix270(binaryData)
+                Log.d("pastel", "Matriz rotada 90° (basado en [1,26])")
+            }
+            binaryData[26][1] == 0 -> {
+                rotateMatrix90(binaryData)
+                Log.d("pastel", "Matriz rotada 270° (basado en [26,1])")
+            }
+            else -> {
+                Log.w("pastel", "No se pudo determinar orientación, usando matriz original")
+            }
         }
 
         // 2. Convertir binaryData (orientado correctamente) a byteData
@@ -284,9 +300,9 @@ class HoloDecoder {
             val field = GenericGF(285, 256, 0)  // Polinomio x⁸ + x⁴ + x³ + x² + 1
             val rsd = ReedSolomonDecoder(field)
             // Log.d("pastel", "Datos antes de RS (hex): ${finalMessage.take(48).joinToString(" ") { "%02X".format(it) }}")
-            for (i in 0 until 84) {
-                Log.d("original", "byte[$i] = %02X".format(finalMessage[i]))
-            }
+            // for (i in 0 until 84) {
+            //     Log.d("original", "byte[$i] = %02X".format(finalMessage[i]))
+            // }
             rsd.decode(finalMessage, 36)  // 36 bytes de redundancia
             // Log.d("pastel", "Datos después de RS (hex): ${finalMessage.take(48).joinToString(" ") { "%02X".format(it) }}")
         } catch (e: ReedSolomonException) {
@@ -478,6 +494,32 @@ class HoloDecoder {
                 val temp = matrix[i][j]
                 matrix[i][j] = matrix[n - 1 - i][n - 1 - j]
                 matrix[n - 1 - i][n - 1 - j] = temp
+            }
+        }
+    }
+    private fun rotateMatrix90(matrix: Array<IntArray>) {
+        val n = matrix.size
+        for (i in 0 until n / 2) {
+            for (j in i until n - i - 1) {
+                // Intercambiar elementos en sentido horario
+                val temp = matrix[i][j]
+                matrix[i][j] = matrix[n - j - 1][i]
+                matrix[n - j - 1][i] = matrix[n - i - 1][n - j - 1]
+                matrix[n - i - 1][n - j - 1] = matrix[j][n - i - 1]
+                matrix[j][n - i - 1] = temp
+            }
+        }
+    }
+    private fun rotateMatrix270(matrix: Array<IntArray>) {
+        val n = matrix.size
+        for (i in 0 until n / 2) {
+            for (j in i until n - i - 1) {
+                // Intercambiar elementos en sentido antihorario
+                val temp = matrix[i][j]
+                matrix[i][j] = matrix[j][n - i - 1]
+                matrix[j][n - i - 1] = matrix[n - i - 1][n - j - 1]
+                matrix[n - i - 1][n - j - 1] = matrix[n - j - 1][i]
+                matrix[n - j - 1][i] = temp
             }
         }
     }

@@ -86,8 +86,9 @@
                 console.log(key === keyDecoded);
                 var dateRaw = (0, _utils.getLastValidateTokenDate)();
                 var date = dateRaw ? new Date(dateRaw) : null;
-                var response = yield (0, _api.postValidateToken)(chain, token);
-                console.log('response postValidateToken', response);
+                // const response = await postValidateToken(chain, token);
+                var response = yield (0, _api.postAuthenticateValidDevice)(androidId, key);
+                console.log('response postAuthenticateValidDevice', response);
                 if (response.status === 'error' && response.message === 'Error de red') {
                   if (date) {
                     console.log('getLastValidateTokenDate', date.toLocaleDateString());
@@ -101,7 +102,7 @@
                   yield OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
                   return;
                 }
-                if (response.status === 'success') {
+                if (response.success === true) {
                   (0, _utils.storeLastValidateTokenDate)(today);
                   isPermissionGranted = true;
                   return;
@@ -129,7 +130,9 @@
                 // }
                 console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
                 (0, _utils.storeLastValidateTokenDate)(today);
+                (0, _utils.storeToken)('token recuperado');
                 isPermissionGranted = true; //FIXME: se dejo en true para pruebas
+                return;
               }
               if (isKeyRegistered) {
                 var res = yield (0, _api.postAuthenticateDevice)(chain);

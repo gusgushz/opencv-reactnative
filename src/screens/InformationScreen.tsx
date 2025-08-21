@@ -26,7 +26,7 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
     documents,
   } = route.params;
 
-  const [link, setLink] = useState<string>('Cargando url...');
+const [link, setLink] = useState<string>(url);
 
   useEffect(() => {
     const fetchLink = async () => {

@@ -14,7 +14,8 @@
   function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
   var OpencvFunc = _reactNative.NativeModules.OpencvFunc;
-  var DownloadSecretKeyScreen = exports.DownloadSecretKeyScreen = function DownloadSecretKeyScreen() {
+  var DownloadSecretKeyScreen = exports.DownloadSecretKeyScreen = function DownloadSecretKeyScreen(_ref) {
+    var navigation = _ref.navigation;
     var _useState = (0, _react.useState)(''),
       _useState2 = (0, _slicedToArray2.default)(_useState, 2),
       url = _useState2[0],
@@ -31,9 +32,13 @@
       _useState8 = (0, _slicedToArray2.default)(_useState7, 2),
       warning = _useState8[0],
       setWarning = _useState8[1];
+    var _useState9 = (0, _react.useState)(0),
+      _useState10 = (0, _slicedToArray2.default)(_useState9, 2),
+      count = _useState10[0],
+      setCount = _useState10[1];
     (0, _react.useEffect)(function () {
       var checkFileExists = /*#__PURE__*/function () {
-        var _ref = (0, _asyncToGenerator2.default)(function* () {
+        var _ref2 = (0, _asyncToGenerator2.default)(function* () {
           try {
             var fileExists = yield RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
             setExists(fileExists);
@@ -42,13 +47,13 @@
           }
         });
         return function checkFileExists() {
-          return _ref.apply(this, arguments);
+          return _ref2.apply(this, arguments);
         };
       }();
       checkFileExists();
     }, [exists]);
     var handleDownload = /*#__PURE__*/function () {
-      var _ref2 = (0, _asyncToGenerator2.default)(function* () {
+      var _ref3 = (0, _asyncToGenerator2.default)(function* () {
         if (!url || isLoading || exists) return;
         setIsLoading(true);
         setWarning('');
@@ -86,17 +91,28 @@
         }
       });
       return function handleDownload() {
-        return _ref2.apply(this, arguments);
+        return _ref3.apply(this, arguments);
       };
     }();
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
-      children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
-        source: _$$_REQUIRE(_dependencyMap[9]),
-        resizeMode: "center",
-        style: {
-          marginBottom: -16
-        }
+      children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableWithoutFeedback, {
+        onPress: function onPress() {
+          {
+            setCount(count + 1);
+            if (count == 4) {
+              setCount(0);
+              navigation.navigate('AndroidIdScreen');
+            }
+          }
+        },
+        children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
+          source: _$$_REQUIRE(_dependencyMap[9]),
+          resizeMode: "center",
+          style: {
+            marginBottom: -16
+          }
+        })
       }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TextInput, {
         style: styles.input,
         value: url,

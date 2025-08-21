@@ -41,6 +41,7 @@ import {
   postKeyActivation,
   postValidateToken,
   postAuthenticateDevice,
+  postAuthenticateValidDevice,
 } from './src/api';
 // import { UserProvider } from './src/contexts/UserContext.tsx';
 import { sufix } from './src/globalVariables';
@@ -111,8 +112,9 @@ function App() {
             console.log(key === keyDecoded);
             const dateRaw = getLastValidateTokenDate();
             const date = dateRaw ? new Date(dateRaw) : null;
-            const response = await postValidateToken(chain, token);
-            console.log('response postValidateToken', response);
+            // const response = await postValidateToken(chain, token);
+            const response = await postAuthenticateValidDevice(androidId, key);
+            console.log('response postAuthenticateValidDevice', response);
             if (response.status === 'error' && response.message === 'Error de red') {
               if (date) {
                 console.log('getLastValidateTokenDate', date.toLocaleDateString());
@@ -126,7 +128,7 @@ function App() {
               await OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
               return;
             }
-            if (response.status === 'success') {
+            if (response.success === true) {
               storeLastValidateTokenDate(today);
               isPermissionGranted = true;
               return;
@@ -154,7 +156,9 @@ function App() {
             // }
             console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
             storeLastValidateTokenDate(today);
+            storeToken('token recuperado');
             isPermissionGranted = true; //FIXME: se dejo en true para pruebas
+            return;
           }
           if (isKeyRegistered) {
             const res = await postAuthenticateDevice(chain);
@@ -175,10 +179,14 @@ function App() {
       if (!isPermissionGranted) await OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
     } else {
       const res = getUsersData();
-      if (!res) {
-        const response = await getUpdateByTimestamp(ConfigApp.Client.Id);
-        if (response.status !== 'error') storeUsersData(JSON.parse(readableString(response.data)) as UpdateByTimestampData);
-      }
+      //NOTE: Pruebas para ver los usuario y contraseñas
+      // console.log('res', res?.created.length);
+      // res?.created.map(user => {
+      //   console.log('user', user);
+      //   console.log('password decrypted', readableString(user.password));
+      // });
+      const response = await getUpdateByTimestamp(ConfigApp.Client.Id);
+      if (response.status !== 'error') storeUsersData(JSON.parse(readableString(response.data)) as UpdateByTimestampData);
     }
   };
 
@@ -203,9 +211,7 @@ function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  ios: { flex: 1 },
-});
+const styles = StyleSheet.create({ ios: { flex: 1 } });
 
 export default Sentry.wrap(App);
 

@@ -15,6 +15,8 @@
   function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
   // import { useUserContext } from '../contexts/UserContext.tsx';
 
+  var _Dimensions$get = _reactNative.Dimensions.get('window'),
+    height = _Dimensions$get.height;
   var HomeScreen = exports.HomeScreen = function HomeScreen(_ref) {
     var navigation = _ref.navigation;
     // const { setUser, setUserSession, userSession } = useUserContext();
@@ -56,7 +58,8 @@
           source: _$$_REQUIRE(_dependencyMap[9]),
           resizeMode: "center",
           style: {
-            marginBottom: -16
+            width: '100%',
+            height: height * 0.3
           }
         })
       }), /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {

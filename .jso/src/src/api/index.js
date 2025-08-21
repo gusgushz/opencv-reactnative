@@ -32,6 +32,12 @@
       return _postAuthenticateDevice.default;
     }
   });
+  Object.defineProperty(exports, "postAuthenticateValidDevice", {
+    enumerable: true,
+    get: function get() {
+      return _postAuthenticateValidDevice.default;
+    }
+  });
   Object.defineProperty(exports, "postKeyActivation", {
     enumerable: true,
     get: function get() {
@@ -51,3 +57,4 @@
   var _postValidateToken = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[5]));
   var _getRecoverToken = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[6]));
   var _postAuthenticateDevice = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[7]));
+  var _postAuthenticateValidDevice = _interopRequireDefault(_$$_REQUIRE(_dependencyMap[8]));

@@ -36,7 +36,6 @@ import org.opencv.imgproc.Imgproc
 import org.opencv.imgproc.Moments
 
 import org.opencv.objdetect.GraphicalCodeDetector
-import org.opencv.objdetect.QRCodeDetector
 
 import android.view.View
 import android.widget.FrameLayout
@@ -71,12 +70,13 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     private val lineColor = Scalar(255.0, 0.0, 0.0) // Rojo
     private val fontColor = Scalar(0.0, 0.0, 255.0) // Azul
     private var impSize = 256 // Tamaño de la imagen procesada
+    // private var impSize = 224 // Tamaño de la imagen procesada
 
     // Variables para el dibujo persistente
     private val drawingLock = Any()
     @Volatile private var lastValidBorder = -1
     @Volatile private var lastValidMarker = -1
-    private var persistentOverlay = Mat()
+    private lateinit var persistentOverlay: Mat
     private var overlayInitialized = false
     var shouldClearOverlay = false
 
@@ -86,18 +86,8 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     private lateinit var holoCode: Mat // Matriz para el código detectado
     private lateinit var hierarchy: Mat // Jerarquía de contornos
     private var contours: MutableList<MatOfPoint> = ArrayList() // Contornos detectados
-    private lateinit var holo: Mat // Matriz para el holograma
-    private lateinit var holo_thres: Mat // Matriz para el umbral
     private lateinit var holoMatrix: Mat // Matriz 28x28 para el resultado final
     private var info: String? = null
-
-    // Variables adicionales del C# que podrías necesitar
-    // private var documentsReaded = 0
-    // private var _data: ByteArray? = null
-    // private lateinit var _bgrMat: Mat
-    // private lateinit var _rotatedMat: Mat
-    // private lateinit var zoomMat: Mat
-    // private var scan = true
 
     private lateinit var detector: GraphicalCodeDetector // Usa QRCodeDetectorAruco() si necesitas Aruco
 
@@ -109,12 +99,10 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             Log.d("pastel", "OpenCV loaded Successfully!")
             holoCode = Mat()
             hierarchy = Mat()
-            holo = Mat.zeros(impSize, impSize, CvType.CV_8UC3)
+            persistentOverlay = Mat()
             holo_raw = Mat.zeros(impSize, impSize, CvType.CV_8UC3)
             holo_gray = Mat.zeros(impSize, impSize, CvType.CV_8UC1)
-            holo_thres = Mat.zeros(impSize, impSize, CvType.CV_8UC1)
             holoMatrix = Mat.zeros(28, 28, CvType.CV_8UC1)
-            detector = QRCodeDetector() // Inicializar el detector de códigos QR
         }
     }
 
@@ -162,6 +150,15 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             0
         }
     }
+    private fun getActionBarHeight(): Int {
+        val typedArray = currentActivity?.theme?.obtainStyledAttributes(
+            intArrayOf(android.R.attr.actionBarSize)
+        )
+        val actionBarHeight = typedArray?.getDimensionPixelSize(0, 0) ?: 0
+        typedArray?.recycle()
+        return actionBarHeight
+    }
+
 
 	@ReactMethod
 	fun startCamera(promise: Promise) {
@@ -213,7 +210,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			overlayViewTop = View(activity).apply {
 				layoutParams = FrameLayout.LayoutParams(
 					width,
-					height / 8,
+					width / 4,
 				).apply {
 					gravity = Gravity.END or Gravity.TOP // Posición en la esquina superior derecha
 				}
@@ -225,7 +222,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			overlayViewBottom = View(activity).apply {
 				layoutParams = FrameLayout.LayoutParams(
 					width,
-					height / 8,
+					width / 4,
 				).apply {
 					gravity = Gravity.BOTTOM
 				}
@@ -237,7 +234,8 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			overlayViewLeft = View(activity).apply {
 				layoutParams = FrameLayout.LayoutParams(
 					width / 4,
-					(height / 4) + 2,
+					width / 2
+                    // + (height * 0.001).toInt(), // Ajustar el alto para que sea más grande
 				).apply {
 					gravity = Gravity.START or Gravity.CENTER
 				}
@@ -245,11 +243,13 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			}
 			// Agregar el overlay al contenedor
 			cameraContainer?.addView(overlayViewLeft)
+            
 			// Crear la vista del overlay
 			overlayViewRight = View(activity).apply {
 				layoutParams = FrameLayout.LayoutParams(
 					width / 4,
-					(height / 4) + 2,
+					width / 2
+                    // + (height * 0.001).toInt(), // Ajustar el alto para que sea más grande
 				).apply {
 					gravity = Gravity.END or Gravity.CENTER
 				}
@@ -261,13 +261,16 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 			// Crear MarginLayoutParams y establecer márgenes
 			val params = ViewGroup.MarginLayoutParams(
 				width,
-				height/2
+				width
 			)
 			// params.setMargins(0, 200, 0, 0)
 
-			//TODO:Agregar una función que recoja el tamaño de la barra de navegación de status
+			//Se agregar una función que recoja el tamaño de la barra de status + y se suma un 10% de la altura de la pantalla para la barra de navegación
             val statusBarHeight = getStatusBarHeight()
-            params.setMargins(0, statusBarHeight+168, 0, 0)
+            val actionBarHeight = getActionBarHeight()
+            // params.setMargins(0, statusBarHeight+(height * 0.077).toInt(), 0, 0)
+            params.setMargins(0, statusBarHeight+actionBarHeight, 0, 0)
+
 			// Agregar el contenedor a la actividad
 			activity.addContentView(cameraContainer, params)
 
@@ -277,7 +280,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             synchronized(drawingLock) {
                 lastValidBorder = -1
                 lastValidMarker = -1
-                persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                persistentOverlay?.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
                 shouldClearOverlay = true
             }
 			mOpenCvCameraView?.enableView()
@@ -293,9 +296,21 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     fun stopCamera(promise: Promise) {
         try {
             if (mOpenCvCameraView == null) {
-                promise.reject("CameraError", "Camera is not initialized")
+                promise.resolve("Camera already stopped") // Cambiado de reject a resolve
                 return
             }
+            if (::persistentOverlay.isInitialized) {
+                try {
+                    persistentOverlay.release()
+                } catch (e: Exception) {
+                    Log.e("pastel", "Error releasing persistentOverlay: ${e.message}")
+                }
+            }
+
+            val localCameraView = mOpenCvCameraView
+            val localContainer = cameraContainer
+            val localOverlays = listOf(overlayViewTop, overlayViewBottom, overlayViewLeft, overlayViewRight)
+
             synchronized(drawingLock) {
                 // Resetear variables de estado
                 lastValidBorder = -1
@@ -304,9 +319,13 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                 info = null
                 
                 // Limpiar el overlay persistente
-                if (overlayInitialized) {
-                    persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
-                    persistentOverlay.release()
+                if (overlayInitialized && ::persistentOverlay.isInitialized) {
+                    try {
+                        persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                        persistentOverlay.release()
+                    } catch (e: Exception) {
+                        Log.e("pastel", "Error clearing persistentOverlay: ${e.message}")
+                    }
                     overlayInitialized = false
                 }
                 
@@ -314,138 +333,77 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                 contours.forEach { it.release() }
                 contours.clear()
                 
-                // Forzar limpieza en el próximo inicio
                 shouldClearOverlay = true
             }
 
             currentActivity?.runOnUiThread {
-                mOpenCvCameraView?.disableView() // Deshabilita la cámara
-                cameraContainer?.removeView(mOpenCvCameraView) // Elimina la vista de la cámara del contenedor
-                mOpenCvCameraView = null // Libera la referencia
+                try {
+                    localCameraView?.disableView()
+                    localContainer?.removeView(localCameraView)
 
-                // Elimina el overlay si existe
-                overlayViewTop?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewTop = null // Libera la referencia
-                }
-                overlayViewBottom?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewBottom = null // Libera la referencia
-                }
-                overlayViewLeft?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewLeft = null // Libera la referencia
-                }
-                overlayViewRight?.let {
-                    cameraContainer?.removeView(it)
-                    overlayViewRight = null // Libera la referencia
-                }
+                    localOverlays.forEach { overlay ->
+                        overlay?.let { localContainer?.removeView(it) }
+                    }
 
-                cameraContainer = null // Libera el contenedor
+                    // Liberar referencias
+                    mOpenCvCameraView = null
+                    cameraContainer = null
+                    overlayViewTop = null
+                    overlayViewBottom = null
+                    overlayViewLeft = null
+                    overlayViewRight = null
+
+                    promise.resolve("Camera stopped successfully")
+                } catch (e: Exception) {
+                    promise.resolve("Camera stopped with minor issues: ${e.message}")
+                }
             }
-            info = null // Reinicia la información
-
-            promise.resolve("Camera stopped successfully")
         } catch (e: Exception) {
-            promise.reject("CameraError", e.message)
+            promise.resolve("Camera stopped with errors: ${e.message}") // Cambiado de reject a resolve
         }
     }
 
 	override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame): Mat {
         val activeArea = inputFrame.rgba()
 
-        // Procesamiento de detección (tu lógica existente)
-        frameCounter++
-        if (frameCounter >= 5) {  // Procesar cada 5 frames
-            frameCounter = 0
-            val detected = detectCode(activeArea)
-            if (detected) {
-                val message = extractBits()
-                info = message?.joinToString(separator = "_")
-            }
-        }
-
         synchronized(drawingLock) {
-            if (!overlayInitialized || persistentOverlay.width() != activeArea.width() || persistentOverlay.height() != activeArea.height()) {
+            if (!::persistentOverlay.isInitialized || persistentOverlay.empty() || !overlayInitialized || persistentOverlay?.width() != activeArea.width() || persistentOverlay?.height() != activeArea.height()) {
+                // persistentOverlay?.release()
                 persistentOverlay = Mat(activeArea.size(), activeArea.type(), Scalar(0.0, 0.0, 0.0, 0.0))
                 overlayInitialized = true
             }
 
             // Limpieza forzada al inicio
             if (shouldClearOverlay) {
-                persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
+                persistentOverlay?.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
                 shouldClearOverlay = false
             }
 
             // Solo procesar detección si no estamos en modo limpieza
-            if (!shouldClearOverlay) {
-                frameCounter++
-                if (frameCounter >= 5) {
-                    frameCounter = 0
-                    val detected = detectCode(activeArea)
-                    if (detected) {
-                        val message = extractBits()
-                        info = message?.joinToString(separator = "_")
-                    }
+            frameCounter++
+            if (frameCounter >= 5 && !shouldClearOverlay) {
+                frameCounter = 0
+                val detected = detectCode(activeArea)
+                if (detected) {
+                    val message = extractBits()
+                    info = message?.joinToString(separator = "_")
                 }
             }
 
             drawPersistentMarkers(activeArea)
-            val outputFrame = activeArea.clone()
-            Core.add(outputFrame, persistentOverlay, outputFrame)
-            return outputFrame
+            // usamos directamente activeArea como outputFrame
+            if (!persistentOverlay.empty() &&
+                persistentOverlay.size() == activeArea.size() &&
+                persistentOverlay.type() == activeArea.type()) {
+                Core.add(activeArea, persistentOverlay, activeArea)
+            }
+            return activeArea         
         }
     }
 
-    // private fun handleFrame(inputFrame: Mat): Mat {
-    //     val decodedInfo = mutableListOf<String>()
-    //     val points = MatOfPoint()
-    //     val tryDecode = true
-    //     val result = findQRs(inputFrame, decodedInfo, points, tryDecode)
-    //     if (result) {
-    //         Log.e("pastel", "Camera QR Result: ${decodedInfo}")
-    //         renderQRs(inputFrame, decodedInfo, points)
-    //         // Almacenar la última información del QR
-    //         text = decodedInfo[0]
-    //     }
-    //     points.release()
-    //     return inputFrame
-    // }
-    // private fun findQRs(inputFrame: Mat, decodedInfo: MutableList<String>, points: MatOfPoint, tryDecode: Boolean): Boolean {
-    //     return if (tryDecode) {
-    //         val s = detector.detectAndDecode(inputFrame, points)
-    //         val result = !points.empty()
-    //         if (result) decodedInfo.add(s)
-    //         result
-    //     } else {
-    //         detector.detect(inputFrame, points)
-    //     }
-    // }
-    // private fun renderQRs(inputFrame: Mat, decodedInfo: List<String>, points: MatOfPoint) {
-    //     for (i in 0 until points.rows()) {
-    //         for (j in 0 until points.cols()) {
-    //             val pt1 = Point(points[i, j])
-    //             val pt2 = Point(points[i, (j + 1) % 4])
-    //             Imgproc.line(inputFrame, pt1, pt2, lineColor, 3)
-    //         }
-    //         if (decodedInfo.isNotEmpty()) {
-    //             var decode = decodedInfo[i]
-    //             if (decode.length > 15) {
-    //                 decode = decode.substring(0, 12) + "..."
-    //             }
-    //             val baseline = IntArray(1)
-    //             val textSize = Imgproc.getTextSize(decode, Imgproc.FONT_HERSHEY_COMPLEX, .95, 3, baseline)
-    //             val sum = Core.sumElems(points.row(i))
-    //             val start = Point(
-    //                 sum.`val`[0] / 4.0 - textSize.width / 2.0,
-    //                 sum.`val`[1] / 4.0 - textSize.height / 2.0
-    //             )
-    //             Imgproc.putText(inputFrame, decode, start, Imgproc.FONT_HERSHEY_COMPLEX, .95, fontColor, 3)
-    //         }
-    //     }
-    // }
-
     private fun drawPersistentMarkers(baseFrame: Mat) {
+        // Verificar que persistentOverlay esté inicializado
+        if (!::persistentOverlay.isInitialized) return
         // Limpiar la capa anterior
         persistentOverlay.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
 
@@ -485,18 +443,6 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
                     markerPoints.release()
                     approxMarker.release()
                 }
-
-                // Dibujar línea de orientación (blanca)
-                //FIXME: Pinta una linea de color blanca del centro del qr hacía el centro de la marca
-                // val muBorder = Imgproc.moments(contours[lastValidBorder])
-                // val muMarker = Imgproc.moments(contours[lastValidMarker])
-
-                // if (muBorder.m00 > 0 && muMarker.m00 > 0) {
-                //     val centerBorder = Point(muBorder.m10/muBorder.m00, muBorder.m01/muBorder.m00)
-                //     val centerMarker = Point(muMarker.m10/muMarker.m00, muMarker.m01/muMarker.m00)
-                //     Imgproc.line(persistentOverlay, centerBorder, centerMarker,
-                //                 Scalar(255.0, 255.0, 255.0, 255.0), 2)
-                // }
             } catch (e: Exception) {
                 Log.e("drawMarkers", "Error al dibujar marcadores: ${e.message}")
             }
@@ -505,198 +451,225 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 
 	//Función de emgu, del archivo detectcode.cs
     fun detectCode(activeArea: Mat): Boolean {
-        val gray = Mat(activeArea.rows(), activeArea.cols(), CvType.CV_8UC1)
-        Imgproc.cvtColor(activeArea, gray, Imgproc.COLOR_RGB2GRAY)
+        val gray = Mat()
+        val hierarchy = Mat()
+        val approx = MatOfPoint2f()
+        val contour2f = MatOfPoint2f()
+        try {
 
-        // Aplicar filtros y umbrales
-        Imgproc.GaussianBlur(gray, gray, Size(5.0, 5.0), 0.0, 0.0)
-        Imgproc.adaptiveThreshold(gray, gray, 255.0, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 51, 14.0)
+            val gray = Mat(activeArea.rows(), activeArea.cols(), CvType.CV_8UC1)
+            Imgproc.cvtColor(activeArea, gray, Imgproc.COLOR_RGB2GRAY)
+
+            // Aplicar filtros y umbrales
+            Imgproc.GaussianBlur(gray, gray, Size(5.0, 5.0), 0.0, 0.0)
+            Imgproc.adaptiveThreshold(gray, gray, 255.0, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 51, 14.0)
 
 
-        contours.clear() // Reiniciar la lista de contornos
-        var hierarchy = Mat() // Reiniciar la jerarquía
+            contours.clear() // Reiniciar la lista de contornos
+            var hierarchy = Mat() // Reiniciar la jerarquía
 
-        // Encontrar contornos
-        Imgproc.findContours(gray, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE)
+            // Encontrar contornos
+            Imgproc.findContours(gray, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE)
 
-        mark = 0
-        //val momentsList = mutableListOf<Moments>()
-        val massCenters = mutableListOf<Point>()
-        for (contour in contours) {
-            // Calcular los momentos del contorno
-            val mu = Imgproc.moments(contour)
+            mark = 0
+            //val momentsList = mutableListOf<Moments>()
+            val massCenters = mutableListOf<Point>()
+            for (contour in contours.toList()) {
+                // Calcular los momentos del contorno
+                val mu = Imgproc.moments(contour)
 
-            // Almacenar los momentos en una lista (opcional, para uso posterior) TODO:
-            //momentsList.add(mu)
+                // Almacenar los momentos en una lista (opcional, para uso posterior) TODO:
+                //momentsList.add(mu)
 
-            // Verificar que el área del contorno no sea cero
-            if (mu.m00 != 0.0) {
-                // Calcular el centro de masa (X, Y)
-                val centerX = mu.m10 / mu.m00
-                val centerY = mu.m01 / mu.m00
+                // Verificar que el área del contorno no sea cero
+                if (mu.m00 != 0.0) {
+                    // Calcular el centro de masa (X, Y)
+                    val centerX = mu.m10 / mu.m00
+                    val centerY = mu.m01 / mu.m00
 
-                // Almacenar el centro de masa en una lista
-                massCenters.add(Point(centerX, centerY))
-            }
-        }
-
-        for (i in contours.indices) {
-            val approx = MatOfPoint2f()
-            val contour2f = MatOfPoint2f(*contours[i].toArray())
-            Imgproc.approxPolyDP(contour2f, approx, Imgproc.arcLength(contour2f, true) * 0.02, true)
-
-            if (approx.total() == 4L) {
-                var k = i
-                var c = 0
-                var info = getHierarchy(hierarchy, k)
-
-                while (info[2] != -1) {
-                    info = getHierarchy(hierarchy, k)
-                    k = info[2]
-                    c++
-                }
-
-                if (c >= 3) {
-                    if (mark == 0) border = i
-                    else if (mark == 1) marker = i
-                    mark++
+                    // Almacenar el centro de masa en una lista
+                    massCenters.add(Point(centerX, centerY))
                 }
             }
-        }
+            if (contours.isEmpty()) return false
+            val contourCount = contours.size // Captura el tamaño actual al inicio para evitar cambios por otro hilo
+            for (i in 0 until contourCount) {
 
-        Log.d("pastel", "mark = ${mark}")
+                // Validar que el índice sigue siendo válido
+                if (i >= contours.size) break
 
-        if (mark >= 2) {
-            val widthA = getApproximatedWidth(contours, border)
-            val widthB = getApproximatedWidth(contours, marker)
+                val contour = contours[i]
+                val points = contour.toArray()
 
-            if (widthB > widthA) {
-                val temp = border
-                border = marker
-                marker = temp
-            }
+                if (points.isEmpty()) continue // evita crash si el contorno está vacío
 
-            if (marker < massCenters.size && border < massCenters.size) {
-                slope = lineSlope(massCenters[marker], massCenters[border])
+                val contour2f = MatOfPoint2f(*points)
 
-                orientation = when {
-                    slope > 0 && slope < 1.5708 ->  HOLO_NORTH
-                    slope >= 1.5708 -> HOLO_EAST
-                    slope < 0 && slope > -1.5708 -> HOLO_WEST
-                    else -> HOLO_SOUTH
+                if (contour2f.total().toInt() < 3) {
+                    contour2f.release()
+                    continue
                 }
 
-                // Imgproc.drawContours(activeArea, contours, marker, Scalar(255.0, 0.0, 0.0), 3)
-                // Imgproc.drawContours(activeArea, contours, border, Scalar(0.0, 255.0, 0.0), 3)
-            } else {
-                Log.w("pastel", "Índices fuera de rango: marker = $marker, border = $border")
+                val approx = MatOfPoint2f()
+                Imgproc.approxPolyDP(contour2f, approx, Imgproc.arcLength(contour2f, true) * 0.02, true)
+
+                if (approx.total() == 4L) {
+                    var k = i
+                    var c = 0
+                    var info = getHierarchy(hierarchy, k)
+
+                    while (info[2] != -1) {
+                        info = getHierarchy(hierarchy, k)
+                        k = info[2]
+                        c++
+                    }
+
+                    if (c >= 3) {
+                        if (mark == 0) border = i
+                        else if (mark == 1) marker = i
+                        mark++
+                    }
+                }
+                approx.release()
+                contour2f.release()
             }
-        }
-        val minArea = (impSize * 0.005).coerceAtLeast(5.0)
-        codeDetected = mark == 2 &&
-                (border < contours.size && marker < contours.size &&
-                        Imgproc.contourArea(contours[border]) > minArea &&
-                        Imgproc.contourArea(contours[marker]) > minArea) //antes mina area era 10
-        Log.d("pastel", "CODEDETECTED: ${codeDetected}")
+            Log.d("pastel", "mark = ${mark}")
 
-        if (codeDetected) {
-            synchronized(drawingLock) {
-                lastValidBorder = border
-                lastValidMarker = marker
-            }
+            if (mark >= 2) {
+                val widthA = getApproximatedWidth(contours, border)
+                val widthB = getApproximatedWidth(contours, marker)
 
-            val L = mutableListOf<Point>()
-            val M = mutableListOf<Point>()
-            val tempL = mutableListOf<Point>()
-            val tempM = mutableListOf<Point>()
-
-            val srcArray = arrayOfNulls<Point>(4)
-            val dstArray = arrayOfNulls<Point>(4)
-
-            // Obtener vértices de los contornos
-            getVertices(contours, border, slope, tempL)
-            getVertices(contours, marker, slope, tempM)
-
-            // Reordenar según orientación
-            updateCornerOrientation(orientation, tempL, L)
-            updateCornerOrientation(orientation, tempM, M)
-
-            // Convertir a Point para la transformación de perspectiva
-            srcArray[0] = L[0]
-            srcArray[1] = L[1]
-            srcArray[2] = L[2]
-            srcArray[3] = L[3]
-
-            dstArray[0] = Point(0.0, 0.0)
-            dstArray[1] = Point(holo_raw.cols().toDouble(), 0.0)
-            dstArray[2] = Point(holo_raw.cols().toDouble(), holo_raw.rows().toDouble())
-            dstArray[3] = Point(0.0, holo_raw.rows().toDouble())
-
-            val src = MatOfPoint2f(*srcArray.filterNotNull().toTypedArray())
-            val dst = MatOfPoint2f(*dstArray.filterNotNull().toTypedArray())
-
-            if (srcArray.size == 4 && dstArray.size == 4) {
-                val warpMatrix = Imgproc.getPerspectiveTransform(src, dst)
-                Imgproc.warpPerspective(
-                    activeArea,
-                    holo_raw,
-                    warpMatrix,
-                    Size(holo_raw.cols().toDouble(), holo_raw.rows().toDouble())
-                )
-
-                when (orientation) {
-                    HOLO_NORTH -> Core.rotate(holo_raw, holo_raw, Core.ROTATE_180)
-                    HOLO_EAST -> Core.rotate(holo_raw, holo_raw, Core.ROTATE_90_CLOCKWISE)
-                    HOLO_WEST -> Core.rotate(holo_raw, holo_raw, Core.ROTATE_90_COUNTERCLOCKWISE)
-                    HOLO_SOUTH -> {} // No rotation needed
+                if (widthB > widthA) {
+                    val temp = border
+                    border = marker
+                    marker = temp
                 }
 
-                // Convertir a escala de grises
-                Imgproc.cvtColor(holo_raw, holo_gray, Imgproc.COLOR_RGB2GRAY)
+                if (marker < massCenters.size && border < massCenters.size) {
+                    slope = lineSlope(massCenters[marker], massCenters[border])
 
-                // Operaciones de mejora de imagen
-                val element = Imgproc.getStructuringElement(
-                    Imgproc.MORPH_RECT,
-                    Size(3.0, 3.0),
-                    Point(1.0, 1.0)
-                )
-
-                // Aplicar CLAHE (Contrast Limited Adaptive Histogram Equalization)
-                val clahe = Imgproc.createCLAHE(5.0, Size(30.0, 30.0))
-                clahe.apply(holo_gray, holo_gray)
-
-                // Operaciones morfológicas
-                Imgproc.dilate(holo_gray, holo_gray, element, Point(-1.0, -1.0), 1)
-                Imgproc.erode(holo_gray, holo_gray, element, Point(-1.0, -1.0), 1)
-                Imgproc.GaussianBlur(holo_gray, holo_gray, Size(5.0, 5.0), 0.0)
-                Imgproc.adaptiveThreshold(
-                    holo_gray,
-                    holo_gray,
-                    255.0,
-                    Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
-                    Imgproc.THRESH_BINARY,
-                    51,
-                    16.0
-                )
-
-                // Recortar el borde
-                val targetSize = 224
-                val borderSize = 16  // Píxeles a conservar en bordes
-                val centerRect = Rect(
-                    borderSize,
-                    borderSize,
-                    holo_gray.cols() - 2*borderSize,
-                    holo_gray.rows() - 2*borderSize
-                )
-
-                holoCode = Mat(holo_gray, centerRect)
+                    orientation = when {
+                        slope > 0 && slope < 1.5708 ->  HOLO_NORTH
+                        slope >= 1.5708 -> HOLO_EAST
+                        slope < 0 && slope > -1.5708 -> HOLO_WEST
+                        else -> HOLO_SOUTH
+                    }
+                } else {
+                    Log.w("pastel", "Índices fuera de rango: marker = $marker, border = $border")
+                }
             }
-            src.release()
-            dst.release()
+            val minArea = (impSize * 0.005).coerceAtLeast(5.0)
+            codeDetected = mark == 2 &&
+                    (border < contours.size && marker < contours.size &&
+                            Imgproc.contourArea(contours[border]) > minArea &&
+                            Imgproc.contourArea(contours[marker]) > minArea) //antes mina area era 10
+            Log.d("pastel", "CODEDETECTED: ${codeDetected}")
+
+            if (codeDetected) {
+                synchronized(drawingLock) {
+                    lastValidBorder = border
+                    lastValidMarker = marker
+                }
+
+                val L = mutableListOf<Point>()
+                val M = mutableListOf<Point>()
+                val tempL = mutableListOf<Point>()
+                val tempM = mutableListOf<Point>()
+
+                val srcArray = arrayOfNulls<Point>(4)
+                val dstArray = arrayOfNulls<Point>(4)
+
+                // Obtener vértices de los contornos
+                getVertices(contours, border, slope, tempL)
+                getVertices(contours, marker, slope, tempM)
+
+                // Reordenar según orientación
+                updateCornerOrientation(orientation, tempL, L)
+                updateCornerOrientation(orientation, tempM, M)
+
+                // Convertir a Point para la transformación de perspectiva
+                srcArray[0] = L[0]
+                srcArray[1] = L[1]
+                srcArray[2] = L[2]
+                srcArray[3] = L[3]
+
+                dstArray[0] = Point(0.0, 0.0)
+                dstArray[1] = Point(holo_raw.cols().toDouble(), 0.0)
+                dstArray[2] = Point(holo_raw.cols().toDouble(), holo_raw.rows().toDouble())
+                dstArray[3] = Point(0.0, holo_raw.rows().toDouble())
+
+                val src = MatOfPoint2f(*srcArray.filterNotNull().toTypedArray())
+                val dst = MatOfPoint2f(*dstArray.filterNotNull().toTypedArray())
+
+                if (srcArray.size == 4 && dstArray.size == 4) {
+                    val warpMatrix = Imgproc.getPerspectiveTransform(src, dst)
+                    Imgproc.warpPerspective(
+                        activeArea,
+                        holo_raw,
+                        warpMatrix,
+                        Size(holo_raw.cols().toDouble(), holo_raw.rows().toDouble())
+                    )
+
+                    when (orientation) {
+                        HOLO_NORTH -> Core.rotate(holo_raw, holo_raw, Core.ROTATE_180)
+                        HOLO_EAST -> Core.rotate(holo_raw, holo_raw, Core.ROTATE_90_CLOCKWISE)
+                        HOLO_WEST -> Core.rotate(holo_raw, holo_raw, Core.ROTATE_90_COUNTERCLOCKWISE)
+                        HOLO_SOUTH -> {} // No rotation needed
+                    }
+
+                    // Convertir a escala de grises
+                    Imgproc.cvtColor(holo_raw, holo_gray, Imgproc.COLOR_RGB2GRAY)
+
+                    // Operaciones de mejora de imagen
+                    val element = Imgproc.getStructuringElement(
+                        Imgproc.MORPH_RECT,
+                        Size(3.0, 3.0),
+                        Point(1.0, 1.0)
+                    )
+
+                    // Aplicar CLAHE (Contrast Limited Adaptive Histogram Equalization)
+                    val clahe = Imgproc.createCLAHE(5.0, Size(30.0, 30.0))
+                    clahe.apply(holo_gray, holo_gray)
+
+                    // Operaciones morfológicas
+                    Imgproc.dilate(holo_gray, holo_gray, element, Point(-1.0, -1.0), 1)
+                    Imgproc.erode(holo_gray, holo_gray, element, Point(-1.0, -1.0), 1)
+                    Imgproc.GaussianBlur(holo_gray, holo_gray, Size(5.0, 5.0), 0.0)
+                    Imgproc.adaptiveThreshold(
+                        holo_gray,
+                        holo_gray,
+                        255.0,
+                        Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,
+                        Imgproc.THRESH_BINARY,
+                        51,
+                        16.0
+                    )
+
+                    // Recortar el borde
+                    val targetSize = 224
+                    val borderSize = 16  // Píxeles a conservar en bordes
+                    val centerRect = Rect(
+                        borderSize,
+                        borderSize,
+                        holo_gray.cols() - 2*borderSize,
+                        holo_gray.rows() - 2*borderSize
+                    )
+
+                    holoCode = Mat(holo_gray, centerRect)
+                    //Imgproc.resize(holoCode, holoCode, Size(28.0, 28.0)) //FIXME:
+                }
+                src.release()
+                dst.release()
+            }
+            gray.release()
+            hierarchy.release()
+            return codeDetected
+        } finally {
+            gray.release()
+            hierarchy.release()
+            approx.release()
+            contour2f.release()
         }
-        gray.release()
-        hierarchy.release()
-        return codeDetected
     }
 
     fun extractBits(): Array<String>? {
@@ -710,68 +683,80 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         var average: Int
         val oneVal: Byte = 255.toByte()
         val zeroVal: Byte = 0.toByte()
+        try {
+            // Procesar cada módulo (ventana de barrido)
+            for (r in 0 until holoCode.rows() step sizeW) {
+                for (c in 0 until holoCode.cols() step sizeW) {
+                    val tempRec = Rect(c, r, sizeW, sizeW)
+                    val module = Mat(holoCode, tempRec)
 
-        // Procesar cada módulo (ventana de barrido)
-        for (r in 0 until holoCode.rows() step sizeW) {
-            for (c in 0 until holoCode.cols() step sizeW) {
-                val tempRec = Rect(c, r, sizeW, sizeW)
-                val module = Mat(holoCode, tempRec)
-
-                // Convertir los valores del módulo a una lista
-                for (i in 0 until sizeW) {
-                    for (j in 0 until sizeW) {
-                        val value = ByteArray(1)
-                        module.get(i, j, value)
-                        moduleValues.add(value[0].toInt() and 0xFF)
+                    // Convertir los valores del módulo a una lista
+                    for (i in 0 until sizeW) {
+                        for (j in 0 until sizeW) {
+                            val value = ByteArray(1)
+                            module.get(i, j, value)
+                            moduleValues.add(value[0].toInt() and 0xFF)
+                        }
                     }
-                }
 
-                // Calcular promedio y determinar bit
-                average = moduleValues.sum() / moduleValues.size
-                if (average > 128) {
-                    holoCodeArray[r / sizeW][c / sizeW][0] = oneVal
-                    holoCodeInt[r / sizeW][c / sizeW] = 0
+                    // Calcular promedio y determinar bit
+                    average = moduleValues.sum() / moduleValues.size
+                    if (average > 128) {
+                        holoCodeArray[r / sizeW][c / sizeW][0] = oneVal
+                        holoCodeInt[r / sizeW][c / sizeW] = 0
+                    } else {
+                        holoCodeArray[r / sizeW][c / sizeW][0] = zeroVal
+                        holoCodeInt[r / sizeW][c / sizeW] = 1
+                    }
+                    moduleValues.clear()
+                }
+            }
+            
+
+            // Convertir el array a Mat (forma simplificada)
+            for (i in 0 until 28) {
+                for (j in 0 until 28) {
+                    imagen.put(i, j, byteArrayOf(holoCodeArray[i][j][0]))
+                }
+            }
+
+            holoMatrix = imagen.clone()
+
+            val holoDecoder = HoloDecoder()
+            val message2 = holoDecoder.decodeMessage(holoCodeInt)
+
+            return if (message2 != "El mensaje está corrompido") {
+                Log.d("pastel", "DECODER message ${message2}")
+                val m = message2.split("_").toTypedArray()
+
+                if (m.size < 5) {
+                    m
                 } else {
-                    holoCodeArray[r / sizeW][c / sizeW][0] = zeroVal
-                    holoCodeInt[r / sizeW][c / sizeW] = 1
+                    val vehicleType = HoloDecoder.whichVehicleNew(m[5].toInt())
+                    if (vehicleType != "Servicio no reconocido") {
+                        m[5] += "_$vehicleType"
+                    } else {
+                        m[5] += "_F"
+                    }
+                    m
                 }
-                moduleValues.clear()
-            }
-        }
-
-        // Convertir el array a Mat (forma simplificada)
-        for (i in 0 until 28) {
-            for (j in 0 until 28) {
-                imagen.put(i, j, byteArrayOf(holoCodeArray[i][j][0]))
-            }
-        }
-
-        holoMatrix = imagen.clone()
-
-        val holoDecoder = HoloDecoder()
-        val message2 = holoDecoder.decodeMessage(holoCodeInt)
-
-        return if (message2 != "El mensaje está corrompido") {
-            Log.d("pastel", "DECODER message ${message2}")
-            val m = message2.split("_").toTypedArray()
-
-            if (m.size < 5) {
-                m
             } else {
-                val vehicleType = HoloDecoder.whichVehicleNew(m[5].toInt())
-                if (vehicleType != "Servicio no reconocido") {
-                    m[5] += "_$vehicleType"
-                } else {
-                    m[5] += "_F"
-                }
-                m
+                null
             }
-        } else {
-            null
+        } catch (e: Exception) {
+            Log.e("pastel", "Error al extraer bits: ${e.message}")
+            return null
+        } finally {
+            holoCode.release()
+            imagen.release()
         }
     }
 
-    private fun getApproximatedWidth(contours: List<MatOfPoint>, cId: Int): Int { //FIXME:
+    private fun getApproximatedWidth(contours: List<MatOfPoint>, cId: Int): Int {//FIXME:
+        if (contours.isEmpty() || cId < 0 || cId >= contours.size) {
+            return 0 // O devuelve -1, lanza excepción controlada, loguea, etc.
+        }
+
         val box: Rect = Imgproc.boundingRect(contours[cId])
         return box.width
     }
@@ -993,7 +978,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     private fun sendDecodedInfoToReact(promise: Promise) {
         if (info != null && info != "El mensaje está corrompido") {
-        Log.e("CameragusQR", "sendDecodedInfoToReact: ${info}")
+        Log.i("CameragusQR", "sendDecodedInfoToReact: ${info}")
         promise.resolve(info)
         } else { //FIXME: Tal vez no haga falta mandar esto como error
             //promise.reject("NoQRCode", "No QR code detected")

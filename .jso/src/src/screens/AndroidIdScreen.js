@@ -37,6 +37,7 @@
       fetchAndroidId();
     }, []);
     var copyToClipboard = function copyToClipboard(androidId) {
+      _reactNative.ToastAndroid.show('Copiado al portapapeles', _reactNative.ToastAndroid.SHORT);
       _clipboard.default.setString(androidId);
     };
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
