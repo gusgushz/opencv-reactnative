@@ -1,6 +1,6 @@
 {
-  "AppName": "Yucatán",
-  "PackageName": "com.vifinsapublic",
+  "AppName": "Colorcode",
+  "PackageName": "com.colorcodepublic",
   "Client": {
     "Id": "31"
   },
@@ -41,9 +41,7 @@
             "Priority": 1
           }
         ],
-        "FieldsToShow": [
-          "url"
-        ]
+        "FieldsToShow": ["url"]
       },
       {
         "Level": "2",
@@ -70,14 +68,7 @@
             "Priority": 2
           }
         ],
-        "FieldsToShow": [
-          "url",
-          "expiration",
-          "service",
-          "serie",
-          "region",
-          "documents"
-        ]
+        "FieldsToShow": ["url", "expiration", "service", "serie", "region", "documents"]
       },
       {
         "Level": "3",

@@ -362,7 +362,17 @@ class HoloDecoder {
         
         val result = specs.joinToString("_") { it?.trim() ?: "" }
         Log.d("pastel", "Mensaje specs: ${result}")
-        return result
+        val rawSpec = (4..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
+        val raw = (1..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
+        Log.d("pastel", "Mensaje raw: ${raw}")
+        Log.d("pastel", "Mensaje rawSpec: ${rawSpec}")
+        Log.d("pastel", "Mensaje result: ${result}")
+        // Si la el Holo contiene "|", retornar rawSpec; si no, retornar result
+        return if (rawSpec.contains("|")) {
+            rawSpec
+        } else {
+            result
+        }
     }
 
     fun mask(matrix: Array<Array<ByteArray>>, mask0: Int, mask1: Int, mask2: Int, mask3: Int): Int {

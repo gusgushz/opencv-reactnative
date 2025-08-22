@@ -364,12 +364,25 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     }
 
 	override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame): Mat {
-        val activeArea = inputFrame.rgba()
+        //Vista normal VIEW_MODE_RGBA
+        // val frame = inputFrame.rgba()
+
+        //Vista gris VIEW_MODE_GRAY
+        val frame = Mat() 
+        Imgproc.cvtColor(inputFrame.gray(), frame, Imgproc.COLOR_GRAY2RGBA, 4);
+
+        // // Vista de detección de bordes VIEW_MODE_CANNY
+        // Imgproc.Canny(inputFrame.gray(), mIntermediateMat, 80, 100);
+        // Imgproc.cvtColor(mIntermediateMat, frame, Imgproc.COLOR_GRAY2RGBA, 4);
+
+        // // Vista de detección de características VIEW_MODE_FEATURES
+        // val mGray = inputFrame.gray();
+        // FindFeatures(mGray.getNativeObjAddr(), frame.getNativeObjAddr());
 
         synchronized(drawingLock) {
-            if (!::persistentOverlay.isInitialized || persistentOverlay.empty() || !overlayInitialized || persistentOverlay?.width() != activeArea.width() || persistentOverlay?.height() != activeArea.height()) {
+            if (!::persistentOverlay.isInitialized || persistentOverlay.empty() || !overlayInitialized || persistentOverlay?.width() != frame.width() || persistentOverlay?.height() != frame.height()) {
                 // persistentOverlay?.release()
-                persistentOverlay = Mat(activeArea.size(), activeArea.type(), Scalar(0.0, 0.0, 0.0, 0.0))
+                persistentOverlay = Mat(frame.size(), frame.type(), Scalar(0.0, 0.0, 0.0, 0.0))
                 overlayInitialized = true
             }
 
@@ -383,22 +396,23 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             frameCounter++
             if (frameCounter >= 5 && !shouldClearOverlay) {
                 frameCounter = 0
-                val detected = detectCode(activeArea)
+                val detected = detectCode(frame)
                 if (detected) {
                     val message = extractBits()
                     info = message?.joinToString(separator = "_")
                 }
             }
 
-            drawPersistentMarkers(activeArea)
+            drawPersistentMarkers(frame)
             // usamos directamente activeArea como outputFrame
             if (!persistentOverlay.empty() &&
-                persistentOverlay.size() == activeArea.size() &&
-                persistentOverlay.type() == activeArea.type()) {
-                Core.add(activeArea, persistentOverlay, activeArea)
+                persistentOverlay.size() == frame.size() &&
+                persistentOverlay.type() == frame.type()) {
+                Core.add(frame, persistentOverlay, frame)
             }
-            return activeArea         
+            return frame         
         }
+        
     }
 
     private fun drawPersistentMarkers(baseFrame: Mat) {
@@ -985,5 +999,12 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         promise.resolve("")
         }
     }
+    // @ReactMethod
+    // private fun printMatrix(promise: Promise) {
+    //     val holoDecoder = HoloDecoder()
+    //     val message2 = holoDecoder.printMatrixWithoutBorders(holoCodeInt)
+    //     Log.i("CameragusQR", "sendDecodedInfoToReact: ${info}")
+    //     promise.resolve(info)
+    // }
 }
 
