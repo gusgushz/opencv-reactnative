@@ -97,15 +97,7 @@
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
       children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableWithoutFeedback, {
-        onPress: function onPress() {
-          {
-            setCount(count + 1);
-            if (count == 4) {
-              setCount(0);
-              navigation.navigate('AndroidIdScreen');
-            }
-          }
-        },
+        onPress: function onPress() {},
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
           source: _$$_REQUIRE(_dependencyMap[9]),
           resizeMode: "center",

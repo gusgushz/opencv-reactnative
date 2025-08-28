@@ -197,7 +197,7 @@
                   setCheckBoxes(newCheckBoxes);
                   lastScannedRef.current = res; // Actualiza el último código escaneado
 
-                  if ((newCheckBoxes[0] && newCheckBoxes[1] || newCheckBoxes[0] && newCheckBoxes[2] || newCheckBoxes[1] && newCheckBoxes[2]) && false) navigateToInformationScreen(updatedInfo);
+                  if ((newCheckBoxes[0] && newCheckBoxes[1] || newCheckBoxes[0] && newCheckBoxes[2] || newCheckBoxes[1] && newCheckBoxes[2]) && true) navigateToInformationScreen(updatedInfo);
                   if (hasRear && hasFrontal && hasEngomado) {
                     if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen(updatedInfo);
                   }

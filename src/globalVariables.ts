@@ -7,7 +7,7 @@ export enum RoleLevels {
   THREE = '4',
 }
 
-export const sufix = 'CHP003';
+export const sufix = 'vif001';
 export const region = AppConfig.Regions[0].Name.toUpperCase();
 
 export const stateNameToId = (state: string): number => {

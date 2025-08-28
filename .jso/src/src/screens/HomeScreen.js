@@ -32,28 +32,15 @@
     (0, _react.useEffect)(function () {
       if (!userSession) {
         {
-          var userSecurityLevelRole = {
-            email: '',
-            name: '',
-            role: '4'
-          };
-          (0, _utils.storeUserSession)(userSecurityLevelRole);
-          setUserSession(userSecurityLevelRole);
+          var Session = (0, _utils.getUserSession)();
+          if (Session) setUserSession(Session);
         }
       }
     }, [isFocused]);
     return /*#__PURE__*/(0, _jsxRuntime.jsxs)(_reactNative.View, {
       style: [styles.container, _theme.stylesTemplate.screenBgColor],
       children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableWithoutFeedback, {
-        onPress: function onPress() {
-          {
-            setCount(count + 1);
-            if (count == 4) {
-              setCount(0);
-              navigation.navigate('AndroidIdScreen');
-            }
-          }
-        },
+        onPress: function onPress() {},
         children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Image, {
           source: _$$_REQUIRE(_dependencyMap[9]),
           resizeMode: "center",
@@ -81,7 +68,40 @@
             style: styles.buttonText,
             children: "Escanear c\xF3digo"
           })
-        }), false]
+        }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_jsxRuntime.Fragment, {
+          children: userSession ? /*#__PURE__*/(0, _jsxRuntime.jsxs)(_jsxRuntime.Fragment, {
+            children: [/*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableOpacity, {
+              onPress: function onPress() {
+                navigation.navigate('ProfileScreen');
+              },
+              style: [styles.button, _theme.stylesTemplate.primaryColor],
+              children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+                style: styles.buttonText,
+                children: "Perfil"
+              })
+            }), /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableOpacity, {
+              onPress: function onPress() {
+                (0, _utils.removeUserSession)();
+                (0, _utils.removeUser)();
+                setUserSession(null);
+              },
+              style: [styles.button, _theme.stylesTemplate.primaryColor],
+              children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+                style: styles.buttonText,
+                children: "Cerrar sesi\xF3n"
+              })
+            })]
+          }) : /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.TouchableOpacity, {
+            onPress: function onPress() {
+              navigation.navigate('LoginScreen');
+            },
+            style: [styles.button, _theme.stylesTemplate.primaryColor],
+            children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.Text, {
+              style: styles.buttonText,
+              children: "Iniciar sesi\xF3n"
+            })
+          })
+        })]
       })]
     });
   };

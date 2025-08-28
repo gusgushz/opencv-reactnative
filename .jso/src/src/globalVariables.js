@@ -11,7 +11,7 @@
     RoleLevels["THREE"] = "4";
     return RoleLevels;
   }({});
-  var sufix = exports.sufix = 'CHP003';
+  var sufix = exports.sufix = 'vif001';
   var region = exports.region = _app.default.Regions[0].Name.toUpperCase();
   var stateNameToId = exports.stateNameToId = function stateNameToId(state) {
     if (state === region) {
