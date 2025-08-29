@@ -1,4 +1,4 @@
-package com.noentrarprivate
+package com.edomexpublic
 
 import android.app.Application
 import com.facebook.react.PackageList

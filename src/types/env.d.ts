@@ -6,5 +6,7 @@ declare module 'dotenv' {
   export const DOMAIN_ID_REBRANDLY: string;
   export const API_KEY_REBRANDLY: string;
   export const API_REPORTS_URL: string;
+  export const API_REPORTS_URL_NEWPORT: string;
+  export const API_KEY_NEWPORT: string;
   export const API_HOLOWEBSERVICE_URL: string;
 }

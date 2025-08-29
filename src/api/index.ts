@@ -5,5 +5,6 @@ import postKeyActivation from './postKeyActivation';
 import postValidateToken from './postValidateToken';
 import getRecoverToken from './getRecoverToken';
 import postAuthenticateDevice from './postAuthenticateDevice';
+import postAuthenticateValidDevice from './postAuthenticateValidDevice';
 
-export { getChildServicesByState, getLink, getUpdateByTimestamp, postKeyActivation, postValidateToken, getRecoverToken, postAuthenticateDevice };
+export { getChildServicesByState, getLink, getUpdateByTimestamp, postKeyActivation, postValidateToken, getRecoverToken, postAuthenticateDevice, postAuthenticateValidDevice };

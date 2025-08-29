@@ -1,4 +1,4 @@
-package com.noentrarprivate
+package com.edomexpublic
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

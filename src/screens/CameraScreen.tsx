@@ -4,7 +4,7 @@ import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
-import { stateNameToId } from '../globalVariables';
+import { regionId, stateNameToId } from '../globalVariables';
 import { Parts, Service } from '../models';
 import { getServices } from '../utils/';
 import { useScanContext } from '../contexts/ScanContext';
@@ -106,62 +106,64 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
         }
         if (res && res.length > 0) {
           // Si es un código nuevo (diferente al último escaneado)
-          if (res !== lastScannedRef.current) {
-            let pts;
-            if (res.includes('XD')) {
-              Vibration.vibrate(100);
-              navigateToInformationScreen(res);
-            }
-            if (res.includes('|')) {
-              Vibration.vibrate(100);
+          if (regionId == res.split('|')[4]) {
+            if (res !== lastScannedRef.current) {
+              let pts;
+              if (res.includes('XD')) {
+                Vibration.vibrate(100);
+                navigateToInformationScreen(res);
+              }
+              if (res.includes('|')) {
+                Vibration.vibrate(100);
 
-              pts = res.split('|');
-              //NOTE:Informacion hardcodeada para Edomex
-              setPartsEdomex({
-                url: 'https://edomex.gob.mx/',
-                folio: pts[0],
-                providerName: 'VIFINSA',
-                providerId: pts[1],
-                batchNumber: pts[2],
-                manufacturedYear: pts[3].slice(0, 2),
-                holo: '00',
-                semester: '2',
-                expirationDate: '2025',
-                serial: 'AAA-000-A',
-              });
-              console.log('parts*************:', JSON.stringify(pts));
-              lastScannedRef.current = res; // Actualiza el último código escaneado
-              navigateToInformationScreen();
+                pts = res.split('|');
+                //NOTE:Informacion hardcodeada para Edomex
+                setPartsEdomex({
+                  url: 'https://edomex.gob.mx/',
+                  folio: pts[0],
+                  providerName: 'VIFINSA',
+                  providerId: pts[1],
+                  batchNumber: pts[2],
+                  manufacturedYear: pts[3].slice(0, 2),
+                  holo: pts[5],
+                  semester: '2',
+                  expirationDate: '2025',
+                  serial: 'AAA-000-A',
+                });
+                console.log('parts*************:', JSON.stringify(pts));
+                lastScannedRef.current = res; // Actualiza el último código escaneado
+                navigateToInformationScreen();
+              }
+              //TODO: Oculto ya que esta rama (EDOMEX) no necesita escanera placas
+              // else {
+              //   pts = res.split('_');
+              //   const serviceName = findServiceName(pts[5], pts[7]);
+              //   let documents: string[] = [];
+              //   if (hasFrontal) documents.push('Frontal');
+              //   if (hasRear) documents.push('Trasera');
+              //   if (hasEngomado) documents.push('Engomado');
+              //   const updatedInfo: Parts = {
+              //     version: pts[0],
+              //     codeType: pts[1],
+              //     chainLength: pts[2],
+              //     permissionLevel: pts[3],
+              //     serial: pts[4],
+              //     typeServiceId: pts[5],
+              //     typeServiceText: serviceName,
+              //     state: pts[7],
+              //     batch: pts[8],
+              //     provider: pts[9],
+              //     providerNumber: pts[10],
+              //     expirationDate: pts[11],
+              //     manufacturedYear: pts[12],
+              //     url: pts[13],
+              //     documents: documents,
+              //   };
+              //   setParts(updatedInfo);
+              //   console.log('parts:', JSON.stringify(pts));
+              //   console.log('updatedInfo:', JSON.stringify(updatedInfo));
+              // }
             }
-            //TODO: Oculto ya que esta rama (EDOMEX) no necesita escanera placas
-            // else {
-            //   pts = res.split('_');
-            //   const serviceName = findServiceName(pts[5], pts[7]);
-            //   let documents: string[] = [];
-            //   if (hasFrontal) documents.push('Frontal');
-            //   if (hasRear) documents.push('Trasera');
-            //   if (hasEngomado) documents.push('Engomado');
-            //   const updatedInfo: Parts = {
-            //     version: pts[0],
-            //     codeType: pts[1],
-            //     chainLength: pts[2],
-            //     permissionLevel: pts[3],
-            //     serial: pts[4],
-            //     typeServiceId: pts[5],
-            //     typeServiceText: serviceName,
-            //     state: pts[7],
-            //     batch: pts[8],
-            //     provider: pts[9],
-            //     providerNumber: pts[10],
-            //     expirationDate: pts[11],
-            //     manufacturedYear: pts[12],
-            //     url: pts[13],
-            //     documents: documents,
-            //   };
-            //   setParts(updatedInfo);
-            //   console.log('parts:', JSON.stringify(pts));
-            //   console.log('updatedInfo:', JSON.stringify(updatedInfo));
-            // }
           }
         }
       } catch (err) {

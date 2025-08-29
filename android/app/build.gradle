@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.noentrarprivate"
+    namespace "com.edomexpublic"
     defaultConfig {
-        applicationId "com.noentrarprivate"
+        applicationId "com.edomexpublic"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

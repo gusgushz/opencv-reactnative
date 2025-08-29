@@ -9,14 +9,14 @@ import { RootStackParamList } from './src/navigation/NavigationProps';
 import { CameraScreen, HomeScreen, InformationScreen, ProfileScreen, LoginScreen, InfractionsScreen, DownloadSecretKeyScreen, AndroidIdScreen, CameraTestScreen
 } from './src/screens/';
 //prettier-ignore
-import { storeServices, storeUsersData, readableString, getKey, getToken, base64Decode, base64Encode, storeToken, getServices, getUsersData, removeToken, getLastValidateTokenDate, storeLastValidateTokenDate, storeDaysDifference,
+import { storeServices, storeUsersData, readableString, getKey, getToken, base64Decode, base64Encode, storeToken, getServices, getUsersData, removeToken, getLastValidateTokenDate, storeLastValidateTokenDate, storeDaysDifference, AESDecrypt,
 } from './src/utils';
 import ConfigApp from './src/config/app.json';
 import { SECURITY_LEVEL } from 'dotenv';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import { UpdateByTimestampData } from './src/models';
 //prettier-ignore
-import { getChildServicesByState, getRecoverToken, getUpdateByTimestamp, postKeyActivation, postValidateToken, postAuthenticateDevice,
+import { getChildServicesByState, getRecoverToken, getUpdateByTimestamp, postKeyActivation, postValidateToken, postAuthenticateDevice, postAuthenticateValidDevice,
 } from './src/api';
 // import { UserProvider } from './src/contexts/UserContext.tsx';
 import { ScanContextProvider } from './src/contexts/ScanContext.tsx';
@@ -57,10 +57,11 @@ function App() {
   const init = async () => {
     let isPermissionGranted = false;
 
-    const serv = getServices();
-    if (!serv) {
+    try {
       const services = await getChildServicesByState();
       if (services.status !== 'error') storeServices(services.data);
+    } catch (error) {
+      console.log('Error al obtener la lista de servicios:', error);
     }
 
     console.log('SECURITY_LEVEL actual:', SECURITY_LEVEL);
@@ -85,13 +86,11 @@ function App() {
         console.log('chain', chain);
         if (token != '') {
           if (key === keyDecoded) {
-            console.log(key === keyDecoded);
             const dateRaw = getLastValidateTokenDate();
-            console.log('dateRaw', dateRaw);
             const date = dateRaw ? new Date(dateRaw) : null;
-            console.log('date', date);
-            const response = await postValidateToken(chain, token);
-            console.log('response postValidateToken', response);
+            // const response = await postValidateToken(chain, token);
+            const response = await postAuthenticateValidDevice(androidId, key);
+            console.log('response postAuthenticateValidDevice', response);
             if (response.status === 'error' && response.message === 'Error de red') {
               if (date) {
                 console.log('getLastValidateTokenDate', date.toLocaleDateString());
@@ -106,7 +105,7 @@ function App() {
               await OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
               return;
             }
-            if (response.status === 'success') {
+            if (response.success === true) {
               storeLastValidateTokenDate(today);
               isPermissionGranted = true;
               return;
@@ -134,7 +133,9 @@ function App() {
             // }
             console.log('isKeyAlreadyRegistered**FALTA EL ENDPOINT PARA RECUPERARTOKEN', isKeyAlreadyRegistered);
             storeLastValidateTokenDate(today);
+            storeToken('token recuperado');
             isPermissionGranted = true; //FIXME: se dejo en true para pruebas
+            return;
           }
           if (isKeyRegistered) {
             const res = await postAuthenticateDevice(chain);
@@ -155,13 +156,19 @@ function App() {
       console.log('isPermissionGranted', isPermissionGranted);
       if (!isPermissionGranted) await OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
     } else {
-      // const res = getUsersData();
-      // if (!res) {
-        console.log('ConfigApp.Client.Id', ConfigApp.Client.Id);
+      try {
+        //NOTE: Pruebas para ver los usuario y contraseñas
+        // const res = getUsersData();
+        // console.log('res', res?.created.length);
+        // (res as UpdateByTimestampData).created.map(user => {
+        //   console.log('user', user);
+        //   console.log('password decrypted', readableString(user.password));
+        // });
         const response = await getUpdateByTimestamp(ConfigApp.Client.Id);
-        console.log('response getUpdateByTimestamp', JSON.parse(readableString(response.data)) as UpdateByTimestampData);
         if (response.status !== 'error') storeUsersData(JSON.parse(readableString(response.data)) as UpdateByTimestampData);
-      // }
+      } catch (error) {
+        console.log('Error al obtener la lista de usuarios:', error);
+      }
     }
   };
 

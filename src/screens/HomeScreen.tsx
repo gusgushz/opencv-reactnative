@@ -19,7 +19,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
 
   const getInfo = async () => {
     const androidId = await OpencvFunc.getAndroidId();
-    console.log('Android ID:', androidId);
+    console.log('Android ID:', androidId + sufix);
     setAndroidId(androidId + sufix);
   };
   const [androidId, setAndroidId] = useState<string>('');
@@ -105,7 +105,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </>
         )}
       </View>
-      <Text style={[styles.text, { fontFamily: 'serif' }]}>Key {key}</Text>
+      {/* <Text style={[styles.text, { fontFamily: 'serif' }]}>Key {key}</Text>
       <Text style={[styles.text, { fontFamily: 'serif' }]}>AndroidId {androidId}</Text>
       <TouchableOpacity style={[styles.button, stylesTemplate.primaryColor]} onPress={() => Clipboard.setString(chain)}>
         <Text style={[styles.text, { fontFamily: 'serif' }]}>Chain {chain}</Text>
@@ -113,7 +113,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
       <Text style={[styles.text, { fontFamily: 'serif' }]}>Días desde la última validación: {daysDiff}</Text>
       <TouchableOpacity style={[styles.button, stylesTemplate.primaryColor]} onPress={() => Clipboard.setString(token)}>
         <Text style={[styles.text, { fontFamily: 'serif' }]}>Token: {token}</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
