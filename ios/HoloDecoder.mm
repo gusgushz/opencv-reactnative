@@ -107,12 +107,22 @@ static ZXGenericGF *QRCodeField256() {
 }
 
 - (NSString *)decodeMessage:(int **)binaryData rows:(int)rows cols:(int)cols {
-    [self flipMatrix90DegreesRight:binaryData rows:rows cols:cols];
+    // [self flipMatrix90DegreesRight:binaryData rows:rows cols:cols];
 
     // 1. Verificar orientación y rotar si es necesario
-    if (binaryData[1][1] == 1) {
+    if (binaryData[1][1] == 0) {
+        NSLog(@"Matriz sin rotar (basado en [1,1])");
+    } else if (binaryData[26][26] == 0) {
         [self rotateMatrix180:binaryData rows:rows cols:cols];
-        NSLog(@"Matriz rotada 180° (basado en [1,1])");
+        NSLog(@"Matriz rotada 180° (basado en [26,26])");
+    } else if (binaryData[1][26] == 0) {
+        [self rotateMatrix270:binaryData rows:rows cols:cols];
+        NSLog(@"Matriz rotada 90° (basado en [1,26])");
+    } else if (binaryData[26][1] == 0) {
+        [self rotateMatrix90:binaryData rows:rows cols:cols];
+        NSLog(@"Matriz rotada 270° (basado en [26,1])");
+    } else {
+        NSLog(@"No se pudo determinar orientación, usando matriz original");
     }
 
     // 2. Convertir binaryData a byteData y aplicar máscaras
@@ -415,37 +425,6 @@ static ZXGenericGF *QRCodeField256() {
     return result;
 }
 
-
-- (void)rotateMatrix180:(int **)matrix rows:(int)rows cols:(int)cols {
-    for (int i = 0; i < rows / 2; i++) {
-        for (int j = 0; j < cols; j++) {
-            int temp = matrix[i][j];
-            matrix[i][j] = matrix[rows - 1 - i][cols - 1 - j];
-            matrix[rows - 1 - i][cols - 1 - j] = temp;
-        }
-    }
-}
-
-- (void)flipMatrix90DegreesRight:(int **)matrix rows:(int)rows cols:(int)cols {
-    // Paso 1: Transponer (intercambiar matrix[i][j] con matrix[j][i])
-    for (int i = 0; i < rows; i++) {
-        for (int j = i + 1; j < cols; j++) {
-            int temp = matrix[i][j];
-            matrix[i][j] = matrix[j][i];
-            matrix[j][i] = temp;
-        }
-    }
-
-    // Paso 2: Flip horizontal
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols / 2; j++) {
-            int temp = matrix[i][j];
-            matrix[i][j] = matrix[i][cols - 1 - j];
-            matrix[i][cols - 1 - j] = temp;
-        }
-    }
-}
-
 - (int)mask:(uint8_t [28][28])matrix rows:(int)rows cols:(int)cols
        mask0:(int)mask0 mask1:(int)mask1 mask2:(int)mask2 mask3:(int)mask3 {
 
@@ -574,5 +553,42 @@ static ZXGenericGF *QRCodeField256() {
         NSLog(@"❌ Error al leer archivo temporal: %@", error);
     }
 }
+
+- (void)rotateMatrix180:(int **)matrix rows:(int)rows cols:(int)cols {
+    for (int i = 0; i < rows / 2; i++) {
+        for (int j = 0; j < cols; j++) {
+            int temp = matrix[i][j];
+            matrix[i][j] = matrix[rows - 1 - i][cols - 1 - j];
+            matrix[rows - 1 - i][cols - 1 - j] = temp;
+        }
+    }
+}
+
+- (void)rotateMatrix90:(int **)matrix rows:(int)rows cols:(int)cols {
+    // Solo válido si rows == cols (matriz cuadrada)
+    for (int i = 0; i < rows / 2; i++) {
+        for (int j = i; j < cols - i - 1; j++) {
+            int temp = matrix[i][j];
+            matrix[i][j] = matrix[rows - j - 1][i];
+            matrix[rows - j - 1][i] = matrix[rows - i - 1][cols - j - 1];
+            matrix[rows - i - 1][cols - j - 1] = matrix[j][cols - i - 1];
+            matrix[j][cols - i - 1] = temp;
+        }
+    }
+}
+
+- (void)rotateMatrix270:(int **)matrix rows:(int)rows cols:(int)cols {
+    // Solo válido si rows == cols (matriz cuadrada)
+    for (int i = 0; i < rows / 2; i++) {
+        for (int j = i; j < cols - i - 1; j++) {
+            int temp = matrix[i][j];
+            matrix[i][j] = matrix[j][cols - i - 1];
+            matrix[j][cols - i - 1] = matrix[rows - i - 1][cols - j - 1];
+            matrix[rows - i - 1][cols - j - 1] = matrix[rows - j - 1][i];
+            matrix[rows - j - 1][i] = temp;
+        }
+    }
+}
+
 
 @end

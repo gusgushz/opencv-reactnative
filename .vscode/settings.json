@@ -1,4 +1,12 @@
 {
   "C_Cpp.errorSquiggles": "disabled",
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "files.associations": {
+    "deque": "cpp",
+    "forward_list": "cpp",
+    "list": "cpp",
+    "regex": "cpp",
+    "string": "cpp",
+    "vector": "cpp"
+  }
 }

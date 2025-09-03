@@ -18,32 +18,39 @@ if mode not in ("public", "private"):
     print("❌ Segundo argumento inválido. Usa 'public' o 'private'")
     sys.exit(1)
 
+# Paths dentro del proyecto
 base_dir = os.path.dirname(os.path.abspath(__file__))
 config_source = os.path.join(base_dir, f"./src/config/app/{provider}.json")
 config_dest = os.path.join(base_dir, "./src/config/app.json")
-
-colors_xml = os.path.join(base_dir, "android/app/src/main/res/values/colors.xml")
-launcher_xml = os.path.join(base_dir, "android/app/src/main/res/values/ic_launcher_background.xml")
-strings_xml = os.path.join(base_dir, "android/app/src/main/res/values/strings.xml")
-
+theme_source = os.path.join(base_dir, f"./src/config/themes/{provider}.json")
+theme_dest = os.path.join(base_dir, "src/config/theme.json")
 logo_source = os.path.join(base_dir, f"assets/logos/logo-{provider}.png")
 logo_dest = os.path.join(base_dir, "assets/logo.png")
-
 env_path = os.path.join(base_dir, ".env")
+
+#Paths Android
+strings_xml = os.path.join(base_dir, "android/app/src/main/res/values/strings.xml")
+colors_xml = os.path.join(base_dir, "android/app/src/main/res/values/colors.xml")
+launcher_xml = os.path.join(base_dir, "android/app/src/main/res/values/ic_launcher_background.xml")
+
+#Paths iOS
+plist_path = os.path.join(base_dir, "ios/testDoc/Info.plist")  # ⚠️ cambia "tuProyecto" por el nombre de tu carpeta ios
+
+#Copiar el logo de la fuente al destino
 try:
     shutil.copyfile(logo_source, logo_dest)
     print(f"✅ Logo copiado: {logo_source} → {logo_dest}")
 except Exception as e:
     print(f"❌ Error copiando logo: {e}")
 
-theme_source = os.path.join(base_dir, f"./src/config/themes/{provider}.json")
-theme_dest = os.path.join(base_dir, "src/config/theme.json")
+#Copiar el theme de la fuente al destino
 try:
     shutil.copyfile(theme_source, theme_dest)
     print(f"✅ Tema copiado: {theme_source} → {theme_dest}")
 except Exception as e:
     print(f"❌ Error copiando tema: {e}")
 
+#Copiar la config de la fuente al destino
 try:
     shutil.copyfile(config_source, config_dest)
     print(f"✅ Config copiado: {config_source} → {config_dest}")
@@ -264,22 +271,46 @@ update_env_value(env_path, "SECURITY_LEVEL", "private" if mode == "private" else
 
 print("\n🎉 Configuración finalizada con éxito.\n")
 
-# # === . Modificar DisplayName en Info.plist (iOS) ===
-# plist_path = f"./ios/testDoc/Info.plist"  # <--- CAMBIA esto con el nombre de tu proyecto
 
-# try:
-#     with open(plist_path, 'r', encoding='utf-8') as f:
-#         plist = f.read()
 
-#     plist = re.sub(
-#         r'<key>CFBundleDisplayName</key>\s*<string>.*?</string>',
-#         f'<key>CFBundleDisplayName</key>\n\t<string>{app_name}</string>',
-#         plist
-#     )
+### NOTE IOS
+# === . Modificar CFBundleDisplayName en Info.plist (iOS) === Su equivalente es AppName, nombre para mostrar en la lista de aplicaciones del telefono
+try:
+    with open(plist_path, 'r', encoding='utf-8') as f:
+        plist = f.read()
 
-#     with open(plist_path, 'w', encoding='utf-8') as f:
-#         f.write(plist)
+    plist = re.sub(
+        r'<key>CFBundleDisplayName</key>\s*<string>.*?</string>',
+        f'<key>CFBundleDisplayName</key>\n\t<string>{app_name}</string>',
+        plist
+    )
 
-#     print(f"✅ Nombre de la app (iOS) actualizado a: {app_name}")
-# except Exception as e:
-#     print(f"❌ Error actualizando Info.plist: {e}")
+    with open(plist_path, 'w', encoding='utf-8') as f:
+        f.write(plist)
+
+    print(f"✅ Nombre de la app (iOS) actualizado a: {app_name}")
+except Exception as e:
+    print(f"❌ Error actualizando Info.plist: {e}")
+
+# === . Modificar PRODUCT_BUNDLE_IDENTIFIER en project.pbxproj === Su equivalente es PackageName, es decir, el identificador de la app 
+pbxproj_path = os.path.join(base_dir, "ios/testDoc.xcodeproj/project.pbxproj") 
+
+try:
+    with open(pbxproj_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Reemplaza todas las ocurrencias (en este caso, debug y release)
+    new_content = re.sub(
+        r'PRODUCT_BUNDLE_IDENTIFIER = [^;]+;',
+        f'PRODUCT_BUNDLE_IDENTIFIER = {new_package};',
+        content
+    )
+
+    if content != new_content:
+        with open(pbxproj_path, "w", encoding="utf-8") as f:
+            f.write(new_content)
+        print(f"✅ PRODUCT_BUNDLE_IDENTIFIER actualizado en project.pbxproj → {new_package}")
+    else:
+        print("ℹ️ PRODUCT_BUNDLE_IDENTIFIER ya estaba actualizado")
+except Exception as e:
+    print(f"❌ Error actualizando project.pbxproj: {e}")
