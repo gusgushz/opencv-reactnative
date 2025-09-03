@@ -112,7 +112,7 @@ function App() {
             console.log(key === keyDecoded);
             const dateRaw = getLastValidateTokenDate();
             const date = dateRaw ? new Date(dateRaw) : null;
-            // const response = await postValidateToken(chain, token);
+            // const response = await postValidateToken(chain, token);ºº
             const response = await postAuthenticateValidDevice(androidId, key);
             console.log('response postAuthenticateValidDevice', response);
             if (response.status === 'error' && response.message === 'Error de red') {
@@ -223,11 +223,11 @@ const MyStack = () => {
   if (key !== '') exists = true;
   return (
     <NavigationContainer>
-      <Stack.Navigator
+      <Stack.Navigator 
         initialRouteName={SECURITY_LEVEL === 'private' && !exists ? 'DownloadSecretKeyScreen' : 'HomeScreen'}
-        screenOptions={{ headerTitleAlign: 'center', headerTintColor: '#737373' }}>
+        screenOptions={{ headerTitleAlign: 'center', headerTintColor: '#737373', headerBackButtonDisplayMode: 'minimal'}}>
         <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: true, headerTitle: 'Escanear código' }} />
+        <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: true, headerTitle: 'Escanear código',headerBackButtonMenuEnabled: false }} />
         <Stack.Screen name="InformationScreen" component={InformationScreen} options={{ headerShown: true, headerTitle: 'Información' }} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: true, headerTitle: 'Perfil' }} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: true, headerTitle: 'Iniciar sesión' }} />

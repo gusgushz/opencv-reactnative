@@ -25,12 +25,17 @@ typedef NS_ENUM(NSInteger, HologramOrientation) {
 @property (nonatomic, assign) HologramOrientation orientation;
 @property (nonatomic, assign) BOOL codeDetected;
 @property (nonatomic, assign) double slope;
-@property (nonatomic, copy) NSString *text;
 @property (nonatomic, assign) int impSize;
+
+// Índices de contorno y marcador válidos
+@property (nonatomic, assign) int lastValidBorder;
+@property (nonatomic, assign) int lastValidMarker;
 
 + (instancetype)sharedInstance;
 
 #ifdef __cplusplus
+// Contornos detectados
+@property (nonatomic, readonly) std::vector<std::vector<cv::Point>> *lastContours;
 // Declaraciones de métodos que usan tipos C++
 + (cv::Mat)convertYUVBufferToRGBA:(CVImageBufferRef)imageBuffer;
 - (BOOL)detectCode:(const cv::Mat &)image;

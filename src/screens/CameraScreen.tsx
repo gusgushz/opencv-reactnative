@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View, Text, BackHandler, NativeModules, Vibration, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { CameraScreenProps } from '../navigation/NavigationProps';
-import { openCamera, closeCamera } from '../utils/';
+import { openCamera, closeCamera, clearNativeInfo, nativeInfo } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
 import { RoleLevels, stateNameToId, region } from '../globalVariables';
 import { Parts, Service } from '../models';
 import { getServices } from '../utils/';
 import { SECURITY_LEVEL } from 'dotenv';
+import { usePreventRemove } from '@react-navigation/native';
 
 const { OpencvFunc, OpenCVWrapper } = NativeModules;
 const { height } = Dimensions.get('window');
@@ -20,18 +21,22 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   const [checkBoxes, setCheckBoxes] = useState<boolean[]>([false, false, false]);
   const [services, setServices] = useState<Service[]>([]);
 
-  // Solo para iOS: header personalizado por tema de la animación de la pantalla
-  useEffect(() => {
-    if (Platform.OS === 'ios') {
-      navigation.setOptions({
-        headerLeft: () => (
-          <TouchableOpacity style={{ width: 'auto', height: '100%' }} onPress={() => navigation.goBack()}>
-            <Text style={styles.backButtonText}>Home</Text>
-          </TouchableOpacity>
-        ),
-      });
+  // 👇 Aquí evitas que se elimine la pantalla sin cerrar la cámara primero
+  usePreventRemove(true, async ({ data }) => {
+    // Cancelar temporizador si existe
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-  }, [navigation]);
+    // Cerrar cámara
+    await clearNativeInfo();
+    await closeCamera();
+    lastScannedRef.current = null;
+    setCheckBoxes([false, false, false]);
+
+    // Después despachar la acción original
+    navigation.dispatch(data.action);
+  });
 
   useEffect(() => {
     const onFocus = () => {
@@ -48,29 +53,31 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+      await clearNativeInfo();
       await closeCamera();
       lastScannedRef.current = null; // Reiniciar el último QR escaneado
     };
 
-    const onBeforeRemove = async (e: any) => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      await closeCamera();
-      setCheckBoxes([false, false, false]);
-      lastScannedRef.current = null; // Reiniciar el último QR escaneado
+    // const onBeforeRemove = async (e: any) => {
+    //   if (timerRef.current) {
+    //     clearTimeout(timerRef.current);
+    //     timerRef.current = null;
+    //   }
+    //   await clearNativeInfo();
+    //   await closeCamera();
+    //   setCheckBoxes([false, false, false]);
+    //   lastScannedRef.current = null; // Reiniciar el último QR escaneado
 
-      const action = e.data.action;
-      if (action.type !== 'GO_BACK') {
-        e.preventDefault();
-        navigation.dispatch(action);
-      }
-    };
+    //   const action = e.data.action;
+    //   if (action.type !== 'GO_BACK') {
+    //     e.preventDefault();
+    //     navigation.dispatch(action);
+    //   }
+    // };
 
     const unsubscribeFocus = navigation.addListener('focus', onFocus);
     const unsubscribeBlur = navigation.addListener('blur', onBlur);
-    const unsubscribeBeforeRemove = navigation.addListener('beforeRemove', onBeforeRemove);
+    // const unsubscribeBeforeRemove = navigation.addListener('beforeRemove', onBeforeRemove);
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       navigation.goBack();
@@ -80,7 +87,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     return () => {
       unsubscribeFocus();
       unsubscribeBlur();
-      unsubscribeBeforeRemove();
+      // unsubscribeBeforeRemove();
       backHandler.remove();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -96,13 +103,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   useEffect(() => {
     const scanQRCode = async () => {
       try {
-        let res;
-        if (Platform.OS === 'ios') {
-          res = await OpenCVWrapper.sendDecodedInfoToReact();
-          console.log('TRAE algo res?', res);
-        } else {
-          res = await OpencvFunc.sendDecodedInfoToReact();
-        }
+        const res = await nativeInfo();
         if (res && res.length > 0) {
           // Si es un código nuevo (diferente al último escaneado)
           //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)

@@ -44,14 +44,25 @@
     UIView *_cameraViewContainer; // Declaración como variable de instancia
 }
 
+@property (nonatomic, strong) UIView *drawingOverlayView;
+
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, strong) AVCaptureDevice *device;
 @property (nonatomic, strong) AVCaptureDeviceInput *input;
 @property (nonatomic, strong) AVCaptureVideoDataOutput *output;
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 @property (nonatomic, assign) CGFloat zoomScale;
-@property (nonatomic, strong) UIView *cameraContainerView;
 @property (nonatomic, strong) CameraTouchView *touchView;
+
+//alto y ancho del Mat de la pantalla/frame
+@property (nonatomic, assign) int frameWidth;
+@property (nonatomic, assign) int frameHeight;
+
+//Overlays
+@property (nonatomic, strong) UIView *overlayViewTop;
+@property (nonatomic, strong) UIView *overlayViewBottom;
+@property (nonatomic, strong) UIView *overlayViewLeft;
+@property (nonatomic, strong) UIView *overlayViewRight;
 
 @end
 
@@ -67,20 +78,61 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    // Configurar la vista de toques primero
+
+    // Configurar vista de toques
     self.touchView = [[CameraTouchView alloc] initWithFrame:self.view.bounds];
     self.touchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    self.touchView.cameraContainerView = self.cameraContainerView;
     [self.view addSubview:self.touchView];
-    
-    // Luego configurar la cámara
+
+    // Configurar cámara
     [self setupCamera];
+    self.touchView.cameraContainerView = _cameraViewContainer;
+
+    // Overlay para dibujar los contornos
+    self.drawingOverlayView = [[UIView alloc] initWithFrame:self.view.bounds];
+    self.drawingOverlayView.backgroundColor = [UIColor clearColor];
+    self.drawingOverlayView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:self.drawingOverlayView];
+    [self.view bringSubviewToFront:self.drawingOverlayView]; // asegurarse de que esté encima de la cámara
+
+}
+- (CGFloat)getTopInset {
+    CGFloat topInset = 0;
+
+    // Si hay navigation controller y está visible, pero no funciona
+    if (self.navigationController && !self.navigationController.navigationBarHidden) {
+        topInset += self.navigationController.navigationBar.frame.size.height;
+    }
+
+    // Fallback para status bar
+    topInset += 44; // altura típica de status bar en iPhones
+
+    return topInset;
 }
 
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
 
+    CGFloat topInset = [self getTopInset];
+    NSLog(@"topInset ************************%f", topInset);
+
+    CGFloat width = self.view.bounds.size.width;
+    _cameraViewContainer.frame = CGRectMake(0, topInset, width, width);
+    self.previewLayer.frame = _cameraViewContainer.bounds;
+
+    [self updateOverlaysFrames];
+}
+
+- (void)updateOverlaysFrames {
+    CGFloat width = _cameraViewContainer.bounds.size.width;
+    self.overlayViewTop.frame = CGRectMake(0, 0, width, width / 4);
+    self.overlayViewBottom.frame = CGRectMake(0, width - width / 4, width, width / 4);
+    self.overlayViewLeft.frame = CGRectMake(0, width / 4, width / 4, width / 2);
+    self.overlayViewRight.frame = CGRectMake(width - width / 4, width / 4, width / 4, width / 2);
+}
 - (void)setupCamera {
     self.session = [[AVCaptureSession alloc] init];
+    //NOTE: Diferentes presets para la calidad de la captura de la camara. Mientras màs alto, màs pesado y màs se llena la memoria.
     // self.session.sessionPreset = AVCaptureSessionPreset1280x720;
     self.session.sessionPreset = AVCaptureSessionPreset640x480;
     // self.session.sessionPreset = AVCaptureSessionPresetMedium;
@@ -100,72 +152,34 @@
 }
 
 - (void)setupCameraContainer {
-    // Configurar vista de cámara al 50% superior
-    CGFloat cameraHeight = self.view.bounds.size.height * 0.5;
-    _cameraViewContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 65, self.view.bounds.size.width, cameraHeight)];
-    _cameraViewContainer.userInteractionEnabled = NO;
+    _cameraViewContainer = [[UIView alloc] init];
     _cameraViewContainer.backgroundColor = [UIColor clearColor];
-    
+    _cameraViewContainer.userInteractionEnabled = NO;
     [self.view addSubview:_cameraViewContainer];
-    
-    // Configurar el preview layer
+
     self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:self.session];
-    self.previewLayer.frame = _cameraViewContainer.bounds;
     self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-    
     [_cameraViewContainer.layer addSublayer:self.previewLayer];
 }
 
 - (void)setupOverlays {
-    // Obtenemos la vista contenedora desde el previewLayer
-    UIView *cameraContainerView = (UIView *)self.previewLayer.superlayer.delegate;
-    
-    if (![cameraContainerView isKindOfClass:[UIView class]]) {
-        NSLog(@"Error: No se pudo obtener la vista contenedora");
-        return;
-    }
-    
-    // Configuración de overlays
-    CGFloat overlayAlpha = 0.5;
-    UIColor *overlayColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:overlayAlpha];
-    
-    // Overlay superior
-    UIView *overlayViewTop = [[UIView alloc] init];
-    overlayViewTop.backgroundColor = overlayColor;
-    overlayViewTop.frame = CGRectMake(0, 0, 
-                                    cameraContainerView.bounds.size.width, 
-                                    cameraContainerView.bounds.size.height / 4);
-    
-    // Overlay inferior
-    UIView *overlayViewBottom = [[UIView alloc] init];
-    overlayViewBottom.backgroundColor = overlayColor;
-    overlayViewBottom.frame = CGRectMake(0, 
-                                       cameraContainerView.bounds.size.height - (cameraContainerView.bounds.size.height / 4), 
-                                       cameraContainerView.bounds.size.width, 
-                                       cameraContainerView.bounds.size.height / 4);
-    
-    // Overlay izquierdo
-    CGFloat overlaySideHeight = cameraContainerView.bounds.size.height / 2;
-    UIView *overlayViewLeft = [[UIView alloc] init];
-    overlayViewLeft.backgroundColor = overlayColor;
-    overlayViewLeft.frame = CGRectMake(0, 
-                                      (cameraContainerView.bounds.size.height - overlaySideHeight) / 2, 
-                                      cameraContainerView.bounds.size.width / 4, 
-                                      overlaySideHeight);
-    
-    // Overlay derecho
-    UIView *overlayViewRight = [[UIView alloc] init];
-    overlayViewRight.backgroundColor = overlayColor;
-    overlayViewRight.frame = CGRectMake(cameraContainerView.bounds.size.width - (cameraContainerView.bounds.size.width / 4), 
-                                       (cameraContainerView.bounds.size.height - overlaySideHeight) / 2, 
-                                       cameraContainerView.bounds.size.width / 4, 
-                                       overlaySideHeight);
-    
-    // Agregar overlays
-    [cameraContainerView addSubview:overlayViewTop];
-    [cameraContainerView addSubview:overlayViewBottom];
-    [cameraContainerView addSubview:overlayViewLeft];
-    [cameraContainerView addSubview:overlayViewRight];
+    UIColor *overlayColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+
+    self.overlayViewTop = [[UIView alloc] init];
+    self.overlayViewTop.backgroundColor = overlayColor;
+    [_cameraViewContainer addSubview:self.overlayViewTop];
+
+    self.overlayViewBottom = [[UIView alloc] init];
+    self.overlayViewBottom.backgroundColor = overlayColor;
+    [_cameraViewContainer addSubview:self.overlayViewBottom];
+
+    self.overlayViewLeft = [[UIView alloc] init];
+    self.overlayViewLeft.backgroundColor = overlayColor;
+    [_cameraViewContainer addSubview:self.overlayViewLeft];
+
+    self.overlayViewRight = [[UIView alloc] init];
+    self.overlayViewRight.backgroundColor = overlayColor;
+    [_cameraViewContainer addSubview:self.overlayViewRight];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -178,30 +192,142 @@
     [self.session stopRunning];
 }
 
-- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+- (void)captureOutput:(AVCaptureOutput *)output 
+    didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer 
+    fromConnection:(AVCaptureConnection *)connection {
+    
+    // Verificar la orientación de la conexión de la cámara
+    AVCaptureVideoOrientation orientation = connection.videoOrientation;
+    connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+    // NSLog(@"🎥 Orientación de cámara:******** %ld", (long)orientation);
+
     static int frameCounter = 0;
     frameCounter++;
     if (frameCounter % 5 != 0) return;
-    
+
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     if (!imageBuffer) return;
-    
-    // Convertir buffer a imagen RGBA
+
     cv::Mat rgbaImage = [OpenCVWrapper convertYUVBufferToRGBA:imageBuffer];
     if (rgbaImage.empty()) return;
+
+    //Guarda dimensiones reales del frame
+    self.frameWidth = rgbaImage.cols;
+    self.frameHeight = rgbaImage.rows;
     
-    // Detectar código
+    // Detecta si hay o no un còdigo
     BOOL detected = [[OpenCVWrapper sharedInstance] detectCode:rgbaImage];
-    //NSLog(@"HOLO codigo detectado? %@", detected);
-    
-    // Si se detectó, extraer bits
+
     if (detected) {
+        // Llamar al overlay usando los datos de detectCode
+        std::vector<std::vector<cv::Point>> contours = *[OpenCVWrapper sharedInstance].lastContours;
+        int lastValidBorder = [OpenCVWrapper sharedInstance].lastValidBorder;
+        int lastValidMarker = [OpenCVWrapper sharedInstance].lastValidMarker;
+        NSLog(@"********contours.size() = %zu", contours.size());
+        NSLog(@"lastValidBorder = %zu", lastValidBorder);
+        NSLog(@"lastValidBorder = %zu", lastValidMarker);
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // [self drawPersistentMarkersOverlay:contours borderIndex:lastValidBorder markerIndex:lastValidMarker];
+            [self drawPersistentMarkersOverlay:*[OpenCVWrapper sharedInstance].lastContours
+                            borderIndex:lastValidBorder
+                            markerIndex:lastValidMarker];
+
+        });
+
         NSArray<NSString *> *message = [[OpenCVWrapper sharedInstance] extractBits];
         if (message.count > 0) {
             NSString *decodedString = [message componentsJoinedByString:@"_"];
             NSLog(@"✅ Holograma detectado: %@", decodedString);
             [OpenCVWrapper sharedInstance].lastDecodedQRCode = decodedString;
         }
+    } else {
+        [self.drawingOverlayView.layer.sublayers makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
+    }
+}
+
+- (void)drawPersistentMarkersOverlay:(std::vector<std::vector<cv::Point>>)contours
+                         borderIndex:(int)borderIdx
+                         markerIndex:(int)markerIdx {
+
+    [self.drawingOverlayView.layer.sublayers makeObjectsPerformSelector:@selector(removeFromSuperlayer)];
+
+    if (contours.empty() || borderIdx < 0 || markerIdx < 0 || self.frameWidth == 0 || self.frameHeight == 0) {
+        return;
+    }
+
+    // ====== Calcular el rect del video dentro del previewLayer ======
+    CGRect layerBounds = self.previewLayer.bounds;
+    CGFloat videoAspect = (CGFloat)self.frameWidth / (CGFloat)self.frameHeight;
+    CGFloat layerAspect = layerBounds.size.width / layerBounds.size.height;
+
+    CGRect videoRect = CGRectZero;
+
+    if (layerAspect > videoAspect) {
+        // La layer es más ancha que el video → recorte horizontal
+        CGFloat scale = layerBounds.size.height / (CGFloat)self.frameHeight;
+        CGFloat width = self.frameWidth * scale;
+        CGFloat x = (layerBounds.size.width - width) / 2.0;
+        videoRect = CGRectMake(x, 0, width, layerBounds.size.height);
+    } else {
+        // La layer es más alta que el video → recorte vertical
+        CGFloat scale = layerBounds.size.width / (CGFloat)self.frameWidth;
+        CGFloat height = self.frameHeight * scale;
+        CGFloat y = (layerBounds.size.height - height) / 2.0;
+        videoRect = CGRectMake(0, y, layerBounds.size.width, height);
+    }
+
+    // ====== Borde verde ======
+    std::vector<cv::Point> borderPoints = contours[borderIdx];
+    if (!borderPoints.empty()) {
+        UIBezierPath *borderPath = [UIBezierPath bezierPath];
+
+        for (size_t i = 0; i < borderPoints.size(); i++) {
+            CGFloat normX = (CGFloat)borderPoints[i].x / (CGFloat)self.frameWidth;
+            CGFloat normY = (CGFloat)borderPoints[i].y / (CGFloat)self.frameHeight;
+            CGFloat offsetY = -15;
+            CGPoint point = CGPointMake(normX * layerBounds.size.width,
+                                        (normY * layerBounds.size.width*1.333) + offsetY);
+
+
+            if (i == 0) [borderPath moveToPoint:point];
+            else [borderPath addLineToPoint:point];
+        }
+
+        [borderPath closePath];
+
+        CAShapeLayer *borderLayer = [CAShapeLayer layer];
+        borderLayer.path = borderPath.CGPath;
+        borderLayer.strokeColor = [UIColor greenColor].CGColor;
+        borderLayer.fillColor = [UIColor clearColor].CGColor;
+        borderLayer.lineWidth = 3.0;
+        [self.drawingOverlayView.layer addSublayer:borderLayer];
+    }
+
+    // ====== Marcador rojo ======
+    std::vector<cv::Point> markerPoints = contours[markerIdx];
+    if (!markerPoints.empty()) {
+        UIBezierPath *markerPath = [UIBezierPath bezierPath];
+
+        for (size_t i = 0; i < markerPoints.size(); i++) {
+            CGFloat normX = (CGFloat)markerPoints[i].x / (CGFloat)self.frameWidth;
+            CGFloat normY = (CGFloat)markerPoints[i].y / (CGFloat)self.frameHeight;
+            CGFloat offsetY = -15;
+            CGPoint point = CGPointMake(normX * layerBounds.size.width,
+                                        (normY * layerBounds.size.width*1.333) + offsetY);
+
+            if (i == 0) [markerPath moveToPoint:point];
+            else [markerPath addLineToPoint:point];
+        }
+
+        [markerPath closePath];
+
+        CAShapeLayer *markerLayer = [CAShapeLayer layer];
+        markerLayer.path = markerPath.CGPath;
+        markerLayer.strokeColor = [UIColor redColor].CGColor;
+        markerLayer.fillColor = [UIColor clearColor].CGColor;
+        markerLayer.lineWidth = 2.0;
+        [self.drawingOverlayView.layer addSublayer:markerLayer];
     }
 }
 
@@ -222,6 +348,25 @@
     cv::Mat _holo;
     cv::Mat _holo_thres;
     cv::Mat _holoMatrix;
+
+    // Variables para dibujo persistente
+    cv::Mat _persistentOverlay;
+    BOOL _overlayInitialized;
+    BOOL _shouldClearOverlay;
+    int _lastValidBorder;
+    int _lastValidMarker;
+}
+
+- (std::vector<std::vector<cv::Point>> *)lastContours {
+    return &_contours;
+}
+
+- (int)lastValidBorder {
+    return _lastValidBorder;
+}
+
+- (int)lastValidMarker {
+    return _lastValidMarker;
 }
 
 RCT_EXPORT_MODULE();
@@ -249,6 +394,11 @@ RCT_EXPORT_MODULE();
         _holo_gray = cv::Mat::zeros(_impSize, _impSize, CV_8UC1);
         _holo_thres = cv::Mat::zeros(_impSize, _impSize, CV_8UC1);
         _holoMatrix = cv::Mat::zeros(28, 28, CV_8UC1);
+        // Inicializar variables de dibujo persistente
+        _overlayInitialized = NO;
+        _shouldClearOverlay = NO;
+        _lastValidBorder = -1;
+        _lastValidMarker = -1;
     }
     return self;
 }
@@ -315,6 +465,11 @@ RCT_EXPORT_METHOD(startCamera:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromi
         
         // Insertar en una posición que no bloquee toques
         [rootViewController.view insertSubview:cameraHostView atIndex:1];
+
+        // NOTE Inicializar variables de dibujo
+        _shouldClearOverlay = YES;
+        _lastValidBorder = -1;
+        _lastValidMarker = -1;
         
         resolve(@"Cámara iniciada correctamente");
     });
@@ -331,7 +486,23 @@ RCT_EXPORT_METHOD(stopCamera:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromis
             NSLog(@"🛑 CameraViewController eliminado");
         }
         
-        [OpenCVWrapper sharedInstance].lastDecodedQRCode = nil;
+        // Resetear variables de estado
+        _lastValidBorder = -1;
+        _lastValidMarker = -1;
+        _mark = 0;
+        _border = -1;
+        _marker = -1;
+        self.lastDecodedQRCode = nil;
+        
+        // Liberar matrices
+        if (_overlayInitialized && !_persistentOverlay.empty()) {
+            _persistentOverlay.release();
+        }
+        
+        _contours.clear();
+        _overlayInitialized = NO;
+        _shouldClearOverlay = YES;
+        
         resolve(@"Camera stopped successfully");
     });
 }
@@ -343,7 +514,50 @@ RCT_EXPORT_METHOD(sendDecodedInfoToReact:(RCTPromiseResolveBlock)resolve rejecte
             ![[OpenCVWrapper sharedInstance].lastDecodedQRCode isEqualToString:@"El mensaje está corrompido"]) {
             NSString *response = [[OpenCVWrapper sharedInstance].lastDecodedQRCode copy];
             resolve(response);
+        } else {
+            resolve(nil);
         }
+    });
+}
+RCT_EXPORT_METHOD(clearDecodedInfo) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [OpenCVWrapper sharedInstance].lastDecodedQRCode = nil;
+    NSLog(@"Cameragus: info cleared");
+  });
+}
+
+RCT_EXPORT_METHOD(getIosId:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+            NSString *uuid = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+            if (uuid) {
+            resolve(uuid);
+            } else {
+            reject(@"no_id", @"No se pudo obtener el ID del dispositivo", nil);
+            }
+        }
+        @catch (NSException *exception) {
+            reject(@"error", exception.reason, nil);
+        }
+    });
+}
+RCT_EXPORT_METHOD(exitAppWithMessage:(NSString *)message) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Salir"
+                                                                    message:message
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
+                                                        style:UIAlertActionStyleDestructive
+                                                        handler:^(UIAlertAction * _Nonnull action) {
+        // Terminar la app
+        exit(50);
+        }];
+
+        [alert addAction:okAction];
+
+        UIViewController *root = RCTPresentedViewController();
+        [root presentViewController:alert animated:YES completion:nil];
     });
 }
 
@@ -351,27 +565,34 @@ RCT_EXPORT_METHOD(sendDecodedInfoToReact:(RCTPromiseResolveBlock)resolve rejecte
 
 + (cv::Mat)convertYUVBufferToRGBA:(CVImageBufferRef)imageBuffer {
     CVPixelBufferLockBaseAddress(imageBuffer, 0);
-    
+
     // Verificar formato del buffer
     OSType pixelFormat = CVPixelBufferGetPixelFormatType(imageBuffer);
-    if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange) {
-        NSLog(@"Error: Unsupported pixel format");
+    if (pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
+        pixelFormat != kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) {
+        NSLog(@"❌ Error: Unsupported pixel format %u", pixelFormat);
         CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
         return cv::Mat();
     }
-    
-    // Obtener planos Y y UV
+
+    int width  = (int)CVPixelBufferGetWidth(imageBuffer);
+    int height = (int)CVPixelBufferGetHeight(imageBuffer);
+
+    // Plano Y
     uint8_t *yPlane = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);
-    size_t yWidth = CVPixelBufferGetWidthOfPlane(imageBuffer, 0);
-    size_t yHeight = CVPixelBufferGetHeightOfPlane(imageBuffer, 0);
-    cv::Mat yMat((int)yHeight, (int)yWidth, CV_8UC1, yPlane);
-    
-    // Convertir YUV a RGBA
+    size_t yStride  = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 0);
+    cv::Mat yMat(height, width, CV_8UC1, yPlane, yStride);
+
+    // Plano UV
+    uint8_t *uvPlane = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 1);
+    size_t uvStride  = CVPixelBufferGetBytesPerRowOfPlane(imageBuffer, 1);
+    cv::Mat uvMat(height / 2, width / 2, CV_8UC2, uvPlane, uvStride);
+
+    // Convertir YUV → RGBA
     cv::Mat rgbaMat;
-    cv::cvtColor(yMat, rgbaMat, cv::COLOR_YUV2RGBA_NV12);
-    
+    cv::cvtColorTwoPlane(yMat, uvMat, rgbaMat, cv::COLOR_YUV2RGBA_NV12);
+
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-    
     return rgbaMat;
 }
 
@@ -461,6 +682,8 @@ RCT_EXPORT_METHOD(sendDecodedInfoToReact:(RCTPromiseResolveBlock)resolve rejecte
     
     if (self.codeDetected) {
         // Procesar código detectado
+        self.lastValidBorder = self.border;
+        self.lastValidMarker = self.marker;
         [self processDetectedCode:activeArea];
     }
     
@@ -628,6 +851,10 @@ RCT_EXPORT_METHOD(sendDecodedInfoToReact:(RCTPromiseResolveBlock)resolve rejecte
 #pragma mark - Helper Methods
 
 - (int)getApproximatedWidth:(const std::vector<std::vector<cv::Point>> &)contours cId:(int)cId {
+    if (contours.empty() || cId < 0 || cId >= contours.size()) {
+        return 0;
+    }
+    
     cv::Rect box = cv::boundingRect(contours[cId]);
     return box.width;
 }
@@ -762,5 +989,49 @@ RCT_EXPORT_METHOD(sendDecodedInfoToReact:(RCTPromiseResolveBlock)resolve rejecte
 - (double)distance:(cv::Point)p point2:(cv::Point)q {
     return sqrt(pow(p.x - q.x, 2.0) + pow(p.y - q.y, 2.0));
 }
+
++ (UIImage *)UIImageFromCVMat:(const cv::Mat&)cvMat {
+    NSData *data = nil;
+    CGColorSpaceRef colorSpace;
+
+    if (cvMat.type() == CV_8UC1) {
+        colorSpace = CGColorSpaceCreateDeviceGray();
+        data = [NSData dataWithBytes:cvMat.data length:cvMat.elemSize() * cvMat.total()];
+    } else if (cvMat.type() == CV_8UC3) {
+        // OpenCV usa BGR, UIKit usa RGB
+        cv::Mat rgbMat;
+        cv::cvtColor(cvMat, rgbMat, cv::COLOR_BGR2RGB);
+        colorSpace = CGColorSpaceCreateDeviceRGB();
+        data = [NSData dataWithBytes:rgbMat.data length:rgbMat.elemSize() * rgbMat.total()];
+    } else if (cvMat.type() == CV_8UC4) {
+        colorSpace = CGColorSpaceCreateDeviceRGB();
+        data = [NSData dataWithBytes:cvMat.data length:cvMat.elemSize() * cvMat.total()];
+    } else {
+        NSLog(@"UIImageFromCVMat: tipo de cv::Mat no soportado");
+        return nil;
+    }
+
+    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)data);
+    CGImageRef imageRef = CGImageCreate(cvMat.cols,                                 // ancho
+                                        cvMat.rows,                                 // alto
+                                        8,                                          // bits por componente
+                                        8 * cvMat.elemSize(),                        // bits por pixel
+                                        cvMat.step[0],                               // bytes por fila
+                                        colorSpace,                                  // espacio de color
+                                        kCGImageAlphaNone | kCGBitmapByteOrderDefault, // info bitmap
+                                        provider,
+                                        NULL,
+                                        false,
+                                        kCGRenderingIntentDefault);
+
+    UIImage *image = [UIImage imageWithCGImage:imageRef];
+
+    CGImageRelease(imageRef);
+    CGDataProviderRelease(provider);
+    CGColorSpaceRelease(colorSpace);
+
+    return image;
+}
+
 
 @end

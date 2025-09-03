@@ -46,7 +46,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
             }
           }
         }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ width: '100%', height: height * 0.3 }} />
+        <Image source={require('../../assets/logo.png')} resizeMode="contain" style={{ width: '100%', height: height * 0.3 }} />
       </TouchableWithoutFeedback>
       <View style={styles.buttonsContainer}>
         <TouchableOpacity

@@ -985,5 +985,10 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         promise.resolve("")
         }
     }
+    @ReactMethod
+    private fun clearDecodedInfo() {
+        info = null
+        Log.d("Cameragus", "info cleared")
+    }
 }
 
