@@ -10,7 +10,6 @@ import { getServices } from '../utils/';
 import { SECURITY_LEVEL } from 'dotenv';
 import { usePreventRemove } from '@react-navigation/native';
 
-const { OpencvFunc, OpenCVWrapper } = NativeModules;
 const { height } = Dimensions.get('window');
 
 export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
@@ -104,10 +103,12 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     const scanQRCode = async () => {
       try {
         const res = await nativeInfo();
+        console.log('res', res)
         if (res && res.length > 0) {
           // Si es un código nuevo (diferente al último escaneado)
           //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)
           if (region == res.split('_')[7]) {
+            console.log('split7', res.split('_')[7]);
             if (res !== lastScannedRef.current) {
               Vibration.vibrate(100);
               const parts = res.split('_');
@@ -138,7 +139,8 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
 
               console.log('parts:', JSON.stringify(parts));
               console.log('updatedInfo:', JSON.stringify(updatedInfo));
-
+              console.log('rolelevel', roleLevel);
+              console.log('enum role', RoleLevels.ZERO);
               if (roleLevel == RoleLevels.ZERO) {
                 navigateToInformationScreen(updatedInfo);
               }

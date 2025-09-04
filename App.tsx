@@ -49,6 +49,18 @@ import * as Sentry from '@sentry/react-native';
 Sentry.init({ dsn: 'https://86a8a5548583da54c5af87a58acf940a@o1412274.ingest.us.sentry.io/4508937809362944' });
 
 function App() {
+  const closeApp = async (message: string) => {
+    try {
+      if (Platform.OS === 'android') {
+        await OpencvFunc.exitAppWithMessage(message);
+      } else {
+        await OpenCVWrapper.exitAppWithMessage(message);
+      }
+    } catch (error) {
+      console.log('no se pude cerrar la app mediante función nativa', error);
+    }
+  };
+
   const requestPermissions = async () => {
     try {
       if (Platform.OS === 'android') {
@@ -81,10 +93,11 @@ function App() {
   const init = async () => {
     let isPermissionGranted = false;
 
-    const serv = getServices();
-    if (!serv) {
+    try {
       const services = await getChildServicesByState();
       if (services.status !== 'error') storeServices(services.data);
+    } catch (error) {
+      console.log('Error al obtener la lista de servicios:', error);
     }
 
     console.log('SECURITY_LEVEL actual:', SECURITY_LEVEL);
@@ -125,7 +138,7 @@ function App() {
                   return;
                 }
               }
-              await OpencvFunc.exitAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
+              await closeApp('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
               return;
             }
             if (response.success === true) {
@@ -176,17 +189,21 @@ function App() {
         return;
       }
       console.log('isPermissionGranted', isPermissionGranted);
-      if (!isPermissionGranted) await OpencvFunc.exitAppWithMessage('Permisos denegados. Cerrando la aplicación...');
+      if (!isPermissionGranted) await closeApp('Permisos denegados. Cerrando la aplicación...');
     } else {
-      const res = getUsersData();
-      //NOTE: Pruebas para ver los usuario y contraseñas
-      // console.log('res', res?.created.length);
-      // res?.created.map(user => {
-      //   console.log('user', user);
-      //   console.log('password decrypted', readableString(user.password));
-      // });
-      const response = await getUpdateByTimestamp(ConfigApp.Client.Id);
-      if (response.status !== 'error') storeUsersData(JSON.parse(readableString(response.data)) as UpdateByTimestampData);
+      try {
+        //NOTE: Pruebas para ver los usuario y contraseñas
+        // const res = getUsersData();
+        // console.log('res', res?.created.length);
+        // (res as UpdateByTimestampData).created.map(user => {
+        //   console.log('user', user);
+        //   console.log('password decrypted', readableString(user.password));
+        // });
+        const response = await getUpdateByTimestamp(ConfigApp.Client.Id);
+        if (response.status !== 'error') storeUsersData(JSON.parse(readableString(response.data)) as UpdateByTimestampData);
+      } catch (error) {
+        console.log('Error al obtener la lista de usuarios:', error);
+      }
     }
   };
 
@@ -223,11 +240,15 @@ const MyStack = () => {
   if (key !== '') exists = true;
   return (
     <NavigationContainer>
-      <Stack.Navigator 
+      <Stack.Navigator
         initialRouteName={SECURITY_LEVEL === 'private' && !exists ? 'DownloadSecretKeyScreen' : 'HomeScreen'}
-        screenOptions={{ headerTitleAlign: 'center', headerTintColor: '#737373', headerBackButtonDisplayMode: 'minimal'}}>
+        screenOptions={{ headerTitleAlign: 'center', headerTintColor: '#737373', headerBackButtonDisplayMode: 'minimal' }}>
         <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: true, headerTitle: 'Escanear código',headerBackButtonMenuEnabled: false }} />
+        <Stack.Screen
+          name="CameraScreen"
+          component={CameraScreen}
+          options={{ headerShown: true, headerTitle: 'Escanear código', headerBackButtonMenuEnabled: false }}
+        />
         <Stack.Screen name="InformationScreen" component={InformationScreen} options={{ headerShown: true, headerTitle: 'Información' }} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: true, headerTitle: 'Perfil' }} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerShown: true, headerTitle: 'Iniciar sesión' }} />
