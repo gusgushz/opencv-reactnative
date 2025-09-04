@@ -350,7 +350,10 @@ class HoloDecoder {
         specs[7] = (14..19).map { finalMessage[it].toInt().toChar() }.joinToString("")
         specs[8] = (20..26).map { finalMessage[it].toInt().toChar() }.joinToString("")
         specs[9] = finalMessage[27].toString()
+        val yearStart = "%02d".format(finalMessage[28].toInt())
+        val yearEnd = "%02d".format(finalMessage[29].toInt())
         specs[10] = "20${finalMessage[28]}-20${finalMessage[29]}"
+        val yearSingle = "%02d".format(finalMessage[30].toInt())
         specs[11] = "20${finalMessage[30]}"
         specs[12] = (31..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
 
