@@ -17,13 +17,13 @@ static ZXGenericGF *QRCodeField256() {
 + (NSString *)whichState:(NSInteger)id {
     NSArray *states = @[
         @"AGUASCALIENTES", @"BAJA CALIFORNIA", @"BAJA CALIFORNIA SUR", @"CAMPECHE",
-        @"CHIAPAS", @"CHIHUAHUA", @"CIUDAD DE MÉXICO", @"COAHUILA",
+        @"CHIAPAS", @"CHIHUAHUA", @"CIUDAD DE MEXICO", @"COAHUILA",
         @"COLIMA", @"DURANGO", @"GUANAJUATO", @"GUERRERO",
-        @"HIDALGO", @"JALISCO", @"MÉXICO", @"MICHOACÁN",
-        @"MORELOS", @"NAYARIT", @"NUEVO LEÓN", @"OAXACA",
-        @"PUEBLA", @"QUERÉTARO", @"QUINTANA ROO", @"SAN LUIS POTOSÍ",
+        @"HIDALGO", @"JALISCO", @"MEXICO", @"MICHOACAN",
+        @"MORELOS", @"NAYARIT", @"NUEVO LEON", @"OAXACA",
+        @"PUEBLA", @"QUERETARO", @"QUINTANA ROO", @"SAN LUIS POTOSI",
         @"SINALOA", @"SONORA", @"TABASCO", @"TAMAULIPAS",
-        @"TLAXCALA", @"VERACRUZ", @"YUCATÁN", @"ZACATECAS",
+        @"TLAXCALA", @"VERACRUZ", @"YUCATAN", @"ZACATECAS",
         @"BELIZE", @"CAYO", @"COROZAL", @"ORANGE WALK",
         @"STANN CREEK", @"TOLEDO"
     ];

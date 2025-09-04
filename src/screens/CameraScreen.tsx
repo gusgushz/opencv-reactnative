@@ -18,6 +18,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastScannedRef = useRef<string | null>(null); // Almacena el último QR escaneado
   const [checkBoxes, setCheckBoxes] = useState<boolean[]>([false, false, false]);
+  const [documents, setDocuments] = useState<string[]>([]); // fuera del useEffect
   const [services, setServices] = useState<Service[]>([]);
 
   // 👇 Aquí evitas que se elimine la pantalla sin cerrar la cámara primero
@@ -32,6 +33,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     await closeCamera();
     lastScannedRef.current = null;
     setCheckBoxes([false, false, false]);
+    setDocuments([]);
 
     // Después despachar la acción original
     navigation.dispatch(data.action);
@@ -40,6 +42,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   useEffect(() => {
     const onFocus = () => {
       setCheckBoxes([false, false, false]);
+      setDocuments([]);
       setServices(getServices() ?? []);
       // Retrasar la apertura de la cámara para que la animación termine
       timerRef.current = setTimeout(async () => {
@@ -92,18 +95,10 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     };
   }, [navigation]);
 
-  const hasRear: boolean = !!services.find(service => service.has_rear === 1);
-  console.log('hasRear', hasRear);
-  const hasFrontal: boolean = !!services.find(service => service.has_frontal === 1);
-  console.log('hasFrontal', hasFrontal);
-  const hasEngomado: boolean = !!services.find(service => service.has_engomado === 1);
-  console.log('hasEngomado', hasEngomado);
-
   useEffect(() => {
     const scanQRCode = async () => {
       try {
         const res = await nativeInfo();
-        console.log('res', res)
         if (res && res.length > 0) {
           // Si es un código nuevo (diferente al último escaneado)
           //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)
@@ -113,11 +108,8 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
               Vibration.vibrate(100);
               const parts = res.split('_');
 
-              const serviceName = findServiceName(parts[5], parts[7]);
-              let documents: string[] = [];
-              if (hasFrontal) documents.push('Frontal');
-              if (hasRear) documents.push('Trasera');
-              if (hasEngomado) documents.push('Engomado');
+              const { serviceName, hasFrontal, hasRear, hasEngomado } = findServiceName(parts[5], parts[7]);
+              let newDocuments = [...documents]; // copia el estado actual
               const updatedInfo: Parts = {
                 roleLevel,
                 version: parts[0],
@@ -134,7 +126,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
                 expirationDate: parts[11],
                 manufacturedYear: parts[12],
                 url: parts[13],
-                documents: documents,
+                documents: newDocuments,
               };
 
               console.log('parts:', JSON.stringify(parts));
@@ -152,21 +144,29 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
               console.log('isSamePlate', isSamePlate);
               if (!isSamePlate) {
                 newCheckBoxes = [false, false, false];
+                newDocuments = [];
+                setDocuments(newDocuments);
                 setCheckBoxes(newCheckBoxes);
               }
 
               switch (updatedInfo.codeType) {
                 case 'Trasero':
                   newCheckBoxes[0] = true;
+                  newDocuments.push('Trasera');
                   break;
                 case 'Delantero':
                   newCheckBoxes[1] = true;
+                  newDocuments.push('Frontal');
                   break;
                 case 'Engomado':
                   newCheckBoxes[2] = true;
+                  newDocuments.push('Engomado');
                   break;
               }
+
+              console.log('documents', documents);
               setCheckBoxes(newCheckBoxes);
+              setDocuments(newDocuments);
 
               lastScannedRef.current = res; // Actualiza el último código escaneado
 
@@ -203,12 +203,16 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     };
   }, [checkBoxes]);
 
-  const findServiceName = (typeServiceId: string, state: string): string => {
+  const findServiceName = (typeServiceId: string, state: string) => {
     const stateId = stateNameToId(state);
     const service = services.find(service => {
       return service.service_db_id.toString() === typeServiceId && service.state_id === stateId;
     });
-    return service?.parent_service_name ?? 'No se encontró el servicio';
+    const serviceName: string = service?.parent_service_name ?? 'No se encontró el servicio';
+    const hasFrontal: boolean = service?.has_frontal === 1 ? true : false;
+    const hasRear: boolean = service?.has_rear === 1 ? true : false;
+    const hasEngomado: boolean = service?.has_engomado === 1 ? true : false;
+    return { serviceName, hasFrontal, hasRear, hasEngomado };
   };
 
   const navigateToInformationScreen = async (parts: Parts) => {
@@ -232,27 +236,6 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
       url: parts.url,
       documents: parts.documents,
     });
-
-    // await closeCamera();
-    // console.log('Navigating to InformationScreen with parts:', parts);
-    // navigation.navigate('InformationScreen', {
-    //   roleLevel: roleLevel,
-    //   version: parts.version,
-    //   codeType: parts.codeType,
-    //   chainLength: parts.chainLength,
-    //   permissionLevel: parts.permissionLevel,
-    //   serial: parts.serial,
-    //   typeServiceId: parts.typeServiceId,
-    //   typeServiceText: parts.typeServiceText,
-    //   state: parts.state,
-    //   batch: parts.batch,
-    //   provider: parts.provider,
-    //   providerNumber: parts.providerNumber,
-    //   expirationDate: parts.expirationDate,
-    //   manufacturedYear: parts.manufacturedYear,
-    //   url: parts.url,
-    //   documents: parts.documents,
-    // });
   };
 
   const checkboxesData = [
