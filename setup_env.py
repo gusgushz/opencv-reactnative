@@ -3,6 +3,7 @@ import sys
 import json
 import os
 import re
+import subprocess
 from xml.etree import ElementTree as ET
 
 # Validación de argumentos
@@ -86,6 +87,10 @@ try:
         theme = json.load(f)
         bootsplash_color = theme.get("bootsplash_background")
         launcher_color = theme.get("ic_launcher_background")
+
+        # Quitar el "#" inicial si existe
+    if bootsplash_color and bootsplash_color.startswith("#"):
+        bootsplash_color = bootsplash_color[1:]
 except Exception as e:
     print(f"❌ Error leyendo theme.json: {e}")
     bootsplash_color = None
@@ -314,3 +319,90 @@ try:
         print("ℹ️ PRODUCT_BUNDLE_IDENTIFIER ya estaba actualizado")
 except Exception as e:
     print(f"❌ Error actualizando project.pbxproj: {e}")
+
+
+# === 5. Generar SplashScreen con react-native-bootsplash ===
+if bootsplash_color:
+    try:
+        cmd = [
+            "yarn", "react-native", "generate-bootsplash",
+            "assets/logo.png",
+            "--platforms=android,ios",
+            f"--background={bootsplash_color}",
+            "--logo-width=250",
+            "--assets-output=assets/bootsplash",
+            "--flavor=main"
+        ]
+        print("\n⚡ Ejecutando:", " ".join(cmd))
+        subprocess.run(cmd, shell=True, check=True)
+        print("✅ SplashScreen generada con éxito usando react-native-bootsplash")
+    except Exception as e:
+        print(f"❌ Error generando SplashScreen: {e}")
+else:
+    print("⚠️ No se generó SplashScreen: bootsplash_background no definido en theme.json")
+
+# === 6. Copiamos los mipmaps (android) del proyecto a android/ ===
+def copy_mipmap_folders(provider):
+    src_dir = os.path.join(base_dir, f"assets/deviceIcons/mipmaps/{provider}")
+    dest_dir = os.path.join(base_dir, "android/app/src/main/res")
+
+    if not os.path.exists(src_dir):
+        print(f"❌ Carpeta de mipmaps del proveedor no existe: {src_dir}")
+        return
+
+    # Listar carpetas en src_dir
+    for folder_name in os.listdir(src_dir):
+        src_folder_path = os.path.join(src_dir, folder_name)
+        dest_folder_path = os.path.join(dest_dir, folder_name)
+
+        if os.path.isdir(src_folder_path):
+            # Si la carpeta ya existe en res/, eliminarla
+            if os.path.exists(dest_folder_path):
+                try:
+                    shutil.rmtree(dest_folder_path)
+                    print(f"🗑️  Carpeta eliminada en res/: {dest_folder_path}")
+                except Exception as e:
+                    print(f"❌ Error eliminando {dest_folder_path}: {e}")
+
+            # Copiar la carpeta nueva
+            try:
+                shutil.copytree(src_folder_path, dest_folder_path)
+                print(f"✅ Carpeta copiada: {src_folder_path} → {dest_folder_path}")
+            except Exception as e:
+                print(f"❌ Error copiando {src_folder_path} a {dest_folder_path}: {e}")
+copy_mipmap_folders(provider)
+
+# === 7. Copiamos los AppIcon.appiconset (iOS) del proyecto a ios/ ===
+def copy_ios_appicon(provider):
+    src_dir = os.path.join(base_dir, f"assets/deviceIcons/AppIcon.appiconset/{provider}")
+    dest_dir = os.path.join(base_dir, "ios/testDoc/Images.xcassets/AppIcon.appiconset")
+
+    if not os.path.exists(src_dir):
+        print(f"❌ Carpeta de AppIcon del proveedor no existe: {src_dir}")
+        return
+
+    # Eliminar todo el contenido viejo en la carpeta destino
+    for item in os.listdir(dest_dir):
+        item_path = os.path.join(dest_dir, item)
+        try:
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            else:
+                os.remove(item_path)
+        except Exception as e:
+            print(f"❌ Error eliminando {item_path}: {e}")
+
+    # Copiar archivos y carpetas nuevos
+    for item in os.listdir(src_dir):
+        src_item_path = os.path.join(src_dir, item)
+        dest_item_path = os.path.join(dest_dir, item)
+        try:
+            if os.path.isdir(src_item_path):
+                shutil.copytree(src_item_path, dest_item_path)
+            else:
+                shutil.copy2(src_item_path, dest_item_path)
+        except Exception as e:
+            print(f"❌ Error copiando {src_item_path} → {dest_item_path}: {e}")
+
+    print(f"✅ AppIcon actualizado para iOS desde {src_dir} → {dest_dir}")
+copy_ios_appicon(provider)

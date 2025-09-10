@@ -352,9 +352,9 @@ class HoloDecoder {
         specs[9] = finalMessage[27].toString()
         val yearStart = "%02d".format(finalMessage[28].toInt())
         val yearEnd = "%02d".format(finalMessage[29].toInt())
-        specs[10] = "20${finalMessage[28]}-20${finalMessage[29]}"
+        specs[10] = "20${yearStart}-20${yearEnd}"
         val yearSingle = "%02d".format(finalMessage[30].toInt())
-        specs[11] = "20${finalMessage[30]}"
+        specs[11] = "20${yearSingle}"
         specs[12] = (31..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
 
         // Validación con regex

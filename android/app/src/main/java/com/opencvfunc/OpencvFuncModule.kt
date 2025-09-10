@@ -67,10 +67,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     private var codeDetected = false
     private var slope: Double = 0.0
     private var text: String? = null
-    private val lineColor = Scalar(255.0, 0.0, 0.0) // Rojo
-    private val fontColor = Scalar(0.0, 0.0, 255.0) // Azul
     private var impSize = 256 // Tamaño de la imagen procesada
-    // private var impSize = 224 // Tamaño de la imagen procesada
 
     // Variables para el dibujo persistente
     private val drawingLock = Any()
@@ -88,8 +85,6 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     private var contours: MutableList<MatOfPoint> = ArrayList() // Contornos detectados
     private lateinit var holoMatrix: Mat // Matriz 28x28 para el resultado final
     private var info: String? = null
-
-    private lateinit var detector: GraphicalCodeDetector // Usa QRCodeDetectorAruco() si necesitas Aruco
 
     init {
         if (!OpenCVLoader.initLocal()) { // Inicializar OpenCV

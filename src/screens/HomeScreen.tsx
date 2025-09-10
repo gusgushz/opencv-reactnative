@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Image, Text, TouchableWithoutFeedback, Dimensions } from 'react-native';
 import { HomeScreenProps } from '../navigation/NavigationProps';
 import { stylesTemplate } from '../theme';
-import { RoleLevels } from '../globalVariables';
+import { region, RoleLevels } from '../globalVariables';
 // import { useUserContext } from '../contexts/UserContext.tsx';
 import { SECURITY_LEVEL } from 'dotenv';
 import { UserSession } from '../models';
@@ -16,6 +16,8 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const [count, setCount] = useState<number>(0);
   const [userSession, setUserSession] = useState<UserSession | null>(getUserSession());
   const isFocused = useIsFocused();
+
+  const logo = region === 'YUCATAN' ? require('../../assets/images/logoHome.png') : require('../../assets/logo.png');
 
   useEffect(() => {
     if (!userSession) {
@@ -46,7 +48,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
             }
           }
         }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="contain" style={{ width: '100%', height: height * 0.3 }} />
+        <Image source={logo} resizeMode="contain" style={{ width: '100%', height: height * 0.3 }} />
       </TouchableWithoutFeedback>
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
