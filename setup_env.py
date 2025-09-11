@@ -325,7 +325,7 @@ except Exception as e:
 if bootsplash_color:
     try:
         cmd = [
-            "yarn", "react-native", "generate-bootsplash",
+            "npx", "--yes", "react-native", "generate-bootsplash",
             "assets/logo.png",
             "--platforms=android,ios",
             f"--background={bootsplash_color}",
@@ -334,7 +334,11 @@ if bootsplash_color:
             "--flavor=main"
         ]
         print("\n⚡ Ejecutando:", " ".join(cmd))
-        subprocess.run(cmd, shell=True, check=True)
+        try:
+            subprocess.run(cmd, check=True)
+            print("✅ SplashScreen generada con éxito usando react-native-bootsplash")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Error generando SplashScreen: {e}")
         print("✅ SplashScreen generada con éxito usando react-native-bootsplash")
     except Exception as e:
         print(f"❌ Error generando SplashScreen: {e}")

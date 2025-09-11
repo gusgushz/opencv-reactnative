@@ -16,6 +16,7 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import { base64Decode, removeToken, storeKey, closeAppWithMessage, getDeviceId } from '../utils';
 import { SECURITY_LEVEL } from 'dotenv';
 import { DownloadSecretKeyScreenProps } from '../navigation/NavigationProps';
+import { region } from '../globalVariables';
 
 const { height } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [warning, setWarning] = useState<string>('');
   const [count, setCount] = useState<number>(0);
+  const logo = region === 'YUCATAN' ? require('../../assets/images/logoHome.png') : require('../../assets/logo.png');
 
   useEffect(() => {
     const checkFileExists = async () => {
@@ -93,7 +95,7 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
             }
           }
         }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="contain" style={{ width: '100%', height: height * 0.3, marginBottom: -16 }} />
+        <Image source={logo} resizeMode="contain" style={{ width: '100%', height: height * 0.3, marginBottom: -16 }} />
       </TouchableWithoutFeedback>
       <TextInput
         style={styles.input}
