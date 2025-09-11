@@ -1,15 +1,17 @@
 **COMO USAR setup_env.py**
+http://ec2-3-16-117-69.us-east-2.compute.amazonaws.com/key/
 
 # Para trabajar en desarrollo normalmente
-python .\setup_env.py default public //o sin escribir nada es esto
+python .\setup_env.py default public // ANDROID
+python3 ./setup_env.py default private // IOS
 
 # Para generar APK con diferentes estados 
-cd android
-./gradlew clean //Recordar limpiar cada vez que se quiera hacer un build nuevo para otro cliente
-cd ..
-python .\setup_env.py azul private
+python .\setup_env.py azul
 cd Android
 ./gradlew assembleRelease
+./gradlew clean //Recordar limpiar cada vez que se quiera hacer un build nuevo para otro cliente
+**** cmd+shift+k para limpiar el build de ios
+npx react-native start --reset-cache
 
 
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).

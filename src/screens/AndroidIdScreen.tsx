@@ -1,37 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, NativeModules, StyleSheet, TouchableOpacity, ToastAndroid } from 'react-native';
+import { Text, View, NativeModules, StyleSheet, TouchableOpacity, ToastAndroid, Alert, Platform, AlertType } from 'react-native';
 import { stylesTemplate } from '../theme';
 import { sufix } from '../globalVariables';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { AESEncrypt, AESDecrypt } from '../utils';
-const { OpencvFunc } = NativeModules;
+import { AESEncrypt, AESDecrypt, getDeviceId } from '../utils';
 
 export const AndroidIdScreen = () => {
-  const [androidId, setAndroidId] = useState<string>('');
+  const [deviceId, setDeviceId] = useState<string>('');
 
   useEffect(() => {
-    const fetchAndroidId = async () => {
+    const fetchDeviceId = async () => {
       try {
-        const id = (await OpencvFunc.getAndroidId()) + sufix;
-        setAndroidId(AESEncrypt(id));
+        const id = (await getDeviceId()) + sufix;
+        setDeviceId(AESEncrypt(id));
       } catch (error) {
         console.error('Error fetching Android ID:', error);
       }
     };
 
-    fetchAndroidId();
+    fetchDeviceId();
   }, []);
 
   const copyToClipboard = (androidId: string) => {
-    ToastAndroid.show('Copiado al portapapeles', ToastAndroid.SHORT);
+    if (Platform.OS == 'android') {
+      ToastAndroid.show('Copiado al portapapeles', ToastAndroid.SHORT);
+    } else {
+      Alert.alert('Copiado al portapapeles');
+    }
     Clipboard.setString(androidId);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Id para soporte técnico</Text>
-      {androidId && <Text style={{ textAlign: 'center', fontSize: 16 }}>{androidId}</Text>}
-      <TouchableOpacity style={[styles.button, stylesTemplate.primaryColor]} onPress={() => copyToClipboard(androidId)}>
+      {deviceId && <Text style={{ textAlign: 'center', fontSize: 16 }}>{deviceId}</Text>}
+      <TouchableOpacity style={[styles.button, stylesTemplate.primaryColor]} onPress={() => copyToClipboard(deviceId)}>
         <Text style={styles.buttonText}>Copiar en el portapapeles</Text>
       </TouchableOpacity>
     </View>

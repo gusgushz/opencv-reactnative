@@ -133,11 +133,13 @@
 - (void)setupCamera {
     self.session = [[AVCaptureSession alloc] init];
     //NOTE: Diferentes presets para la calidad de la captura de la camara. Mientras màs alto, màs pesado y màs se llena la memoria.
-    // self.session.sessionPreset = AVCaptureSessionPreset1280x720;
-    self.session.sessionPreset = AVCaptureSessionPreset640x480;
-    // self.session.sessionPreset = AVCaptureSessionPresetMedium;
+    // self.session.sessionPreset = AVCaptureSessionPreset1280x720;+
+    // self.session.sessionPreset = AVCaptureSessionPreset640x480;
+    self.session.sessionPreset = AVCaptureSessionPresetMedium;
+    // self.session.sessionPreset = AVCaptureSessionPresetHigh;
     
     self.device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    [self configureDeviceForLowLight];
     self.input = [AVCaptureDeviceInput deviceInputWithDevice:self.device error:nil];
     self.output = [[AVCaptureVideoDataOutput alloc] init];
     
@@ -330,6 +332,32 @@
         [self.drawingOverlayView.layer addSublayer:markerLayer];
     }
 }
+
+- (void)configureDeviceForLowLight {
+    NSError *error = nil;
+    if ([self.device lockForConfiguration:&error]) {
+
+        // Autofocus continuo
+        if ([self.device isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
+            self.device.focusMode = AVCaptureFocusModeContinuousAutoFocus;
+        }
+
+        // Exposición automática
+        if ([self.device isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
+            self.device.exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+        }
+
+        // Low-light boost (mejora en poca luz)
+        if ([self.device isLowLightBoostSupported]) {
+            self.device.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+        }
+
+        [self.device unlockForConfiguration];
+    } else {
+        NSLog(@"Error configurando cámara: %@", error.localizedDescription);
+    }
+}
+
 
 @end
 
@@ -543,23 +571,23 @@ RCT_EXPORT_METHOD(getIosId:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseR
 }
 RCT_EXPORT_METHOD(exitAppWithMessage:(NSString *)message) {
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Salir"
-                                                                    message:message
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Cerrando la App"
+                                                                       message:message
                                                                 preferredStyle:UIAlertControllerStyleAlert];
 
-        UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
-                                                        style:UIAlertActionStyleDestructive
-                                                        handler:^(UIAlertAction * _Nonnull action) {
-        // Terminar la app
-        exit(50);
-        }];
-
-        [alert addAction:okAction];
-
         UIViewController *root = RCTPresentedViewController();
-        [root presentViewController:alert animated:YES completion:nil];
+        [root presentViewController:alert animated:YES completion:^{
+            // Espera 2 segundos y luego cierra la app
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+                           dispatch_get_main_queue(), ^{
+                [alert dismissViewControllerAnimated:YES completion:^{
+                    exit(50); // Termina la app
+                }];
+            });
+        }];
     });
 }
+
 
 #pragma mark - Image Processing
 

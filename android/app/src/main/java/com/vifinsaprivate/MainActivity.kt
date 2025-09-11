@@ -1,4 +1,4 @@
-package com.vifinsapublic
+package com.vifinsaprivate
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

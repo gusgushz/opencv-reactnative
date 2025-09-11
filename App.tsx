@@ -29,6 +29,8 @@ import {
   removeToken,
   getLastValidateTokenDate,
   storeLastValidateTokenDate,
+  closeAppWithMessage,
+  getDeviceId,
 } from './src/utils';
 import ConfigApp from './src/config/app.json';
 import { SECURITY_LEVEL } from 'dotenv';
@@ -49,18 +51,6 @@ import * as Sentry from '@sentry/react-native';
 Sentry.init({ dsn: 'https://86a8a5548583da54c5af87a58acf940a@o1412274.ingest.us.sentry.io/4508937809362944' });
 
 function App() {
-  const closeApp = async (message: string) => {
-    try {
-      if (Platform.OS === 'android') {
-        await OpencvFunc.exitAppWithMessage(message);
-      } else {
-        await OpenCVWrapper.exitAppWithMessage(message);
-      }
-    } catch (error) {
-      console.log('no se pude cerrar la app mediante función nativa', error);
-    }
-  };
-
   const requestPermissions = async () => {
     try {
       if (Platform.OS === 'android') {
@@ -103,19 +93,20 @@ function App() {
     console.log('SECURITY_LEVEL actual:', SECURITY_LEVEL);
 
     if (SECURITY_LEVEL === 'private') {
-      const exists = await RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
+      const devicePath = Platform.OS == 'android' ? `${RNFS.ExternalDirectoryPath}` : `${RNFS.LibraryDirectoryPath}`;
+      const exists = await RNFS.exists(`${devicePath}/secretKey.dat`);
       console.log('exists', exists);
       //removeToken();
       if (exists) {
-        const androidId = (await OpencvFunc.getAndroidId()) + sufix;
+        const deviceId = (await getDeviceId()) + sufix;
         const token = getToken() ?? '';
-        const content = await RNFS.readFile(`${RNFS.ExternalDirectoryPath}/secretKey.dat`, 'utf8');
+        const content = await RNFS.readFile(`${devicePath}/secretKey.dat`, 'utf8');
         const keyDecoded = base64Decode(content);
         const key = getKey() ?? '';
-        const chain = base64Encode(key + '.' + androidId);
+        const chain = base64Encode(key + '.' + deviceId);
         const today = new Date();
 
-        console.log('androidId', androidId);
+        console.log('deviceId', deviceId);
         console.log('token', token);
         console.log('content', content);
         console.log('keyDecoded', keyDecoded);
@@ -126,7 +117,7 @@ function App() {
             const dateRaw = getLastValidateTokenDate();
             const date = dateRaw ? new Date(dateRaw) : null;
             // const response = await postValidateToken(chain, token);ºº
-            const response = await postAuthenticateValidDevice(androidId, key);
+            const response = await postAuthenticateValidDevice(deviceId, key);
             console.log('response postAuthenticateValidDevice', response);
             if (response.status === 'error' && response.message === 'Error de red') {
               if (date) {
@@ -138,7 +129,7 @@ function App() {
                   return;
                 }
               }
-              await closeApp('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
+              await closeAppWithMessage('Necesita conectarse a internet para validar su sesión. Cerrando la aplicación...');
               return;
             }
             if (response.success === true) {
@@ -151,7 +142,7 @@ function App() {
           console.log('No hay token, se procede a registrar la clave');
           let isKeyRegistered: boolean = false;
           let isKeyAlreadyRegistered: boolean = false;
-          const response = await postKeyActivation(androidId, keyDecoded);
+          const response = await postKeyActivation(deviceId, keyDecoded);
           console.log('response postKeyActivation', response);
           if (response.status === 'error') {
             if (response.data == 'key is already active') isKeyAlreadyRegistered = true;
@@ -189,7 +180,7 @@ function App() {
         return;
       }
       console.log('isPermissionGranted', isPermissionGranted);
-      if (!isPermissionGranted) await closeApp('Permisos denegados. Cerrando la aplicación...');
+      if (!isPermissionGranted) await closeAppWithMessage('Permisos denegados. Cerrando la aplicación...');
     } else {
       try {
         //NOTE: Pruebas para ver los usuario y contraseñas

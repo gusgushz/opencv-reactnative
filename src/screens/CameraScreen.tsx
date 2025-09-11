@@ -104,6 +104,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
           //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)
           if (region == res.split('_')[7]) {
             console.log('split7', res.split('_')[7]);
+            console.log('split1', res.split('_')[1]);
             if (res !== lastScannedRef.current) {
               Vibration.vibrate(100);
               const parts = res.split('_');
@@ -152,15 +153,15 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
               switch (updatedInfo.codeType) {
                 case 'Trasero':
                   newCheckBoxes[0] = true;
-                  newDocuments.push('Trasera');
+                  if (!newDocuments.includes('Trasera')) newDocuments.push('Trasera');
                   break;
                 case 'Delantero':
                   newCheckBoxes[1] = true;
-                  newDocuments.push('Frontal');
+                  if (!newDocuments.includes('Frontal')) newDocuments.push('Frontal');
                   break;
                 case 'Engomado':
                   newCheckBoxes[2] = true;
-                  newDocuments.push('Engomado');
+                  if (!newDocuments.includes('Engomado')) newDocuments.push('Engomado');
                   break;
               }
 

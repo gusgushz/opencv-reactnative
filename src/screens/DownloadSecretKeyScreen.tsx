@@ -1,11 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, NativeModules, Image, TouchableWithoutFeedback } from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+  TouchableWithoutFeedback,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import { stylesTemplate } from '../theme';
 import * as RNFS from '@dr.pogodin/react-native-fs';
-import { base64Decode, removeToken, storeKey } from '../utils';
+import { base64Decode, removeToken, storeKey, closeAppWithMessage, getDeviceId } from '../utils';
 import { SECURITY_LEVEL } from 'dotenv';
 import { DownloadSecretKeyScreenProps } from '../navigation/NavigationProps';
-const { OpencvFunc } = NativeModules;
+
+const { height } = Dimensions.get('window');
 
 export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenProps) => {
   const [url, setUrl] = useState<string>('');
@@ -33,6 +45,7 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
     setWarning('');
 
     try {
+      const devicePath = Platform.OS == 'android' ? `${RNFS.ExternalDirectoryPath}` : `${RNFS.LibraryDirectoryPath}`;
       let processedUrl = url.trim(); // Limpiar espacios
       if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
         processedUrl = 'http://' + processedUrl; //FIXME: cambiar el prefijo a https://
@@ -42,20 +55,20 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
 
       const downloadResult = await RNFS.downloadFile({
         fromUrl: processedUrl,
-        toFile: `${RNFS.ExternalDirectoryPath}/secretKey.dat`,
+        toFile: `${devicePath}/secretKey.dat`,
       }).promise;
 
       if (downloadResult.statusCode === 200) {
-        const exists = await RNFS.exists(`${RNFS.ExternalDirectoryPath}/secretKey.dat`);
+        const exists = await RNFS.exists(`${devicePath}/secretKey.dat`);
         if (exists) {
           setWarning('Clave Descargada');
-          const content = await RNFS.readFile(`${RNFS.ExternalDirectoryPath}/secretKey.dat`, 'utf8');
+          const content = await RNFS.readFile(`${devicePath}/secretKey.dat`, 'utf8');
           const keyDecoded = base64Decode(content);
           removeToken();
           storeKey(keyDecoded);
           setExists(true);
           console.log('Clave descargada:', keyDecoded);
-          await OpencvFunc.exitAppWithMessage('Clave descargada. Volver a abrir la aplicación para continuar.');
+          await closeAppWithMessage('Clave descargada. Volver a abrir la aplicación para continuar.');
         }
       } else {
         setWarning('Error al descargar la clave. Verifique la URL.');
@@ -80,7 +93,7 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
             }
           }
         }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="center" style={{ marginBottom: -16 }} />
+        <Image source={require('../../assets/logo.png')} resizeMode="contain" style={{ width: '100%', height: height * 0.3, marginBottom: -16 }} />
       </TouchableWithoutFeedback>
       <TextInput
         style={styles.input}

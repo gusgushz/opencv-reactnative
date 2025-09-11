@@ -55,3 +55,31 @@ export const nativeInfo = async () => {
     throw error;
   }
 };
+
+export const getDeviceId = async () => {
+  let id;
+  try {
+    if (Platform.OS === 'android') {
+      id = await OpencvFunc.getAndroidId();
+    } else {
+      id = await OpenCVWrapper.getIosId();
+    }
+    return id;
+  } catch (error) {
+    console.error('No se pudo obtener el ID:', error);
+    throw error;
+  }
+};
+
+export const closeAppWithMessage = async (message: string) => {
+  try {
+    if (Platform.OS === 'android') {
+      await OpencvFunc.exitAppWithMessage(message);
+    } else {
+      await OpenCVWrapper.exitAppWithMessage(message);
+    }
+  } catch (error) {
+    console.error('No se pudo cerrar la app', error);
+    throw error;
+  }
+};

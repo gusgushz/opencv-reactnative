@@ -1,4 +1,4 @@
-package com.vifinsapublic
+package com.vifinsaprivate
 
 import android.app.Application
 import com.facebook.react.PackageList
