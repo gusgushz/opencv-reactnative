@@ -26,7 +26,7 @@ export const InformationScreen = ({ route, navigation }: InformationScreenProps)
     documents,
   } = route.params;
 
-const [link, setLink] = useState<string>(url);
+  const [link, setLink] = useState<string>(url);
 
   useEffect(() => {
     const fetchLink = async () => {
@@ -112,7 +112,7 @@ const BodyLevelOfClearanceA: React.FC<BodyLevelOfClearanceAProps> = ({ expiratio
         <Image resizeMode="contain" source={require('../../assets/icons/person_outline.png')} style={{ width: 16, tintColor: 'white' }}></Image>
         <Text style={styles.textHeader}>Perfil privado 2</Text>
       </View>
-      <View style={styles.content}>
+      {/* <View style={styles.content}>
         <View style={{ gap: 4 }}>
           <Text style={styles.textNormal}>Vigencia:</Text>
           <Text style={styles.textNormal}>Servicio:</Text>
@@ -120,14 +120,35 @@ const BodyLevelOfClearanceA: React.FC<BodyLevelOfClearanceAProps> = ({ expiratio
           <Text style={styles.textNormal}>Región:</Text>
           <Text style={styles.textNormal}>Documentos:</Text>
         </View>
-        <View style={{ gap: 4 }}>
+        <View style={{ gap: 4, maxWidth: '70%' }}>
           <Text style={{ textAlign: 'right' }}>{expirationDate}</Text>
-          <Text style={{ textAlign: 'right' }}>{typeServiceText}</Text>
+          <Text numberOfLines={2} style={{ textAlign: 'right' }}>
+            {typeServiceText}
+          </Text>
           <Text style={{ textAlign: 'right' }}>{serial}</Text>
           <Text style={{ textAlign: 'right' }}>{state}</Text>
           <Text style={{ textAlign: 'right' }}>{documents.join(', ')}</Text>
         </View>
+      </View> */}
+      <View style={{ paddingVertical: 12, gap:4 }}>
+        <Row label={'Vigencia'} item={expirationDate}></Row>
+        <Row label={'Servicio'} item={typeServiceText}></Row>
+        <Row label={'Serie'} item={serial}></Row>
+        <Row label={'Región'} item={state}></Row>
+        <Row label={'Documentos'} item={documents.join(', ')}></Row>
       </View>
+    </View>
+  );
+};
+type RowProps = { label: string; item: string };
+const Row: React.FC<RowProps> = ({ label, item }) => {
+  // []
+  return (
+    <View style={{ flexDirection: 'row', gap: 4, paddingHorizontal: 24 }}>
+      <Text style={[styles.textNormal, { flex: 3 }]}>{label}:</Text>
+      <Text numberOfLines={2} style={{ textAlign: 'right', flex: 8 }}>
+        {item}
+      </Text>
     </View>
   );
 };
@@ -191,6 +212,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 4,
     justifyContent: 'space-between',
+    alignContent: 'center',
+    width: '100%',
   },
   text: {
     fontSize: 20,

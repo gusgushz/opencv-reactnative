@@ -4,7 +4,7 @@ import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera, clearNativeInfo, nativeInfo } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
-import { RoleLevels, stateNameToId, region } from '../globalVariables';
+import { RoleLevels, stateNameToId, region, providerId } from '../globalVariables';
 import { Parts, Service } from '../models';
 import { getServices } from '../utils/';
 import { SECURITY_LEVEL } from 'dotenv';
@@ -102,7 +102,9 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
         if (res && res.length > 0) {
           // Si es un código nuevo (diferente al último escaneado)
           //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)
-          if (region == res.split('_')[7]) {
+          console.log('providerid', providerId);
+          console.log('split10', res.split('_')[10]);
+          if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
             console.log('split7', res.split('_')[7]);
             console.log('split1', res.split('_')[1]);
             if (res !== lastScannedRef.current) {

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Yucatán</string>
+	<string>Chiapas Público</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,30 +27,42 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<false/>
+		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>ec2-3-16-117-69.us-east-2.compute.amazonaws.com</key>
+			<key>localhost.com</key>
 			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
 				<key>NSIncludesSubdomains</key>
 				<true/>
+			</dict>
+			<key>127.0.0.1.com</key>
+			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+			<key>ec2-3-16-117-69.us-east-2.compute.amazonaws.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
 			<key>ec2-3-144-185-166.us-east-2.compute.amazonaws.com</key>
 			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
 			<key>ec2-3-129-57-8.us-east-2.compute.amazonaws.com</key>
 			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
 		</dict>

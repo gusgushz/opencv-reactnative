@@ -1,4 +1,4 @@
-package com.vifinsaprivate
+package com.chiapaspublic
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

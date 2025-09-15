@@ -1,17 +1,17 @@
 {
-  "AppName": "Yucatán",
-  "PackageName": "com.vifinsaprivate",
+  "AppName": "Chiapas",
+  "PackageName": "com.chiapaspublic",
   "Client": {
-    "Id": "31"
+    "Id": "05"
   },
   "Regions": [
     {
-      "Id": "31",
-      "Name": "yucatan"
+      "Id": "05",
+      "Name": "chiapas"
     }
   ],
   "Provider": {
-    "Id": "026",
+    "Id": "26",
     "Name": "vifinsa"
   },
   "PermissionLevels": {

@@ -33,7 +33,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = testDoc/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = testDoc/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = testDoc/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		17F2628F5B1D46B0B29AD21C /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = testDoc/BootSplash.storyboard; sourceTree = "<group>"; };
+		17F2628F5B1D46B0B29AD21C /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = testDoc/BootSplash.storyboard; sourceTree = "<group>"; };
 		2F440BE32DA99AD0007D786C /* HoloDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HoloDecoder.h; sourceTree = "<group>"; };
 		2F440BE42DA99AD0007D786C /* HoloDecoder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = HoloDecoder.mm; sourceTree = "<group>"; };
 		2FF7B2CA2D7210BC003ACC5F /* opencv2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = opencv2.xcframework; path = ../../opencv/build_all/opencv2.xcframework; sourceTree = "<group>"; };
@@ -54,7 +54,7 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-testDoc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-testDoc.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = testDoc/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = testDoc/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		AFCE3666BCE343928811F02D /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = testDoc/Colors.xcassets; sourceTree = "<group>"; };
+		AFCE3666BCE343928811F02D /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = testDoc/Colors.xcassets; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -253,9 +253,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-testDoc/Pods-testDoc-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-testDoc/Pods-testDoc-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -306,9 +310,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-testDoc/Pods-testDoc-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-testDoc/Pods-testDoc-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -355,7 +363,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vifinsaprivate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chiapaspublic;
 				PRODUCT_NAME = testDoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "testDoc-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -387,7 +395,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vifinsaprivate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chiapaspublic;
 				PRODUCT_NAME = testDoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "testDoc-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -464,10 +472,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -536,10 +541,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -558,7 +560,7 @@
 				13B07F951A680F5B00A75B9A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "testDoc" */ = {
 			isa = XCConfigurationList;
@@ -567,7 +569,7 @@
 				83CBBA211A601CBA00E9B192 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

@@ -133,10 +133,10 @@
 - (void)setupCamera {
     self.session = [[AVCaptureSession alloc] init];
     //NOTE: Diferentes presets para la calidad de la captura de la camara. Mientras màs alto, màs pesado y màs se llena la memoria.
-    // self.session.sessionPreset = AVCaptureSessionPreset1280x720;+
+    // self.session.sessionPreset = AVCaptureSessionPreset1280x720;
     // self.session.sessionPreset = AVCaptureSessionPreset640x480;
-    self.session.sessionPreset = AVCaptureSessionPresetMedium;
-    // self.session.sessionPreset = AVCaptureSessionPresetHigh;
+    // self.session.sessionPreset = AVCaptureSessionPresetMedium;
+    self.session.sessionPreset = AVCaptureSessionPresetHigh;
     
     self.device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     [self configureDeviceForLowLight];
@@ -279,6 +279,8 @@
         videoRect = CGRectMake(0, y, layerBounds.size.width, height);
     }
 
+    CGFloat offsetY = -100;
+    CGFloat aspectRatio = 1.777; // 1280/720
     // ====== Borde verde ======
     std::vector<cv::Point> borderPoints = contours[borderIdx];
     if (!borderPoints.empty()) {
@@ -287,9 +289,8 @@
         for (size_t i = 0; i < borderPoints.size(); i++) {
             CGFloat normX = (CGFloat)borderPoints[i].x / (CGFloat)self.frameWidth;
             CGFloat normY = (CGFloat)borderPoints[i].y / (CGFloat)self.frameHeight;
-            CGFloat offsetY = -15;
             CGPoint point = CGPointMake(normX * layerBounds.size.width,
-                                        (normY * layerBounds.size.width*1.333) + offsetY);
+                                        (normY * layerBounds.size.width*aspectRatio) + offsetY);
 
 
             if (i == 0) [borderPath moveToPoint:point];
@@ -314,9 +315,8 @@
         for (size_t i = 0; i < markerPoints.size(); i++) {
             CGFloat normX = (CGFloat)markerPoints[i].x / (CGFloat)self.frameWidth;
             CGFloat normY = (CGFloat)markerPoints[i].y / (CGFloat)self.frameHeight;
-            CGFloat offsetY = -15;
             CGPoint point = CGPointMake(normX * layerBounds.size.width,
-                                        (normY * layerBounds.size.width*1.333) + offsetY);
+                                        (normY * layerBounds.size.width*aspectRatio) + offsetY);
 
             if (i == 0) [markerPath moveToPoint:point];
             else [markerPath addLineToPoint:point];

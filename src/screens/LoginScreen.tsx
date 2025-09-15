@@ -5,6 +5,7 @@ import { LoginScreenProps } from '../navigation/NavigationProps';
 // import { useUserContext } from '../contexts/UserContext.tsx';
 import { UserSession } from '../models';
 import { getUsersData, readableString, storeUser, storeUserSession } from '../utils';
+import { region } from '../globalVariables';
 
 const { height } = Dimensions.get('window');
 
@@ -14,6 +15,8 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [warning, setWarning] = useState('');
+
+  const logo = region === 'YUCATAN' ? require('../../assets/images/logoHome.png') : require('../../assets/logo.png');
 
   const handleLogin = () => {
     setIsLoading(true);
@@ -46,7 +49,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.container, stylesTemplate.screenBgColor]}>
       <View style={{ width: '100%', gap: 24 }}>
-        <Image source={require('../../assets/logo.png')} resizeMode="contain" style={{ width: '100%', height: height * 0.2 }} />
+        <Image source={logo} resizeMode="contain" style={{ width: '100%', height: height * 0.2 }} />
         <View style={{ gap: 4 }}>
           <Text style={styles.title}>Correo</Text>
           <TextInput
