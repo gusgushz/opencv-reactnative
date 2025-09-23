@@ -1,0 +1,17 @@
+{
+  "AppName": "Estado de México",
+  "PackageName": "com.edomexpublic",
+  "Client": {
+    "Id": "15"
+  },
+  "Regions": [
+    {
+      "Id": "15",
+      "Name": "Mexico"
+    }
+  ],
+  "Provider": {
+    "Id": "26",
+    "Name": "vifinsa"
+  }
+}

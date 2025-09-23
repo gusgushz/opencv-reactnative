@@ -116,7 +116,7 @@ function App() {
             console.log(key === keyDecoded);
             const dateRaw = getLastValidateTokenDate();
             const date = dateRaw ? new Date(dateRaw) : null;
-            // const response = await postValidateToken(chain, token);ºº
+            // const response = await postValidateToken(chain, token);
             const response = await postAuthenticateValidDevice(deviceId, key);
             console.log('response postAuthenticateValidDevice', response);
             if (response.status === 'error' && response.message === 'Error de red') {

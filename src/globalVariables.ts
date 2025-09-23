@@ -11,12 +11,29 @@ export enum RoleLevels {
 //vifinsa
 // export const sufix = 'vif001';
 //chiapas
-export const sufix = 'CHP003';
+// export const sufix = 'CHP004';
 //edomex
 // export const sufix = 'MEX010';
+//demo
+// export const sufix = 'dem001';
+//plaresa
+// export const sufix = 'pls001';
+//troqmex
+// export const sufix = 'trm001';
+//safetyp
+export const sufix = 'sft001';
 
+export const isDemo = false; //SOLO CAMBIAR CUANDO SE CREE UNA APP DEMO
 export const region = AppConfig.Regions[0].Name.toUpperCase();
+export const regionId = AppConfig.Regions[0].Id;
+const provider = AppConfig.Provider.Name.toLowerCase();
 export const providerId = AppConfig.Provider.Id;
+export const logo =
+  provider == 'vifinsa'
+    ? require('../assets/images/logoHome-vifinsa.png')
+    : provider == 'edomex'
+    ? require('../assets/images/logoHome-edomex.png')
+    : require('../assets/logo.png');
 
 export const stateNameToId = (state: string): number => {
   if (state === region) {
@@ -26,3 +43,6 @@ export const stateNameToId = (state: string): number => {
     return -1;
   }
 };
+
+//prettier-ignore
+export const regions = ['','AGUASCALIENTES', 'BAJA CALIFORNIA', 'BAJA CALIFORNIA SUR', 'CAMPECHE', 'CHIAPAS', 'CHIHUAHUA', 'CIUDAD DE MEXICO', 'COAHUILA', 'COLIMA', 'DURANGO', 'GUANAJUATO', 'GUERRERO', 'HIDALGO', 'JALISCO', 'MEXICO', 'MICHOACAN', 'MORELOS', 'NAYARIT', 'NUEVO LEON', 'OAXACA', 'PUEBLA', 'QUERETARO', 'QUINTANA ROO', 'SAN LUIS POTOSI', 'SINALOA', 'SONORA', 'TABASCO', 'TAMAULIPAS', 'TLAXCALA', 'VERACRUZ', 'YUCATAN', 'ZACATECAS', 'BELIZE', 'CAYO', 'COROZAL', 'ORANGE WALK', 'STANN CREEK', 'TOLEDO'];

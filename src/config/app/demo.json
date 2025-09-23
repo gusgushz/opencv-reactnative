@@ -1,0 +1,17 @@
+{
+  "AppName": "Demo",
+  "PackageName": "com.demopublic",
+  "Client": {
+    "Id": "0"
+  },
+  "Regions": [
+    {
+      "Id": "0",
+      "Name": "demo"
+    }
+  ],
+  "Provider": {
+    "Id": "0",
+    "Name": "Demo"
+  }
+}

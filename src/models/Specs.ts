@@ -16,6 +16,25 @@ export interface Specs {
   url: string; //URL de la dependencia de gobierno
 }
 export type Parts = Specs & {
-  roleLevel: string;
   documents: string[];
 };
+export interface PartsEdomex {
+  url: string;
+  folio: string;
+  providerName: string;
+  providerId: string;
+  batchNumber: string;
+  manufacturedYear: string; //año de manufactura
+  holo: string; //Holograma
+  semester: string; //Semestre
+  expirationDate: string; //vigencia 20xx-20xx
+  serial: string; // Numeros-letras de la placa // serie de placa
+}
+export interface PartsEdomexFromScan {
+  folio: string; //Folio
+  providerId: string; //Id del proveedor
+  batchNumber: string; //Lote
+  manufacturedYear: string; //año de manufactura, SOLO TOMAR LOS 2 PRIMEROS DIGITOS
+  stateId: string; //Id del estado
+  certificate: string; //Holograma-tipo de certificado de verificación #PUEDE SER: 0,00,1,2
+}

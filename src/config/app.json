@@ -1,18 +1,18 @@
 {
-  "AppName": "Chiapas",
-  "PackageName": "com.chiapaspublic",
+  "AppName": "Scanner",
+  "PackageName": "com.safetypprivate",
   "Client": {
-    "Id": "05"
+    "Id": "31"
   },
   "Regions": [
     {
-      "Id": "05",
-      "Name": "chiapas"
+      "Id": "31",
+      "Name": "yucatan"
     }
   ],
   "Provider": {
-    "Id": "26",
-    "Name": "vifinsa"
+    "Id": "36",
+    "Name": "safetyp"
   },
   "PermissionLevels": {
     "public": [

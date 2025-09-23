@@ -4,7 +4,13 @@ import json
 import os
 import re
 import subprocess
+import platform
 from xml.etree import ElementTree as ET
+
+# Para poder usar npx en windows y otros sistemas
+npx_cmd = "npx"
+if platform.system() == "Windows":
+    npx_cmd = "npx.cmd"
 
 # Validación de argumentos
 if len(sys.argv) < 2:
@@ -28,6 +34,7 @@ theme_dest = os.path.join(base_dir, "src/config/theme.json")
 logo_source = os.path.join(base_dir, f"assets/logos/logo-{provider}.png")
 logo_dest = os.path.join(base_dir, "assets/logo.png")
 env_path = os.path.join(base_dir, ".env")
+global_vars_path = os.path.join(base_dir, "src/globalVariables.ts")
 
 #Paths Android
 strings_xml = os.path.join(base_dir, "android/app/src/main/res/values/strings.xml")
@@ -63,21 +70,26 @@ try:
     with open(config_dest, "r", encoding="utf-8") as f:
         config = json.load(f)
 
-    app_name = config.get("AppName")
-    new_package = f"com.{provider}{mode}"
+    app_name = config.get("AppName")  # fallback por si no existe
 
+    # Lógica para Chiapas
+    if provider.lower() == "chiapas":
+        if mode == "public":
+            app_name += " Público"
+        elif mode == "private":
+            app_name += " Privado"
+
+    config["AppName"] = app_name
+
+    new_package = f"com.{provider}{mode}"
     config["PackageName"] = new_package
 
     with open(config_dest, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ app.json actualizado con PackageName: {new_package}")
+    print(f"✅ app.json actualizado con PackageName: {new_package} y AppName: {app_name}")
 except Exception as e:
     print(f"❌ Error actualizando app.json: {e}")
-    sys.exit(1)
-
-if not new_package:
-    print("❌ PackageName no encontrado en app.json")
     sys.exit(1)
 
 # Leer colores desde theme.json
@@ -325,7 +337,7 @@ except Exception as e:
 if bootsplash_color:
     try:
         cmd = [
-            "npx", "--yes", "react-native", "generate-bootsplash",
+            npx_cmd, "--yes", "react-native", "generate-bootsplash",
             "assets/logo.png",
             "--platforms=android,ios",
             f"--background={bootsplash_color}",
@@ -339,7 +351,6 @@ if bootsplash_color:
             print("✅ SplashScreen generada con éxito usando react-native-bootsplash")
         except subprocess.CalledProcessError as e:
             print(f"❌ Error generando SplashScreen: {e}")
-        print("✅ SplashScreen generada con éxito usando react-native-bootsplash")
     except Exception as e:
         print(f"❌ Error generando SplashScreen: {e}")
 else:
@@ -410,3 +421,43 @@ def copy_ios_appicon(provider):
 
     print(f"✅ AppIcon actualizado para iOS desde {src_dir} → {dest_dir}")
 copy_ios_appicon(provider)
+
+# === Mapeo provider → sufix que aparece en globalVariables.ts ===
+provider_sufix_map = {
+    "vifinsa": "vif001",
+    "chiapas": "CHP004",
+    "edomex": "MEX010",
+    "demo": "dem001",
+    "plaresa": "pls001",
+    "troqmex": "trm001",
+    "safetyp": "sft001"
+}
+
+current_sufix = provider_sufix_map.get(provider.lower())
+
+# === Leer archivo ===
+with open(global_vars_path, "r", encoding="utf-8") as f:
+    lines = f.readlines()
+
+# === Modificar líneas ===
+new_lines = []
+sufix_pattern = re.compile(r"^(//\s*)?export const sufix = '(.*?)';")
+
+for line in lines:
+    match = sufix_pattern.match(line)
+    if match:
+        sufix_value = match.group(2)
+        if sufix_value == current_sufix:
+            # Descomentar
+            new_lines.append(f"export const sufix = '{sufix_value}';\n")
+        else:
+            # Comentar
+            new_lines.append(f"// export const sufix = '{sufix_value}';\n")
+    else:
+        new_lines.append(line)
+
+# === Guardar archivo ===
+with open(global_vars_path, "w", encoding="utf-8") as f:
+    f.writelines(new_lines)
+
+print(f"✅ globalVariables.ts actualizado para provider '{provider}' con sufix '{current_sufix}'")

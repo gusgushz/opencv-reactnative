@@ -1,20 +1,38 @@
 **COMO USAR setup_env.py**
-http://ec2-3-16-117-69.us-east-2.compute.amazonaws.com/key/
 
-# Para trabajar en desarrollo normalmente
-python .\setup_env.py default public // ANDROID
-python3 ./setup_env.py default private // IOS
+# ARCHIVOS NECESARIOS PARA QUE FUNCIONE CORRECTAMENTE EL ARCHIVO
 
-//Recordar limpiar cada vez que se quiera hacer un build nuevo
+- Es necesario agregar a la carpeta src/config en /app y en /config sus respectivos .JSON con la informacion básica del proveedor, nombrando cada archivo con el nombre del proveedor.
+- Tener los iconos (android e ios) en sus respectivas carpeta en assets/deviceIcons. Para ios es /AppIcon.appiconset y dentro se agrega la carpeta con el nombre del proveedor y dentro las imagenes. Para android es /mipmaps y dentro se agrega la carpeta con el nombre del proveedor.
+  *https://www.appicon.co/* Esta es la url que se utiliza para crear los íconos, en android solo crea los ic_launcher.png, manualmente usando pptx creo la ic_launcher_round.png
+- También es requisito tener el logo o imagen logo que se va a usar en la splashscreen (mediante bootsplash) dentro de assets/logos con el formato logo-{provider}.png
+- En caso de que el logo sea diferente a la imagen usada dentro de la app (en la pantalla home/login/downloadsecretkey) se debe agregar manualmente esta imagen dentro de la carpeta assets/images con el nombre logoHome-{provider}.png y luego dentro de src/globalVariables.ts agregar el path para la imagen (seguir formato)
+- Por último, se debe agregar dentro de globalVariables.ts el sufix relacionado con el proveedor (no necesariamente tiene que llevar algo en el nombre relacionado con él). Y luego dentro del setup_env.py buscar por la linea 425 para agregar a la lista de proveedores y se pueda hacer el cambio de sufix entre proveedores.
+- OPCIONAL. Si el cliente quiero un nombre en particular o agregar algo extra al nombre AppName (dentro del config/app.json) como en chiapas que se agrega publico o privado por la linea 75 de setup_env.py se puede agregar la excepción.
+
+# VER PASO SIGUIENTE ANTES DE USAR. Comandos para utilizar el cambio de ambiente entre windows y mac, limpiar antes de utilizar el script
+
+python .\setup_env.py demo public // WINDOWS
+python3 ./setup_env.py demo private // MACOS
+
 ### LIMPIAR BUILD ANDROID
+
 cd Android
-./gradlew assembleRelease
 ./gradlew clean
+./gradlew assembleRelease //Para crear release
+
 ### LIMPIAR BUILD IOS
+
 cd ios
-xcodebuild clean (cmd+shift+k en xcode) 
+xcodebuild clean (cmd+shift+k en xcode)
+//Para crear release se tiene que cambiar el schema (via codigo o en xcode->product/schema/edit) y RUN
+
 ### LIMPIAR METRO
+
 npx react-native start --reset-cache
+//En algunos casos puede ser necesario borrar las carpetas build dentro de /android y /android/app
+
+http://ec2-3-16-117-69.us-east-2.compute.amazonaws.com/key/
 
 **Opencv-JS**
 

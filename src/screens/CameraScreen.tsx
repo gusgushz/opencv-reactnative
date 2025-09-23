@@ -4,8 +4,8 @@ import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera, clearNativeInfo, nativeInfo } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
-import { RoleLevels, stateNameToId, region, providerId } from '../globalVariables';
-import { Parts, Service } from '../models';
+import { RoleLevels, stateNameToId, region, providerId, regionId, isDemo, regions } from '../globalVariables';
+import { Parts, PartsEdomex, Service } from '../models';
 import { getServices } from '../utils/';
 import { SECURITY_LEVEL } from 'dotenv';
 import { usePreventRemove } from '@react-navigation/native';
@@ -100,96 +100,125 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
       try {
         const res = await nativeInfo();
         if (res && res.length > 0) {
-          // Si es un código nuevo (diferente al último escaneado)
-          //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado)
-          console.log('providerid', providerId);
-          console.log('split10', res.split('_')[10]);
-          if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
-            console.log('split7', res.split('_')[7]);
-            console.log('split1', res.split('_')[1]);
-            if (res !== lastScannedRef.current) {
-              Vibration.vibrate(100);
+          if (isDemo) {
+            //REFACTOR: PARA EL MODO DEMO
+            if (res.includes('_')) {
               const parts = res.split('_');
+              parts[6] = findServiceNameDemo(parts[5], parts[7]);
+              console.log('newRes:*******', parts.join('_'));
+              navigateToInformationScreen({ info: parts.join('_') });
+            } else {
+              navigateToInformationScreen({ info: res });
+            }
+          }
+          if (res.includes('XD') && regionId == '15') {
+            navigateToInformationScreen({ info: res });
+          }
+          if (res.includes('|') && regionId == '15') {
+            const pts = res.split('|');
+            const partsEdomex = {
+              url: 'https://edomex.gob.mx/',
+              folio: pts[0],
+              providerName: 'VIFINSA',
+              providerId: pts[1],
+              batchNumber: pts[2],
+              manufacturedYear: pts[3].slice(0, 2),
+              holo: pts[5],
+              semester: '2',
+              expirationDate: '2025',
+              serial: 'AAA-000-A',
+            };
+            navigateToInformationScreen({ partsEdomex: partsEdomex });
+          } else {
+            //NOTE: esto es para que solo funcione el codigo con una región(nombre del estado) y con un solo proveedor
+            console.log('region', region);
+            console.log('split7', res.split('_')[7]);
+            console.log('providerid', providerId);
+            console.log('split10', res.split('_')[10]);
+            if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
+              // Si es un código nuevo (diferente al último escaneado)
+              if (res !== lastScannedRef.current) {
+                Vibration.vibrate(100);
+                const parts = res.split('_');
 
-              const { serviceName, hasFrontal, hasRear, hasEngomado } = findServiceName(parts[5], parts[7]);
-              let newDocuments = [...documents]; // copia el estado actual
-              const updatedInfo: Parts = {
-                roleLevel,
-                version: parts[0],
-                codeType: parts[1],
-                chainLength: parts[2],
-                permissionLevel: parts[3],
-                serial: parts[4],
-                typeServiceId: parts[5],
-                typeServiceText: serviceName,
-                state: parts[7],
-                batch: parts[8],
-                provider: parts[9],
-                providerNumber: parts[10],
-                expirationDate: parts[11],
-                manufacturedYear: parts[12],
-                url: parts[13],
-                documents: newDocuments,
-              };
+                const { serviceName, hasFrontal, hasRear, hasEngomado } = findServiceName(parts[5], parts[7]);
+                let newDocuments = [...documents]; // copia el estado actual
+                const updatedInfo: Parts = {
+                  version: parts[0],
+                  codeType: parts[1],
+                  chainLength: parts[2],
+                  permissionLevel: parts[3],
+                  serial: parts[4],
+                  typeServiceId: parts[5],
+                  typeServiceText: serviceName,
+                  state: parts[7],
+                  batch: parts[8],
+                  provider: parts[9],
+                  providerNumber: parts[10],
+                  expirationDate: parts[11],
+                  manufacturedYear: parts[12],
+                  url: parts[13],
+                  documents: newDocuments,
+                };
 
-              console.log('parts:', JSON.stringify(parts));
-              console.log('updatedInfo:', JSON.stringify(updatedInfo));
-              console.log('rolelevel', roleLevel);
-              console.log('enum role', RoleLevels.ZERO);
-              if (roleLevel == RoleLevels.ZERO) {
-                navigateToInformationScreen(updatedInfo);
-              }
-              let newCheckBoxes = [...checkBoxes];
+                console.log('parts:', JSON.stringify(parts));
+                console.log('updatedInfo:', JSON.stringify(updatedInfo));
+                console.log('rolelevel', roleLevel);
+                if (roleLevel == RoleLevels.ZERO) {
+                  navigateToInformationScreen({ parts: updatedInfo });
+                }
+                let newCheckBoxes = [...checkBoxes];
 
-              const isSamePlate = res.split('_')[4] === lastScannedRef.current?.split('_')[4];
-              console.log('lastScannedRef.current', lastScannedRef.current?.split('_')[4]);
-              console.log('res', res.split('_')[4]);
-              console.log('isSamePlate', isSamePlate);
-              if (!isSamePlate) {
-                newCheckBoxes = [false, false, false];
-                newDocuments = [];
-                setDocuments(newDocuments);
+                const isSamePlate = res.split('_')[4] === lastScannedRef.current?.split('_')[4];
+                console.log('lastScannedRef.current', lastScannedRef.current?.split('_')[4]);
+                console.log('res', res.split('_')[4]);
+                console.log('isSamePlate', isSamePlate);
+                if (!isSamePlate) {
+                  newCheckBoxes = [false, false, false];
+                  newDocuments = [];
+                  setDocuments(newDocuments);
+                  setCheckBoxes(newCheckBoxes);
+                }
+
+                switch (updatedInfo.codeType) {
+                  case 'Trasero':
+                    newCheckBoxes[0] = true;
+                    if (!newDocuments.includes('Trasera')) newDocuments.push('Trasera');
+                    break;
+                  case 'Delantero':
+                    newCheckBoxes[1] = true;
+                    if (!newDocuments.includes('Frontal')) newDocuments.push('Frontal');
+                    break;
+                  case 'Engomado':
+                    newCheckBoxes[2] = true;
+                    if (!newDocuments.includes('Engomado')) newDocuments.push('Engomado');
+                    break;
+                }
+
+                console.log('documents', documents);
                 setCheckBoxes(newCheckBoxes);
-              }
+                setDocuments(newDocuments);
 
-              switch (updatedInfo.codeType) {
-                case 'Trasero':
-                  newCheckBoxes[0] = true;
-                  if (!newDocuments.includes('Trasera')) newDocuments.push('Trasera');
-                  break;
-                case 'Delantero':
-                  newCheckBoxes[1] = true;
-                  if (!newDocuments.includes('Frontal')) newDocuments.push('Frontal');
-                  break;
-                case 'Engomado':
-                  newCheckBoxes[2] = true;
-                  if (!newDocuments.includes('Engomado')) newDocuments.push('Engomado');
-                  break;
-              }
+                lastScannedRef.current = res; // Actualiza el último código escaneado
 
-              console.log('documents', documents);
-              setCheckBoxes(newCheckBoxes);
-              setDocuments(newDocuments);
+                if (
+                  ((newCheckBoxes[0] && newCheckBoxes[1]) || (newCheckBoxes[0] && newCheckBoxes[2]) || (newCheckBoxes[1] && newCheckBoxes[2])) &&
+                  SECURITY_LEVEL === 'public'
+                )
+                  navigateToInformationScreen({ parts: updatedInfo });
 
-              lastScannedRef.current = res; // Actualiza el último código escaneado
-
-              if (
-                ((newCheckBoxes[0] && newCheckBoxes[1]) || (newCheckBoxes[0] && newCheckBoxes[2]) || (newCheckBoxes[1] && newCheckBoxes[2])) &&
-                SECURITY_LEVEL === 'public'
-              )
-                navigateToInformationScreen(updatedInfo);
-
-              if (hasRear && hasFrontal && hasEngomado) {
-                if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen(updatedInfo);
-              }
-              if (hasRear && hasFrontal && !hasEngomado) {
-                if (newCheckBoxes[0] && newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-              }
-              if (hasFrontal && !hasEngomado && !hasRear) {
-                if (newCheckBoxes[1]) navigateToInformationScreen(updatedInfo);
-              }
-              if (hasRear && !hasFrontal && !hasEngomado) {
-                if (newCheckBoxes[0]) navigateToInformationScreen(updatedInfo);
+                if (hasRear && hasFrontal && hasEngomado) {
+                  if (newCheckBoxes[0] && newCheckBoxes[1] && newCheckBoxes[2]) navigateToInformationScreen({ parts: updatedInfo });
+                }
+                if (hasRear && hasFrontal && !hasEngomado) {
+                  if (newCheckBoxes[0] && newCheckBoxes[1]) navigateToInformationScreen({ parts: updatedInfo });
+                }
+                if (hasFrontal && !hasEngomado && !hasRear) {
+                  if (newCheckBoxes[1]) navigateToInformationScreen({ parts: updatedInfo });
+                }
+                if (hasRear && !hasFrontal && !hasEngomado) {
+                  if (newCheckBoxes[0]) navigateToInformationScreen({ parts: updatedInfo });
+                }
               }
             }
           }
@@ -217,28 +246,53 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     const hasEngomado: boolean = service?.has_engomado === 1 ? true : false;
     return { serviceName, hasFrontal, hasRear, hasEngomado };
   };
-
-  const navigateToInformationScreen = async (parts: Parts) => {
-    await closeCamera();
-    console.log('Navigating to InformationScreen with parts:', parts);
-    navigation.navigate('InformationScreen', {
-      roleLevel: roleLevel,
-      version: parts.version,
-      codeType: parts.codeType,
-      chainLength: parts.chainLength,
-      permissionLevel: parts.permissionLevel,
-      serial: parts.serial,
-      typeServiceId: parts.typeServiceId,
-      typeServiceText: parts.typeServiceText,
-      state: parts.state,
-      batch: parts.batch,
-      provider: parts.provider,
-      providerNumber: parts.providerNumber,
-      expirationDate: parts.expirationDate,
-      manufacturedYear: parts.manufacturedYear,
-      url: parts.url,
-      documents: parts.documents,
+  const findServiceNameDemo = (typeServiceId: string, state: string) => {
+    const stateId = regions.findIndex(r => r === state);
+    const service = services.find(service => {
+      return service.service_db_id.toString() == typeServiceId && service.state_id == stateId;
     });
+    const serviceName: string = service?.parent_service_name ?? 'No se encontró el servicio';
+    return serviceName;
+  };
+
+  type NavigateParams = { parts: Parts } | { partsEdomex: PartsEdomex } | { info: string };
+  const navigateToInformationScreen = async (params: NavigateParams) => {
+    await closeCamera();
+    console.log('Navigating to InformationScreen with parts:', params);
+    if ('info' in params) navigation.navigate('InformationScreen', { roleLevel, info: params.info });
+    if ('partsEdomex' in params)
+      navigation.navigate('InformationScreen', {
+        roleLevel,
+        url: params.partsEdomex.url,
+        folio: params.partsEdomex.folio,
+        providerName: params.partsEdomex.providerName,
+        providerId: params.partsEdomex.providerId,
+        batchNumber: params.partsEdomex.batchNumber,
+        manufacturedYear: params.partsEdomex.manufacturedYear,
+        holo: params.partsEdomex.holo,
+        semester: params.partsEdomex.semester,
+        expirationDate: params.partsEdomex.expirationDate,
+        serial: params.partsEdomex.serial,
+      });
+    if ('parts' in params)
+      navigation.navigate('InformationScreen', {
+        roleLevel,
+        version: params.parts.version,
+        codeType: params.parts.codeType,
+        chainLength: params.parts.chainLength,
+        permissionLevel: params.parts.permissionLevel,
+        serial: params.parts.serial,
+        typeServiceId: params.parts.typeServiceId,
+        typeServiceText: params.parts.typeServiceText,
+        state: params.parts.state,
+        batch: params.parts.batch,
+        provider: params.parts.provider,
+        providerNumber: params.parts.providerNumber,
+        expirationDate: params.parts.expirationDate,
+        manufacturedYear: params.parts.manufacturedYear,
+        url: params.parts.url,
+        documents: params.parts.documents,
+      });
   };
 
   const checkboxesData = [

@@ -365,7 +365,13 @@ class HoloDecoder {
         
         val result = specs.joinToString("_") { it?.trim() ?: "" }
         Log.d("pastel", "Mensaje specs: ${result}")
-        return result
+        val rawSpec = (4..46).map { finalMessage[it].toInt().toChar() }.joinToString("")
+        Log.d("pastel", "Mensaje rawSpec: ${rawSpec}")
+        return if (rawSpec.contains("|") || rawSpec.contains("XD")) {
+            rawSpec
+        } else {
+            result
+        }
     }
 
     fun mask(matrix: Array<Array<ByteArray>>, mask0: Int, mask1: Int, mask2: Int, mask3: Int): Int {

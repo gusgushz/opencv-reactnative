@@ -16,7 +16,7 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import { base64Decode, removeToken, storeKey, closeAppWithMessage, getDeviceId } from '../utils';
 import { SECURITY_LEVEL } from 'dotenv';
 import { DownloadSecretKeyScreenProps } from '../navigation/NavigationProps';
-import { region } from '../globalVariables';
+import { logo } from '../globalVariables';
 
 const { height } = Dimensions.get('window');
 
@@ -26,7 +26,6 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [warning, setWarning] = useState<string>('');
   const [count, setCount] = useState<number>(0);
-  const logo = region === 'YUCATAN' ? require('../../assets/images/logoHome.png') : require('../../assets/logo.png');
 
   useEffect(() => {
     const checkFileExists = async () => {
@@ -85,18 +84,20 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
 
   return (
     <View style={[styles.container, stylesTemplate.screenBgColor]}>
-      <TouchableWithoutFeedback
-        onPress={() => {
-          if (SECURITY_LEVEL === 'private') {
-            setCount(count + 1);
-            if (count == 4) {
-              setCount(0);
-              navigation.navigate('AndroidIdScreen');
+      <View style={{ width: '100%', height: height * 0.3, justifyContent: 'center', marginBottom: -16 }}>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            if (SECURITY_LEVEL === 'private') {
+              setCount(count + 1);
+              if (count == 4) {
+                setCount(0);
+                navigation.navigate('AndroidIdScreen');
+              }
             }
-          }
-        }}>
-        <Image source={logo} resizeMode="contain" style={{ width: '100%', height: height * 0.3, marginBottom: -16 }} />
-      </TouchableWithoutFeedback>
+          }}>
+          <Image source={logo} resizeMode="contain" style={{ width: '100%' }} />
+        </TouchableWithoutFeedback>
+      </View>
       <TextInput
         style={styles.input}
         value={url}
