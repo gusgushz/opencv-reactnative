@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.safetypprivate"
+    namespace "com.vfiprivate"
     defaultConfig {
-        applicationId "com.safetypprivate"
+        applicationId "com.vfiprivate"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

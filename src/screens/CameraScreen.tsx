@@ -136,6 +136,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             console.log('providerid', providerId);
             console.log('split10', res.split('_')[10]);
             if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
+            // if (providerId == res.split('_')[10]) {
               // Si es un código nuevo (diferente al último escaneado)
               if (res !== lastScannedRef.current) {
                 Vibration.vibrate(100);
@@ -311,11 +312,17 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             key={checkbox.id}
             value={checkbox.isChecked}
             label={checkbox.label}
-            checkedColor="#8F0F40"
+            checkedColor={stylesTemplate.primaryColor.backgroundColor}
+            // checkedColor="#006F45"
             uncheckedColor="#747272"
             size={24}
             checkBoxStyle={{ borderRadius: 24 }}
-            labelStyle={{ color: checkbox.isChecked ? '#8F0F40' : '#747272' }}
+            labelStyle={{
+              color: checkbox.isChecked
+                // ? '#006F45'
+                ? stylesTemplate.primaryColor.backgroundColor
+                :  '#747272',
+            }}
             animationType="fade"
           />
         ))}

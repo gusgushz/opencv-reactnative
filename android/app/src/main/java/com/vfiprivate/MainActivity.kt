@@ -1,4 +1,4 @@
-package com.safetypprivate
+package com.vfiprivate
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

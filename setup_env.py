@@ -72,8 +72,8 @@ try:
 
     app_name = config.get("AppName")  # fallback por si no existe
 
-    # Lógica para Chiapas
-    if provider.lower() == "chiapas":
+    # Lógica para Chiapas y VFI
+    if provider.lower() in ("chiapas", "vfi"):
         if mode == "public":
             app_name += " Público"
         elif mode == "private":
@@ -430,7 +430,8 @@ provider_sufix_map = {
     "demo": "dem001",
     "plaresa": "pls001",
     "troqmex": "trm001",
-    "safetyp": "sft001"
+    "safetyp": "sft001",
+    "vfi": "vfi001"
 }
 
 current_sufix = provider_sufix_map.get(provider.lower())

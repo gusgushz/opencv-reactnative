@@ -21,7 +21,9 @@ export enum RoleLevels {
 //troqmex
 // export const sufix = 'trm001';
 //safetyp
-export const sufix = 'sft001';
+// export const sufix = 'sft001';
+//vfi
+export const sufix = 'vfi001';
 
 export const isDemo = false; //SOLO CAMBIAR CUANDO SE CREE UNA APP DEMO
 export const region = AppConfig.Regions[0].Name.toUpperCase();
