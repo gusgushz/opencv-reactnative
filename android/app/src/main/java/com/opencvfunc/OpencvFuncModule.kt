@@ -4,6 +4,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.LifecycleEventListener
+import android.content.Intent
 
 //Imports para ver el Android Id
 import android.content.Context
@@ -22,6 +24,8 @@ import org.opencv.android.OpenCVLoader
 import org.opencv.android.CameraActivity
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.JavaCameraView
+// import org.opencv.android.BaseLoaderCallback
+// import org.opencv.android.LoaderCallbackInterface
 import org.opencv.core.Mat
 import org.opencv.core.Core
 import org.opencv.core.CvType
@@ -48,7 +52,8 @@ import android.util.Log
 import com.holodecoder.HoloDecoder
 
 class OpencvFuncModule(reactContext: ReactApplicationContext) :
-  ReactContextBaseJavaModule(reactContext), CameraBridgeViewBase.CvCameraViewListener2 {
+  ReactContextBaseJavaModule(reactContext), CameraBridgeViewBase.CvCameraViewListener2,
+    LifecycleEventListener {
 
     // Variables de la cámara
 	private var mOpenCvCameraView: JavaCameraView? = null
@@ -89,9 +94,9 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
     init {
         if (!OpenCVLoader.initLocal()) { // Inicializar OpenCV
             Log.e("pastel", "Unable to load OpenCV!")
-
         } else {
             Log.d("pastel", "OpenCV loaded Successfully!")
+            reactContext.addLifecycleEventListener(this) 
             holoCode = Mat()
             hierarchy = Mat()
             persistentOverlay = Mat()
@@ -197,6 +202,12 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
 					scaleY = 3f
 				}
 			}
+
+            if (!OpenCVLoader.initDebug()) {
+                // OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, context, loaderCallback)
+            } else {
+                // loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
+            }
 
 			// Agregar la vista de la cámara al contenedor
 			cameraContainer?.addView(mOpenCvCameraView)
@@ -985,5 +996,45 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
         info = null
         Log.d("Cameragus", "info cleared")
     }
+
+    override fun onHostResume() {
+        Log.d("pastel", "App volvió a primer plano → reanudar cámara")
+        try {
+            Log.d("pastel", "app funcionando bien hasta onHostResume")
+            mOpenCvCameraView?.enableView()
+        } catch (e: Exception) {
+            Log.e("pastel", "Error al reanudar cámara vamos a manejar el crasheo: ${e.message}")
+            // handleCameraCrash()
+        }
+    }
+
+    override fun onHostPause() {
+        Log.d("pastel", "App a background → liberar cámara")
+        mOpenCvCameraView?.disableView()
+        // mOpenCvCameraView = null
+        // try {
+        //     System.gc() // fuerza liberar JNI refs
+        // } catch (e: Exception) {
+        //     Log.e("pastel", "Error al pausar cámara: ${e.message}")
+        // }
+    }
+
+    override fun onHostDestroy() {
+        Log.d("pastel", "App destruida → limpiar cámara")
+        mOpenCvCameraView?.disableView()
+        // mOpenCvCameraView = null
+        // try {
+        // } catch (e: Exception) {
+        //     Log.e("pastel", "Error al destruir cámara: ${e.message}")
+        // }
+    }
+    // private fun handleCameraCrash() {
+    //     val context = currentActivity ?: reactApplicationContext
+    //     Log.d("pastel", "Reiniciando app debido a crash de cámara")
+
+    //     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    //     intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+    //     context.startActivity(intent)
+    // }
 }
 

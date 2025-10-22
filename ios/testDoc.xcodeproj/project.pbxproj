@@ -363,7 +363,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vfiprivate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vifinsapublic;
 				PRODUCT_NAME = testDoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "testDoc-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -395,7 +395,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.vfiprivate;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vifinsapublic;
 				PRODUCT_NAME = testDoc;
 				SWIFT_OBJC_BRIDGING_HEADER = "testDoc-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

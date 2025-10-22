@@ -1,6 +1,6 @@
 {
-  "AppName": "VFI Privado",
-  "PackageName": "com.vfiprivate",
+  "AppName": "Yucatán",
+  "PackageName": "com.vifinsapublic",
   "Client": {
     "Id": "31"
   },
@@ -12,7 +12,7 @@
   ],
   "Provider": {
     "Id": "26",
-    "Name": "vfi"
+    "Name": "vifinsa"
   },
   "PermissionLevels": {
     "public": [

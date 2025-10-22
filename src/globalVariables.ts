@@ -9,7 +9,7 @@ export enum RoleLevels {
 
 //NOTE
 //vifinsa
-// export const sufix = 'vif001';
+export const sufix = 'vif001';
 //chiapas
 // export const sufix = 'CHP004';
 //edomex
@@ -23,7 +23,7 @@ export enum RoleLevels {
 //safetyp
 // export const sufix = 'sft001';
 //vfi
-export const sufix = 'vfi001';
+// export const sufix = 'vfi001';
 
 export const isDemo = false; //SOLO CAMBIAR CUANDO SE CREE UNA APP DEMO
 export const region = AppConfig.Regions[0].Name.toUpperCase();

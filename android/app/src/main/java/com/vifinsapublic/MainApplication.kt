@@ -1,4 +1,4 @@
-package com.vfiprivate
+package com.vifinsapublic
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -13,6 +13,9 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.opencvwrapper.OpencvWrapperPackage
 import com.opencvfunc.OpencvFuncPackage
+import android.content.Intent
+import android.os.Process
+import android.util.Log
 
 class MainApplication : Application(), ReactApplication {
 
@@ -24,6 +27,7 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               add(OpencvWrapperPackage())
               add(OpencvFuncPackage())
+              add(CameraXPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -44,5 +48,17 @@ class MainApplication : Application(), ReactApplication {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
+    // // Manejador global de crashes
+    // Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+    //   Log.e("AppCrash", "Excepción no manejada: ${throwable.message}", throwable)
+
+    //   val intent = packageManager.getLaunchIntentForPackage(packageName)
+    //   intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+    //   startActivity(intent)
+
+    //   // Terminar proceso actual
+    //   Process.killProcess(Process.myPid())
+    //   System.exit(1)
+    // }
   }
 }

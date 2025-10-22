@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Text, BackHandler, NativeModules, Vibration, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, BackHandler,  NativeModules, Vibration, TouchableOpacity, Platform, Dimensions, } from 'react-native';
 import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera, clearNativeInfo, nativeInfo } from '../utils/';
 import { stylesTemplate } from '../theme';
