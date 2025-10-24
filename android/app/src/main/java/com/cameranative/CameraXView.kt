@@ -1,581 +1,247 @@
 package com.cameranative
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
-import android.hardware.camera2.*
-import android.media.Image
-import android.media.ImageReader
-import android.util.AttributeSet
 import android.util.Log
-import android.util.Size
-import android.view.Surface
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import android.view.View
-import android.view.WindowManager
 import android.widget.FrameLayout
-import org.opencv.core.*
-import org.opencv.core.Point
-import org.opencv.imgproc.Imgproc
-import java.nio.ByteBuffer
-import android.graphics.Rect
-import kotlin.math.min
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import android.util.DisplayMetrics
+import android.view.Gravity
 
+import org.opencv.core.Mat
+import org.opencv.core.Core
+import org.opencv.core.CvType
+import org.opencv.android.Utils
 
-class CameraXView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
-) : FrameLayout(context, attrs), SurfaceHolder.Callback {
+import com.holodecoder.HoloFunctions
 
-    private val TAG = "CameraXView"
-    private var cameraDevice: CameraDevice? = null
-    private var cameraCaptureSession: CameraCaptureSession? = null
-    private var cameraId: String = ""
-    private var cameraManager: CameraManager =
-        context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    private var cameraCharacteristics: CameraCharacteristics? = null
-    private var previewSize: Size? = null
-    private var imageReader: ImageReader? = null
-    private val cameraSurface = AutoFitSurfaceView(context)
-    private val overlayView = OverlayView(context)
+@SuppressLint("UnsafeOptInUsageError")
+class CameraXView(context: Context) : FrameLayout(context), LifecycleOwner {
+
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    private val previewView: PreviewView = PreviewView(context)
+    
+    private var frameCounter = 0
+    private val processEveryNFrames = 10
+    private val opencvFunctions = HoloFunctions()
+    private var info: String? = null
+
+    override val lifecycle: Lifecycle
+        get() = lifecycleRegistry
 
     init {
-        cameraSurface.holder.addCallback(this)
-         // Agregamos primero la cámara
-        addView(cameraSurface, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-        // Agregamos la overlay encima
-        addView(overlayView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        val displayMetrics = context.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels // ancho del dispositivo
+        val previewParams = LayoutParams(screenWidth, screenWidth) // cuadrado
+        previewParams.gravity = Gravity.TOP // centrar
+        previewView.layoutParams = previewParams
+
+        // Ajusta el scale type para centrar y recortar bordes
+        previewView.scaleType = PreviewView.ScaleType.FILL_CENTER
+
+        addView(previewView)
+
+        lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        // logCameraInfo()
+        startCamera()
     }
 
-    fun setAspectRatio(width: Int, height: Int) {
-        cameraSurface.setAspectRatio(width, height)
-        cameraSurface.holder.setFixedSize(width, height)
-        requestLayout()
-    }
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+        cameraProviderFuture.addListener({
+            try {
+                val cameraProvider = cameraProviderFuture.get()
 
-    private fun openCamera() {
-        try {
-            cameraId = cameraManager.cameraIdList.first {
-                val characteristics = cameraManager.getCameraCharacteristics(it)
-                characteristics.get(CameraCharacteristics.LENS_FACING) ==
-                        CameraCharacteristics.LENS_FACING_BACK
-            }
+                val preview = Preview.Builder().build()
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            // Guardamos las characteristics para usarlas después
-            cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId)
+                preview.setSurfaceProvider(previewView.surfaceProvider)
 
-            val characteristics = cameraCharacteristics!!
-            val capabilities = characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
-            Log.d(TAG, "Capacidades: ${capabilities?.joinToString()}")
+                // ImageAnalysis para obtener frames y procesarlos con OpenCV en la funcion processImageProxy
+                val imageAnalyzer = ImageAnalysis.Builder()
+                    .setTargetResolution(android.util.Size(1024, 768)) // resolución deseada
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
 
-            val focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
-            Log.d(TAG, "Distancia focal: ${focalLengths?.joinToString()}")
-
-            val apertures = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
-            Log.d(TAG, "Aperturas: ${apertures?.joinToString()}")
-
-            val sensorSize = characteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE)
-            Log.d(TAG, "Tamaño del sensor: ${sensorSize?.width} x ${sensorSize?.height}")
-
-            val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-            val outputSizes = map?.getOutputSizes(SurfaceHolder::class.java)
-            outputSizes?.forEach {
-                Log.d(TAG, "Resolución soportada: ${it.width} x ${it.height}")
-            }
-            val orientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
-            Log.d("CameraInfo", "Orientación del sensor: $orientation°")
-
-            // Crear ImageReader en landscape 1920x1080 (ajusta si quieres portrait)
-            imageReader = ImageReader.newInstance(1280, 720, ImageFormat.YUV_420_888, 2)
-            imageReader?.setOnImageAvailableListener(onImageAvailableListener, null)
-
-            cameraManager.openCamera(cameraId, stateCallback, null)
-        } catch (e: CameraAccessException) {
-            Log.e(TAG, "CameraAccessException abriendo cámara: ${e.message}", e)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error abriendo cámara: ${e.message}", e)
-        }
-    }
-
-    private val stateCallback = object : CameraDevice.StateCallback() {
-        override fun onOpened(camera: CameraDevice) {
-            cameraDevice = camera
-            // Ajustamos la relación de aspecto del SurfaceView
-            setAspectRatio(1280, 720)
-            startPreview()
-        }
-
-        override fun onDisconnected(camera: CameraDevice) {
-            camera.close()
-            cameraDevice = null
-        }
-
-        override fun onError(camera: CameraDevice, error: Int) {
-            camera.close()
-            cameraDevice = null
-        }
-    }
-
-    private fun startPreview() {
-        try {
-            val rotation = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager)
-                .defaultDisplay.rotation
-
-            val sensorOrientation = cameraCharacteristics?.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 90
-
-            // CALCULAR rotación correcta para mostrar en portrait
-            val totalRotation = when (rotation) {
-                Surface.ROTATION_0 -> 90 // Portrait normal
-                Surface.ROTATION_90 -> 0  // Landscape normal
-                Surface.ROTATION_180 -> 270 // Portrait invertido  
-                Surface.ROTATION_270 -> 180 // Landscape invertido
-                else -> 90
-            }
-
-            Log.d(TAG, "Rotación - Pantalla: $rotation, Sensor: $sensorOrientation, Total: $totalRotation")
-
-            val previewSurface = cameraSurface.holder.surface
-            val readerSurface = imageReader!!.surface
-
-            val captureRequestBuilder =
-                cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            captureRequestBuilder.addTarget(previewSurface)
-            captureRequestBuilder.addTarget(readerSurface)
-
-            // Aplicar rotación portrait
-            captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, totalRotation)
-            
-            // Configurar para evitar distorsión
-            captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, getMaxZoomRect())
-            captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
-            captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-
-            cameraDevice!!.createCaptureSession(
-                listOf(previewSurface, readerSurface),
-                object : CameraCaptureSession.StateCallback() {
-                    override fun onConfigured(session: CameraCaptureSession) {
-                        cameraCaptureSession = session
-                        session.setRepeatingRequest(captureRequestBuilder.build(), null, null)
-                        Log.d(TAG, "Preview iniciado en portrait (estilo iOS)")
+                imageAnalyzer.setAnalyzer(ContextCompat.getMainExecutor(context)) { imageProxy ->
+                    try {
+                        frameCounter++
+                        if (frameCounter % processEveryNFrames == 0) {
+                            // Procesar este frame
+                            processImageProxy(imageProxy)
+                        } else {
+                            // No procesar, solo liberar
+                            imageProxy.close()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("CameraXView", "Error procesando frame: ${e.message}")
                     }
-                    override fun onConfigureFailed(session: CameraCaptureSession) {
-                        Log.e(TAG, "Falló la configuración de la cámara")
-                    }
-                },
-                null
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Error iniciando preview: ${e.message}", e)
-        }
-    }
-    private fun getMaxZoomRect(): Rect? {
-        return try {
-            cameraCharacteristics?.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
-        } catch (e: Exception) {
-            null
-        }
+                }
+
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(
+                    this, // ✅ esta clase ahora implementa LifecycleOwner
+                    cameraSelector,
+                    preview,
+                    imageAnalyzer
+                )
+
+                lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+
+                // 🔍 Log para ver que resolución es usada por CameraX
+                // previewView.post {
+                //     val viewWidth = previewView.width
+                //     val viewHeight = previewView.height
+                //     Log.i("CameraXView", "📏 Resolución del PreviewView: ${viewWidth}x${viewHeight}")
+                //     //NOTE:Resolución del PreviewView: 1080x2232 ACTUALMENTE
+                //     val surfaceResolution = preview.attachedSurfaceResolution
+                //     Log.i("CameraXView", "🎯 Resolución exacta usada por CameraX: ${surfaceResolution?.width}x${surfaceResolution?.height}")
+                //     //NOTE:Resolución exacta usada por CameraX: 1600x1200 ACTUALMENTE. Ratio 4/3
+                // }
+                Log.i("CameraXView", "✅ Cámara iniciada correctamente")
+                // 🔍 Log de características de la cámara actual
+                //logCurrentCameraCharacteristics(cameraSelector)
+
+            } catch (e: Exception) {
+                Log.e("CameraXView", "❌ Error iniciando cámara: ${e.message}")
+            }
+        }, ContextCompat.getMainExecutor(context))
     }
 
-    private val onImageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
-        val image = reader.acquireLatestImage() ?: return@OnImageAvailableListener
-
+    private fun processImageProxy(imageProxy: ImageProxy) {
         try {
-            Log.d(TAG, "Image received: ${image.width}x${image.height}, format: ${image.format}")
-            
-            // CONVERSIÓN YUV_420_888 CORRECTA
-            val rgbMat = convertYUV420ToRGB(image)
-            
-            if (rgbMat.empty()) {
-                Log.e(TAG, "RGB Mat is empty after conversion")
-                image.close()
-                return@OnImageAvailableListener
-            }
-            
-            Log.d(TAG, "RGB Mat created: ${rgbMat.cols()}x${rgbMat.rows()}, type: ${rgbMat.type()}")
-            
-            // Procesamiento normal
-            val contours = processFrameWithOpenCV(rgbMat)
-        
-            // SI no hay contornos, crear unos de prueba
-            val contoursToDraw = if (contours.isEmpty()) {
-                Log.d(TAG, "No contours found, creating test contours")
-                createTestContours(rgbMat.cols(), rgbMat.rows())
-            } else {
-                contours
-            }
-            
-            Log.d(TAG, "Sending ${contoursToDraw.size} contours to overlay")
-            
-            // Actualizar overlay
-            post {
-                overlayView.setContours(contoursToDraw, rgbMat.cols(), rgbMat.rows())
-            }
+            val yBuffer = imageProxy.planes[0].buffer
+            val uBuffer = imageProxy.planes[1].buffer
+            val vBuffer = imageProxy.planes[2].buffer
 
-            rgbMat.release()
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "Error procesando frame: ${e.message}", e)
-        } finally {
-            image.close()
-        }
-    }
-
-    private fun convertYUV420ToRGB(image: Image): Mat {
-        try {
-            val width = image.width
-            val height = image.height
-            val planes = image.planes
-            
-            Log.d(TAG, "YUV Conversion - Planes: ${planes.size}")
-            
-            // Obtener los buffers de cada plano
-            val yBuffer = planes[0].buffer
-            val uBuffer = planes[1].buffer
-            val vBuffer = planes[2].buffer
-            
-            // Obtener información de los planos
-            val yPixelStride = planes[0].pixelStride
-            val uvPixelStride = planes[1].pixelStride
-            val uvRowStride = planes[1].rowStride
-            
-            Log.d(TAG, "Y pixel stride: $yPixelStride, UV pixel stride: $uvPixelStride, UV row stride: $uvRowStride")
-            
-            // Crear array para datos YUV
             val ySize = yBuffer.remaining()
             val uSize = uBuffer.remaining()
             val vSize = vBuffer.remaining()
-            
-            val yuvData = ByteArray(ySize + uSize + vSize)
-            
-            // Copiar datos Y
-            yBuffer.get(yuvData, 0, ySize)
-            
-            // Para YUV_420_888, necesitamos manejar el pixel stride
-            if (uvPixelStride == 1) {
-                // Caso simple: pixel stride 1
-                uBuffer.get(yuvData, ySize, uSize)
-                vBuffer.get(yuvData, ySize + uSize, vSize)
-            } else {
-                // Caso complejo: pixel stride > 1, necesitamos intercalar manualmente
-                val uvBuffer = ByteArray(uvRowStride * height / 2)
-                uBuffer.get(uvBuffer, 0, min(uBuffer.remaining(), uvBuffer.size))
-                
-                var uvIndex = 0
-                var nv21Index = ySize
-                while (uvIndex < uvBuffer.size && nv21Index < yuvData.size - 1) {
-                    yuvData[nv21Index++] = uvBuffer[uvIndex] // U
-                    if (uvIndex + 1 < uvBuffer.size) {
-                        yuvData[nv21Index++] = uvBuffer[uvIndex + 1] // V
-                    }
-                    uvIndex += uvPixelStride
-                }
+
+            val nv21 = ByteArray(ySize + uSize + vSize)
+
+            yBuffer.get(nv21, 0, ySize)
+            vBuffer.get(nv21, ySize, vSize)
+            uBuffer.get(nv21, ySize + vSize, uSize)
+
+            // Convert NV21 a Bitmap
+            val yuvImage = android.graphics.YuvImage(nv21, android.graphics.ImageFormat.NV21, imageProxy.width, imageProxy.height, null)
+            val out = java.io.ByteArrayOutputStream()
+            yuvImage.compressToJpeg(android.graphics.Rect(0, 0, imageProxy.width, imageProxy.height), 100, out)
+            val yuvBytes = out.toByteArray()
+            val bitmap = android.graphics.BitmapFactory.decodeByteArray(yuvBytes, 0, yuvBytes.size)
+
+            // Convert Bitmap a Mat
+            val mat = Mat(bitmap.height, bitmap.width, CvType.CV_8UC4)
+            Utils.bitmapToMat(bitmap, mat)
+
+            // Aquí ya puedes usar OpenCV
+            // Ejemplo: detectar QR con detectores de OpenCV o Zxing
+            val isDetected = opencvFunctions.detectCode(mat)
+            // Log para ver cuando se detecta
+            Log.i("CameraXView", "✅ Código detectado: $isDetected")
+            if (isDetected) {
+                val message = opencvFunctions.extractBits()
+                info = message?.joinToString(separator = "_")
+                // Log para ver cuando se detecta
+                Log.i("CameraXView", "✅ INFORMACION: $info")
             }
-            
-            // Crear Mat YUV y convertir a RGB
-            val yuvMat = Mat(height + height / 2, width, CvType.CV_8UC1)
-            yuvMat.put(0, 0, yuvData)
-            
-            val rgbMat = Mat()
-            Imgproc.cvtColor(yuvMat, rgbMat, Imgproc.COLOR_YUV2RGB_NV21)
-            
-            yuvMat.release()
-            
-            Log.d(TAG, "YUV to RGB conversion successful")
-            return rgbMat
-            
         } catch (e: Exception) {
-            Log.e(TAG, "Error in YUV conversion: ${e.message}", e)
-            return Mat()
+            Log.e("CameraXView", "Error en processImageProxy: ${e.message}")
+        } finally {
+            imageProxy.close() // 🔹 MUY IMPORTANTE
         }
     }
 
-// si tienes reactApplicationContext y sendEvent; comentar si no existe
-                    // val params = Arguments.createMap().apply {
-                    //     putDouble("x", rect.x.toDouble())
-                    //     putDouble("y", rect.y.toDouble())
-                    //     putDouble("area", area)
-                    // }
-                    // sendEvent(reactApplicationContext, "onBumpDetected", params)
-    private fun processFrameWithOpenCV(rgbMat: Mat): MutableList<MatOfPoint> { 
-        // Cambiado para retornar contours
-        Log.d(TAG, "Procesando frame: ${rgbMat.cols()} x ${rgbMat.rows()}")
-        
-        val gray = Mat()
-        Imgproc.cvtColor(rgbMat, gray, Imgproc.COLOR_RGB2GRAY)
-        Imgproc.GaussianBlur(gray, gray, Size(5.0, 5.0), 0.0)
+    private fun logCameraInfo() {
+        try {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+            val cameraIds = cameraManager.cameraIdList
 
-        val edges = Mat()
-        Imgproc.Canny(gray, edges, 50.0, 150.0)
-
-        val contours: MutableList<MatOfPoint> = ArrayList()
-        val hierarchy = Mat()
-        Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE)
-
-        Log.d(TAG, "Contornos detectados: ${contours.size}")
-        
-        // EJEMPLO: Filtrar contornos por área para tener menos ruido
-        val filteredContours = contours.filter { contour ->
-            val area = Imgproc.contourArea(contour)
-            area > 100.0 // Filtrar contornos muy pequeños
-        }.toMutableList()
-        
-        Log.d(TAG, "Contornos filtrados: ${filteredContours.size}")
-
-        // ejemplo de filtrado y eventos
-        for (contour in filteredContours) {
-            val area = Imgproc.contourArea(contour)
-            if (area in 800.0..8000.0) {
-                val rect = Imgproc.boundingRect(contour)
-                val roi = gray.submat(rect)
-                val mean = Core.mean(roi)
-
-                if (mean.`val`[0] < 90) {
-                    Imgproc.rectangle(rgbMat, rect, Scalar(0.0, 0.0, 255.0, 255.0), 2)
-                    Imgproc.putText(
-                        rgbMat,
-                        "Posible bache",
-                        Point(rect.x.toDouble(), rect.y.toDouble() - 10),
-                        Imgproc.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        Scalar(0.0, 0.0, 255.0, 255.0),
-                        2
-                    )
+            Log.i("CameraXView", "=== Lista de cámaras disponibles ===")
+            for (cameraId in cameraIds) {
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+                val lensFacing = characteristics.get(android.hardware.camera2.CameraCharacteristics.LENS_FACING)
+                val facingStr = when (lensFacing) {
+                    android.hardware.camera2.CameraCharacteristics.LENS_FACING_BACK -> "Trasera"
+                    android.hardware.camera2.CameraCharacteristics.LENS_FACING_FRONT -> "Frontal"
+                    android.hardware.camera2.CameraCharacteristics.LENS_FACING_EXTERNAL -> "Externa"
+                    else -> "Desconocida"
                 }
-                roi.release()
-            }
-        }
-        
-        edges.release()
-        hierarchy.release()
-        gray.release()
-        
-        return filteredContours // RETORNAR los contornos
-    }
-    // Añadir esta función si no existe
-    private fun createTestContours(matWidth: Int, matHeight: Int): MutableList<MatOfPoint> {
-        val testContours = mutableListOf<MatOfPoint>()
-        
-        Log.d(TAG, "Creating test contours for: $matWidth x $matHeight")
-        
-        // Crear un contorno cuadrado en el centro
-        val centerX = matWidth / 2.0
-        val centerY = matHeight / 2.0
-        val size = min(matWidth, matHeight) / 4.0 // Tamaño relativo
-        
-        val points = arrayOf(
-            Point(centerX - size, centerY - size),
-            Point(centerX + size, centerY - size),
-            Point(centerX + size, centerY + size),
-            Point(centerX - size, centerY + size)
-        )
-        
-        val contour = MatOfPoint(*points)
-        testContours.add(contour)
-        
-        // Crear un triángulo de prueba también
-        val trianglePoints = arrayOf(
-            Point(centerX, centerY - size),
-            Point(centerX + size, centerY + size),
-            Point(centerX - size, centerY + size)
-        )
-        
-        val triangleContour = MatOfPoint(*trianglePoints)
-        testContours.add(triangleContour)
-        
-        Log.d(TAG, "Created ${testContours.size} test contours")
-        return testContours
-    }
 
-    fun closeCamera() {
-        cameraCaptureSession?.close()
-        cameraDevice?.close()
-        imageReader?.close()
-    }
+                Log.i("CameraXView", "Cámara ID: $cameraId ($facingStr)")
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        openCamera()
-    }
+                val map = characteristics.get(android.hardware.camera2.CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                val outputSizes = map?.getOutputSizes(android.view.SurfaceHolder::class.java)
 
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        closeCamera()
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
-}
-
-class OverlayView(context: Context) : View(context) {
-    private val contours: MutableList<MatOfPoint> = mutableListOf()
-    private val paint = Paint().apply {
-        color = Color.RED
-        style = Paint.Style.STROKE
-        strokeWidth = 8f // Hacer más grueso para que sea visible
-        isAntiAlias = true
-    }
-    private var matWidth = 0
-    private var matHeight = 0
-
-    fun setContours(contours: List<MatOfPoint>, matWidth: Int, matHeight: Int) {
-        Log.d("Overlay", "setContours called: $matWidth x $matHeight, ${contours.size} contours")
-        
-        this.contours.clear()
-        this.contours.addAll(contours)
-        this.matWidth = matWidth
-        this.matHeight = matHeight
-        
-        // Log detallado de los contornos
-        contours.forEachIndexed { index, contour ->
-            val points = contour.toArray()
-            Log.d("Overlay", "Contour $index: ${points.size} points")
-            if (points.isNotEmpty()) {
-                Log.d("Overlay", "First point: (${points[0].x}, ${points[0].y})")
-                Log.d("Overlay", "Last point: (${points.last().x}, ${points.last().y})")
-            }
-        }
-        
-        postInvalidate()
-    }
-
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        
-        Log.d("Overlay", "onDraw - View: ${width}x${height}, Mat: ${matWidth}x${matHeight}")
-        
-        if (matWidth == 0 || matHeight == 0) {
-            Log.d("Overlay", "Mat dimensions not set")
-            drawDebugInfo(canvas, "No mat dimensions")
-            return
-        }
-
-        if (contours.isEmpty()) {
-            Log.d("Overlay", "No contours to draw")
-            drawDebugInfo(canvas, "No contours")
-            return
-        }
-
-        // Calcular escala - ROTAR las coordenadas porque el sensor está a 90°
-        val scaleX = width.toFloat() / matHeight.toFloat()  // Invertir: width/matHeight
-        val scaleY = height.toFloat() / matWidth.toFloat()  // Invertir: height/matWidth
-        
-        Log.d("Overlay", "Scale factors: $scaleX x $scaleY")
-
-        for ((index, contour) in contours.withIndex()) {
-            val path = Path()
-            val points = contour.toArray()
-            
-            Log.d("Overlay", "Drawing contour $index with ${points.size} points")
-            
-            if (points.isNotEmpty()) {
-                // ROTAR COORDENADAS: (x, y) -> (y, matWidth - x)
-                val firstPoint = points[0]
-                val x = (firstPoint.y * scaleX) // y original se convierte en x
-                val y = ((matWidth - firstPoint.x) * scaleY) // x invertido se convierte en y
-                path.moveTo(x.toFloat(), y.toFloat())
-                
-                Log.d("Overlay", "First point rotated: (${firstPoint.x}, ${firstPoint.y}) -> ($x, $y)")
-                
-                // Resto de puntos rotados
-                for (i in 1 until points.size) {
-                    val point = points[i]
-                    val x2 = (point.y * scaleX)
-                    val y2 = ((matWidth - point.x) * scaleY)
-                    path.lineTo(x2.toFloat(), y2.toFloat())
+                outputSizes?.forEach {
+                    Log.i("CameraXView", "  Resolución soportada: ${it.width}x${it.height}")
                 }
-                
-                // Cerrar el path
-                path.close()
-                
-                canvas.drawPath(path, paint)
-                Log.d("Overlay", "Contour $index drawn")
             }
-        }
-        
-        // Dibujar un punto de referencia en cada esquina
-        drawReferencePoints(canvas)
-        drawDebugInfo(canvas, "Contours: ${contours.size}")
-    }
-    
-    private fun drawReferencePoints(canvas: Canvas) {
-        val pointPaint = Paint().apply {
-            color = Color.GREEN
-            style = Paint.Style.FILL
-            strokeWidth = 15f
-        }
-        
-        // Esquinas
-        canvas.drawCircle(50f, 50f, 10f, pointPaint) // Esquina superior izquierda
-        canvas.drawCircle(width - 50f, 50f, 10f, pointPaint) // Esquina superior derecha
-        canvas.drawCircle(50f, height - 50f, 10f, pointPaint) // Esquina inferior izquierda
-        canvas.drawCircle(width - 50f, height - 50f, 10f, pointPaint) // Esquina inferior derecha
-        
-        // Centro
-        val centerPaint = Paint().apply {
-            color = Color.BLUE
-            style = Paint.Style.FILL
-            strokeWidth = 20f
-        }
-        canvas.drawCircle(width / 2f, height / 2f, 15f, centerPaint)
-    }
-    
-    private fun drawDebugInfo(canvas: Canvas, message: String) {
-        val textPaint = Paint().apply {
-            color = Color.WHITE
-            textSize = 40f
-            isAntiAlias = true
-        }
-        
-        // Fondo semitransparente para el texto
-        val backgroundPaint = Paint().apply {
-            color = Color.argb(180, 0, 0, 0)
-        }
-        
-        canvas.drawRect(0f, 0f, width.toFloat(), 250f, backgroundPaint)
-        canvas.drawText("View: ${width}x${height}", 20f, 50f, textPaint)
-        canvas.drawText("Mat: ${matWidth}x${matHeight}", 20f, 100f, textPaint)
-        canvas.drawText(message, 20f, 150f, textPaint)
-        canvas.drawText("Scale: ${width.toFloat() / matHeight.toFloat()} x ${height.toFloat() / matWidth.toFloat()}", 20f, 200f, textPaint)
-    }
-}
+            Log.i("CameraXView", "=== Fin de lista ===")
 
-class AutoFitSurfaceView(context: Context, attrs: AttributeSet? = null) : SurfaceView(context, attrs) {
-    private var ratioWidth = 0
-    private var ratioHeight = 0
-
-    fun setAspectRatio(width: Int, height: Int) {
-        ratioWidth = width
-        ratioHeight = height
-        Log.d("SurfaceView", "Aspect ratio configurado: $width:$height")
-        requestLayout()
+        } catch (e: Exception) {
+            Log.e("CameraXView", "❌ Error obteniendo info cámara: ${e.message}")
+        }
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val width = MeasureSpec.getSize(widthMeasureSpec)
-        val height = MeasureSpec.getSize(heightMeasureSpec)
+    private fun logCurrentCameraCharacteristics(cameraSelector: CameraSelector) {
+        try {
+            val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+            val cameraIds = cameraManager.cameraIdList
 
-        if (ratioWidth == 0 || ratioHeight == 0) {
-            setMeasuredDimension(width, height)
-            return
+            for (cameraId in cameraIds) {
+                val characteristics: android.hardware.camera2.CameraCharacteristics =
+                    cameraManager.getCameraCharacteristics(cameraId)
+
+                val facing: Int? = characteristics.get(android.hardware.camera2.CameraCharacteristics.LENS_FACING)
+
+                val isSelected: Boolean =
+                    (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA && facing == android.hardware.camera2.CameraCharacteristics.LENS_FACING_BACK) ||
+                    (cameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA && facing == android.hardware.camera2.CameraCharacteristics.LENS_FACING_FRONT)
+
+                if (isSelected) {
+                    val sensorOrientation: Int? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.SENSOR_ORIENTATION)
+                    val apertures: FloatArray? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES)
+                    val focalLengths: FloatArray? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                    val sensorSize: android.util.SizeF? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE)
+                    val isoRange: android.util.Range<Int>? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)
+                    val flashAvailable: Boolean? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE)
+                    val afModes: IntArray? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES)
+                    val oisModes: IntArray? =
+                        characteristics.get(android.hardware.camera2.CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION)
+
+                    Log.i("CameraXView", "--- Características de la cámara actual ---")
+                    Log.i("CameraXView", "ID: $cameraId")
+                    Log.i("CameraXView", "Orientación del sensor: ${sensorOrientation}°")
+                    Log.i("CameraXView", "Apertura (f-stop): ${apertures?.joinToString()}")
+                    Log.i("CameraXView", "Distancia focal (mm): ${focalLengths?.joinToString()}")
+                    Log.i("CameraXView", "Tamaño físico del sensor: ${sensorSize}")
+                    Log.i("CameraXView", "ISO máximo: ${isoRange?.upper}")
+                    Log.i("CameraXView", "Soporta flash: $flashAvailable")
+                    Log.i("CameraXView", "Modos de enfoque disponibles: ${afModes?.joinToString()}")
+                    Log.i("CameraXView", "Modos de estabilización óptica: ${oisModes?.joinToString()}")
+                    Log.i("CameraXView", "--------------------------------------------")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CameraXView", "❌ Error obteniendo características: ${e.message}")
         }
-
-        // Calcular para portrait (9:16)
-        val expectedRatio = ratioHeight.toFloat() / ratioWidth.toFloat() // 16/9 = 1.777
-        val actualViewRatio = height.toFloat() / width.toFloat()
-
-        Log.d("SurfaceView", "Expected: $expectedRatio, Actual: $actualViewRatio")
-
-        val newWidth: Int
-        val newHeight: Int
-
-        if (actualViewRatio > expectedRatio) {
-            // Demasiado alto - ajustar height
-            newWidth = width
-            newHeight = (width * expectedRatio).toInt()
-        } else {
-            // Demasiado ancho - ajustar width  
-            newHeight = height
-            newWidth = (height / expectedRatio).toInt()
-        }
-
-        Log.d("SurfaceView", "Medidas finales: $newWidth x $newHeight")
-        setMeasuredDimension(newWidth, newHeight)
     }
 }

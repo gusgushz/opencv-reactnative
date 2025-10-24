@@ -13,6 +13,7 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.opencvwrapper.OpencvWrapperPackage
 import com.opencvfunc.OpencvFuncPackage
+import com.cameranative.CameraXPackage
 import android.content.Intent
 import android.os.Process
 import android.util.Log

@@ -4,7 +4,7 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
-import com.cameranative.Camera2ViewManager
+import com.cameranative.CameraXViewManager
 
 class CameraXPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
@@ -12,6 +12,6 @@ class CameraXPackage : ReactPackage {
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        return listOf(CameraXViewManager(reactContext))
+        return listOf(CameraXViewManager())
     }
 }

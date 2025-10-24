@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Text, BackHandler,  NativeModules, Vibration, TouchableOpacity, Platform, Dimensions, } from 'react-native';
+import { StyleSheet, View, Text, BackHandler, NativeModules, Vibration, TouchableOpacity, Platform, Dimensions } from 'react-native';
 import { CameraScreenProps } from '../navigation/NavigationProps';
-import { openCamera, closeCamera, clearNativeInfo, nativeInfo } from '../utils/';
+import { openCamera, closeCamera, clearNativeInfo, nativeInfo, getServices } from '../utils/';
 import { stylesTemplate } from '../theme';
 import { AdvancedCheckbox } from 'react-native-advanced-checkbox';
-import { RoleLevels, stateNameToId, region, providerId, regionId, isDemo, regions } from '../globalVariables';
+import { RoleLevels, stateNameToId, region, providerId, regionId, isDemo, regions, provider } from '../globalVariables';
 import { Parts, PartsEdomex, Service } from '../models';
-import { getServices } from '../utils/';
 import { SECURITY_LEVEL } from 'dotenv';
 import { usePreventRemove } from '@react-navigation/native';
 
@@ -136,6 +135,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             console.log('providerid', providerId);
             console.log('split10', res.split('_')[10]);
             if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
+            //NOTE:La siguiente linea es solo para cliente VFI ya que puede ver todos los codigos asociados al providerId sin importar el estado, mientras que Vifinsa solo puede ver los de yucatana
             // if (providerId == res.split('_')[10]) {
               // Si es un código nuevo (diferente al último escaneado)
               if (res !== lastScannedRef.current) {
@@ -197,6 +197,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
                 }
 
                 console.log('documents', documents);
+                updatedInfo.documents = newDocuments;
                 setCheckBoxes(newCheckBoxes);
                 setDocuments(newDocuments);
 
@@ -312,16 +313,12 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             key={checkbox.id}
             value={checkbox.isChecked}
             label={checkbox.label}
-            checkedColor={stylesTemplate.primaryColor.backgroundColor}
-            // checkedColor="#006F45"
+            checkedColor={provider == 'vfi' ? '#006F45' : stylesTemplate.primaryColor.backgroundColor}
             uncheckedColor="#747272"
             size={24}
             checkBoxStyle={{ borderRadius: 24 }}
             labelStyle={{
-              color: checkbox.isChecked
-                // ? '#006F45'
-                ? stylesTemplate.primaryColor.backgroundColor
-                :  '#747272',
+              color: !checkbox.isChecked ? '#747272' : provider == 'vfi' ? '#006F45' : stylesTemplate.primaryColor.backgroundColor,
             }}
             animationType="fade"
           />

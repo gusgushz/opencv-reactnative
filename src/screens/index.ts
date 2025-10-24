@@ -1,4 +1,5 @@
 export * from './CameraScreen';
+export * from './CameraXScreen';
 export * from './HomeScreen';
 export * from './InformationScreen';
 export * from './ProfileScreen';

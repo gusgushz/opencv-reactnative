@@ -34,7 +34,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
     //REFACTOR: PARA EL MODO DEMO
     return (
       <View style={[styles.container, stylesTemplate.screenBgColor]}>
-        <Image source={logo} resizeMode="contain" style={{ width: '100%', height: height * 0.3, marginVertical: 24 }} />
+        <Image source={logo()} resizeMode="contain" style={{ width: '100%', height: height * 0.3, marginVertical: 24 }} />
         <View style={styles.buttonsContainer}>
           <TouchableOpacity
             onPress={() => {
@@ -60,7 +60,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
               }
             }
           }}>
-          <Image source={logo} resizeMode="contain" style={{ width: '100%' }} />
+          <Image source={logo()} resizeMode="contain" style={{ width: '100%' }} />
         </TouchableWithoutFeedback>
       </View>
       <View style={styles.buttonsContainer}>
@@ -75,6 +75,13 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           style={[styles.button, stylesTemplate.primaryColor]}>
           <Text style={styles.buttonText}>Escanear código</Text>
         </TouchableOpacity>
+        {/* <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('CameraXScreen');
+          }}
+          style={[styles.button, stylesTemplate.primaryColor]}>
+          <Text style={styles.buttonText}>CAMARA X</Text>
+        </TouchableOpacity> */}
         {SECURITY_LEVEL !== 'private' && (
           <>
             {userSession ? (

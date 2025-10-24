@@ -14,6 +14,7 @@ import {
   InfractionsScreen,
   DownloadSecretKeyScreen,
   AndroidIdScreen,
+  CameraXScreen,
 } from './src/screens/';
 import {
   storeServices,
@@ -238,6 +239,11 @@ const MyStack = () => {
         <Stack.Screen
           name="CameraScreen"
           component={CameraScreen}
+          options={{ headerShown: true, headerTitle: 'Escanear código', headerBackButtonMenuEnabled: false }}
+        />
+        <Stack.Screen
+          name="CameraXScreen"
+          component={CameraXScreen}
           options={{ headerShown: true, headerTitle: 'Escanear código', headerBackButtonMenuEnabled: false }}
         />
         <Stack.Screen name="InformationScreen" component={InformationScreen} options={{ headerShown: true, headerTitle: 'Información' }} />

@@ -32,6 +32,9 @@ xcodebuild clean (cmd+shift+k en xcode)
 npx react-native start --reset-cache
 //En algunos casos puede ser necesario borrar las carpetas build dentro de /android y /android/app
 
+//Para poder hacer un debug solo para una arquitectura (la del dispositivo objetivo aka mi telefono)
+npx react-native run-android --active-arch-only
+
 http://ec2-3-16-117-69.us-east-2.compute.amazonaws.com/key/
 
 **Opencv-JS**

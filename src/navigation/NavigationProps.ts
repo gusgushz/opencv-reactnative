@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 export type RootStackParamList = {
   HomeScreen: {} | undefined;
   CameraScreen: { roleLevel: string };
+  CameraXScreen: {} | undefined;
   InformationScreen:
     | {
         roleLevel: string;
@@ -49,6 +50,7 @@ export type RootStackParamList = {
 
 export type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'HomeScreen'>;
 export type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'CameraScreen'>;
+export type CameraXScreenProps = NativeStackScreenProps<RootStackParamList, 'CameraXScreen'>;
 export type InformationScreenProps = NativeStackScreenProps<RootStackParamList, 'InformationScreen'>;
 export type ProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'ProfileScreen'>;
 export type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'LoginScreen'>;

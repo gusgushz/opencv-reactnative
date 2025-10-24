@@ -28,14 +28,13 @@ export const sufix = 'vif001';
 export const isDemo = false; //SOLO CAMBIAR CUANDO SE CREE UNA APP DEMO
 export const region = AppConfig.Regions[0].Name.toUpperCase();
 export const regionId = AppConfig.Regions[0].Id;
-const provider = AppConfig.Provider.Name.toLowerCase();
+export const provider = AppConfig.Provider.Name.toLowerCase();
 export const providerId = AppConfig.Provider.Id;
-export const logo =
-  provider == 'vifinsa'
-    ? require('../assets/images/logoHome-vifinsa.png')
-    : provider == 'edomex'
-    ? require('../assets/images/logoHome-edomex.png')
-    : require('../assets/logo.png');
+export const logo = () => {
+  if (provider == 'vifinsa' && region == 'YUCATAN') return require('../assets/images/logoHome-vifinsa.png');
+  if (provider == 'vifinsa' && region == 'MEXICO') return require('../assets/images/logoHome-edomex.png');
+  return require('../assets/logo.png');
+};
 
 export const stateNameToId = (state: string): number => {
   if (state === region) {
