@@ -95,7 +95,7 @@ export const DownloadSecretKeyScreen = ({ navigation }: DownloadSecretKeyScreenP
               }
             }
           }}>
-          <Image source={logo} resizeMode="contain" style={{ width: '100%' }} />
+          <Image source={logo()} resizeMode="contain" style={{ width: '100%' }} />
         </TouchableWithoutFeedback>
       </View>
       <TextInput

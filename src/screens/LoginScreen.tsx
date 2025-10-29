@@ -48,7 +48,7 @@ export const LoginScreen = ({ navigation }: LoginScreenProps) => {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.container, stylesTemplate.screenBgColor]}>
       <View style={{ width: '100%', gap: 24 }}>
         <View style={{ width: '100%', height: height * 0.3, justifyContent: 'center' }}>
-          <Image source={logo} resizeMode="contain" style={{ width: '100%' }} />
+          <Image source={logo()} resizeMode="contain" style={{ width: '100%' }} />
         </View>
         <View style={{ gap: 4 }}>
           <Text style={styles.title}>Correo</Text>

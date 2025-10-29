@@ -9,6 +9,7 @@
 - En caso de que el logo sea diferente a la imagen usada dentro de la app (en la pantalla home/login/downloadsecretkey) se debe agregar manualmente esta imagen dentro de la carpeta assets/images con el nombre logoHome-{provider}.png y luego dentro de src/globalVariables.ts agregar el path para la imagen (seguir formato)
 - Por último, se debe agregar dentro de globalVariables.ts el sufix relacionado con el proveedor (no necesariamente tiene que llevar algo en el nombre relacionado con él). Y luego dentro del setup_env.py buscar por la linea 425 para agregar a la lista de proveedores y se pueda hacer el cambio de sufix entre proveedores.
 - OPCIONAL. Si el cliente quiero un nombre en particular o agregar algo extra al nombre AppName (dentro del config/app.json) como en chiapas que se agrega publico o privado por la linea 75 de setup_env.py se puede agregar la excepción.
+* RECORDAR. Al cambiar la version (major, minor o patch), se tiene que cambiar de manera manual antes de hacer una version relesase. Para esto "npm version (versionado)" y luego entrar a app/build.gradle y cambiar la version de android (IOS pendiente saber donde). No se agrega al archivo setup_env, por lo que siempre es manual esto.
 
 # VER PASO SIGUIENTE ANTES DE USAR. Comandos para utilizar el cambio de ambiente entre windows y mac, limpiar antes de utilizar el script
 
@@ -18,6 +19,7 @@ python3 ./setup_env.py demo private // MACOS
 ### LIMPIAR BUILD ANDROID
 
 cd Android
+./gradlew --stop
 ./gradlew clean
 ./gradlew assembleRelease //Para crear release
 

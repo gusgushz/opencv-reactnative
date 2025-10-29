@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Text, BackHandler, NativeModules, Vibration, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import { StyleSheet, View, BackHandler, Vibration, Dimensions } from 'react-native';
 import { CameraScreenProps } from '../navigation/NavigationProps';
 import { openCamera, closeCamera, clearNativeInfo, nativeInfo, getServices } from '../utils/';
 import { stylesTemplate } from '../theme';
@@ -15,12 +15,12 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
   const { roleLevel } = route.params;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastScannedRef = useRef<string | null>(null); // Almacena el último QR escaneado
+  const lastScannedRef = useRef<string | null>(null);
   const [checkBoxes, setCheckBoxes] = useState<boolean[]>([false, false, false]);
-  const [documents, setDocuments] = useState<string[]>([]); // fuera del useEffect
+  const [documents, setDocuments] = useState<string[]>([]);
   const [services, setServices] = useState<Service[]>([]);
 
-  // 👇 Aquí evitas que se elimine la pantalla sin cerrar la cámara primero
+  // 👇 Aquí evitas que se elimine la pantalla sin cerrar la cámara primero: USADO POR IOS
   usePreventRemove(true, async ({ data }) => {
     // Cancelar temporizador si existe
     if (timerRef.current) {
@@ -59,26 +59,8 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
       lastScannedRef.current = null; // Reiniciar el último QR escaneado
     };
 
-    // const onBeforeRemove = async (e: any) => {
-    //   if (timerRef.current) {
-    //     clearTimeout(timerRef.current);
-    //     timerRef.current = null;
-    //   }
-    //   await clearNativeInfo();
-    //   await closeCamera();
-    //   setCheckBoxes([false, false, false]);
-    //   lastScannedRef.current = null; // Reiniciar el último QR escaneado
-
-    //   const action = e.data.action;
-    //   if (action.type !== 'GO_BACK') {
-    //     e.preventDefault();
-    //     navigation.dispatch(action);
-    //   }
-    // };
-
     const unsubscribeFocus = navigation.addListener('focus', onFocus);
     const unsubscribeBlur = navigation.addListener('blur', onBlur);
-    // const unsubscribeBeforeRemove = navigation.addListener('beforeRemove', onBeforeRemove);
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       navigation.goBack();
@@ -88,7 +70,6 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
     return () => {
       unsubscribeFocus();
       unsubscribeBlur();
-      // unsubscribeBeforeRemove();
       backHandler.remove();
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -135,8 +116,8 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             console.log('providerid', providerId);
             console.log('split10', res.split('_')[10]);
             if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
-            //NOTE:La siguiente linea es solo para cliente VFI ya que puede ver todos los codigos asociados al providerId sin importar el estado, mientras que Vifinsa solo puede ver los de yucatana
-            // if (providerId == res.split('_')[10]) {
+              //NOTE:La siguiente linea es solo para cliente VFI ya que puede ver todos los codigos asociados al providerId sin importar el estado, mientras que Vifinsa solo puede ver los de yucatana
+              // if (providerId == res.split('_')[10]) {
               // Si es un código nuevo (diferente al último escaneado)
               if (res !== lastScannedRef.current) {
                 Vibration.vibrate(100);
