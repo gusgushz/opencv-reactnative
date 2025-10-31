@@ -1003,7 +1003,7 @@ class OpencvFuncModule(reactContext: ReactApplicationContext) :
             Log.d("pastel", "app funcionando bien hasta onHostResume")
             mOpenCvCameraView?.enableView()
         } catch (e: Exception) {
-            Log.e("pastel", "Error al reanudar cámara vamos a manejar el crasheo: ${e.message}")
+            Log.e("pastel", "Error al reanudar cámara: ${e.message}")
             // handleCameraCrash()
         }
     }

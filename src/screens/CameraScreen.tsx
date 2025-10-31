@@ -117,7 +117,7 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             console.log('split10', res.split('_')[10]);
             if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
               //NOTE:La siguiente linea es solo para cliente VFI ya que puede ver todos los codigos asociados al providerId sin importar el estado, mientras que Vifinsa solo puede ver los de yucatana
-              // if (providerId == res.split('_')[10]) {
+            // if (providerId == res.split('_')[10]) {
               // Si es un código nuevo (diferente al último escaneado)
               if (res !== lastScannedRef.current) {
                 Vibration.vibrate(100);

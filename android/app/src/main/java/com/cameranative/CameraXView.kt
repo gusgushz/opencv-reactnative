@@ -21,6 +21,7 @@ import org.opencv.core.Mat
 import org.opencv.core.Core
 import org.opencv.core.CvType
 import org.opencv.android.Utils
+import java.util.concurrent.Executors
 
 import com.holodecoder.HoloFunctions
 
@@ -34,6 +35,8 @@ class CameraXView(context: Context) : FrameLayout(context), LifecycleOwner {
     private val processEveryNFrames = 10
     private val opencvFunctions = HoloFunctions()
     private var info: String? = null
+
+    private val analysisExecutor = Executors.newSingleThreadExecutor()
 
     override val lifecycle: Lifecycle
         get() = lifecycleRegistry
@@ -68,11 +71,12 @@ class CameraXView(context: Context) : FrameLayout(context), LifecycleOwner {
 
                 // ImageAnalysis para obtener frames y procesarlos con OpenCV en la funcion processImageProxy
                 val imageAnalyzer = ImageAnalysis.Builder()
-                    .setTargetResolution(android.util.Size(1024, 768)) // resolución deseada
+                    // .setTargetResolution(android.util.Size(1024, 768)) // resolución deseada
+                    .setTargetResolution(android.util.Size(1600, 1200)) // resolución deseada
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 
-                imageAnalyzer.setAnalyzer(ContextCompat.getMainExecutor(context)) { imageProxy ->
+                imageAnalyzer.setAnalyzer(analysisExecutor) { imageProxy ->
                     try {
                         frameCounter++
                         if (frameCounter % processEveryNFrames == 0) {

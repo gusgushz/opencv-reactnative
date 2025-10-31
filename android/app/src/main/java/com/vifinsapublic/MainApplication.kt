@@ -17,6 +17,10 @@ import com.cameranative.CameraXPackage
 import android.content.Intent
 import android.os.Process
 import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
+import kotlin.system.exitProcess
 
 class MainApplication : Application(), ReactApplication {
 
@@ -49,17 +53,22 @@ class MainApplication : Application(), ReactApplication {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
-    // // Manejador global de crashes
-    // Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-    //   Log.e("AppCrash", "Excepción no manejada: ${throwable.message}", throwable)
+    setGlobalCrashHandler()
+  }
+  private fun setGlobalCrashHandler() {
+    Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+      Handler(Looper.getMainLooper()).post {
+        Toast.makeText(applicationContext, "Error fatal: ${throwable.message}", Toast.LENGTH_SHORT).show()
+      }
 
-    //   val intent = packageManager.getLaunchIntentForPackage(packageName)
-    //   intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-    //   startActivity(intent)
+      val intent = Intent(applicationContext, MainActivity::class.java).apply {
+        putExtra("isCrashed", true)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+      }
+      startActivity(intent)
 
-    //   // Terminar proceso actual
-    //   Process.killProcess(Process.myPid())
-    //   System.exit(1)
-    // }
+      Process.killProcess(Process.myPid())
+      exitProcess(10)
+    }
   }
 }
