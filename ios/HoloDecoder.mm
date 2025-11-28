@@ -401,7 +401,7 @@ static ZXGenericGF *QRCodeField256() {
     specs[11] = [NSString stringWithFormat:@"20%02d", extractedData[30]];
     // specs[9] = [NSString stringWithFormat:@"%d", extractedData[27]];
     // specs[10] = [NSString stringWithFormat:@"20%d-20%d", extractedData[28], extractedData[29]];
-    specs[11] = [NSString stringWithFormat:@"20%d", extractedData[30]];
+    // specs[11] = [NSString stringWithFormat:@"20%d", extractedData[30]];
 
     // specs[12] (31..46)
     NSMutableString *spec12 = [NSMutableString string];

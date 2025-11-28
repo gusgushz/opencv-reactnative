@@ -100,7 +100,7 @@ try:
         bootsplash_color = theme.get("bootsplash_background")
         launcher_color = theme.get("ic_launcher_background")
 
-        # Quitar el "#" inicial si existe
+        # Quitar el "#" inicial si existe REFACTOR: CAUSO PROBLEMAS EN MACOS CON ANDROID STUDIO EMULATOR
     if bootsplash_color and bootsplash_color.startswith("#"):
         bootsplash_color = bootsplash_color[1:]
 except Exception as e:
@@ -145,7 +145,7 @@ def update_color_value(file_path, color_name, new_value):
         print(f"❌ Error modificando {os.path.basename(file_path)}: {e}")
 
 if bootsplash_color:
-    update_color_value(colors_xml, "bootsplash_background", bootsplash_color)
+    update_color_value(colors_xml, "bootsplash_background", bootsplash_color) #REFACTOR, a lo mejor aqui se debe agregar el "#" para el color
 else:
     print("⚠️ bootsplash_color no definido en theme.json")
 
@@ -462,3 +462,46 @@ with open(global_vars_path, "w", encoding="utf-8") as f:
     f.writelines(new_lines)
 
 print(f"✅ globalVariables.ts actualizado para provider '{provider}' con sufix '{current_sufix}'")
+
+# === 8. Modificar CameraScreen.tsx según provider ===
+camera_screen_path = os.path.join(
+    base_dir,
+    "src/screens/CameraScreen.tsx"
+)
+
+def comment_line(line: str):
+    if line.lstrip().startswith("//"):
+        return line  # ya comentada
+    return "// " + line
+
+def uncomment_line(line: str):
+    stripped = line.lstrip()
+    if stripped.startswith("//"):
+        # Remover SOLO el primer // que hace de comentario, no tocar otros //
+        prefix_len = len(line) - len(line.lstrip())
+        return line[:prefix_len] + stripped[2:].lstrip()
+    return line  # ya descomentada
+
+try:
+    with open(camera_screen_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    if len(lines) >= 121:
+        if provider.lower() == "vfi":
+            # === Si ES vfi ===
+            lines[118] = comment_line(lines[118])       # Línea 119
+            lines[120] = uncomment_line(lines[120])     # Línea 121
+            print("✅ CameraScreen.tsx modificado para provider=vfi (119 comentada, 121 descomentada)")
+        else:
+            # === Si NO es vfi, revertir cambios ===
+            lines[118] = uncomment_line(lines[118])     # Línea 119 vuelve a normal
+            lines[120] = comment_line(lines[120])       # Línea 121 vuelve a estar comentada
+            print("🔄 CameraScreen.tsx revertido (provider ≠ vfi)")
+    else:
+        print("⚠️ CameraScreen.tsx no tiene suficientes líneas (faltan 119 y 121)")
+
+    with open(camera_screen_path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+except Exception as e:
+    print(f"❌ Error modificando CameraScreen.tsx: {e}")

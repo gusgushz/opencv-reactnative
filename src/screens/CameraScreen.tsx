@@ -84,7 +84,8 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             //REFACTOR: PARA EL MODO DEMO
             if (res.includes('_')) {
               const parts = res.split('_');
-              parts[6] = findServiceNameDemo(parts[5], parts[7]);
+              const { serviceName } = findServiceNameDemo(parts[5], parts[7]);
+              parts[6] = serviceName;
               console.log('newRes:*******', parts.join('_'));
               navigateToInformationScreen({ info: parts.join('_') });
             } else {
@@ -117,13 +118,15 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
             console.log('split10', res.split('_')[10]);
             if (region == res.split('_')[7] && providerId == res.split('_')[10]) {
               //NOTE:La siguiente linea es solo para cliente VFI ya que puede ver todos los codigos asociados al providerId sin importar el estado, mientras que Vifinsa solo puede ver los de yucatana
-            // if (providerId == res.split('_')[10]) {
+              //             if (providerId == res.split('_')[10]) {
               // Si es un código nuevo (diferente al último escaneado)
               if (res !== lastScannedRef.current) {
                 Vibration.vibrate(100);
                 const parts = res.split('_');
 
-                const { serviceName, hasFrontal, hasRear, hasEngomado } = findServiceName(parts[5], parts[7]);
+                const { serviceName, hasFrontal, hasRear, hasEngomado } =
+                  provider == 'vfi' ? findServiceNameDemo(parts[5], parts[7]) : findServiceName(parts[5], parts[7]);
+
                 let newDocuments = [...documents]; // copia el estado actual
                 const updatedInfo: Parts = {
                   version: parts[0],
@@ -235,7 +238,10 @@ export const CameraScreen = ({ navigation, route }: CameraScreenProps) => {
       return service.service_db_id.toString() == typeServiceId && service.state_id == stateId;
     });
     const serviceName: string = service?.parent_service_name ?? 'No se encontró el servicio';
-    return serviceName;
+    const hasFrontal: boolean = service?.has_frontal === 1 ? true : false;
+    const hasRear: boolean = service?.has_rear === 1 ? true : false;
+    const hasEngomado: boolean = service?.has_engomado === 1 ? true : false;
+    return { serviceName, hasFrontal, hasRear, hasEngomado };
   };
 
   type NavigateParams = { parts: Parts } | { partsEdomex: PartsEdomex } | { info: string };
